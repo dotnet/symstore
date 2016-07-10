@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "MicroBuild.Core": "0.2.0",
+    "Microsoft.Net.Compilers": "2.0.0-beta3-60616-03",
+    "xunit.runner.console": "2.1.0"
+  },
+  "frameworks": {
+    "net46": {}
+  },
+  "runtimes": {
+    "win": {}
+  }
+}

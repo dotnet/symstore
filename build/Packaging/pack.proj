@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutDirName>Nuget</OutDirName>
+  </PropertyGroup>
+  <ImportGroup>
+    <Import Project="..\Targets\Settings.targets" />
+  </ImportGroup>
+  <Target Name="Build">
+    <Exec Command='"$(ToolsetCompilerPackageDir)\tools\csi.exe" "$(MSBuildProjectDirectory)\pack.csx" "$(NuGetVersion)" "$(MSBuildProjectDirectory)\..\..\src\NuGet" "$(OutDirBase)" "$(OutDir)"' />
+  </Target>
+  <Target Name="Clean">
+    <RemoveDir Directories="$(OutDir)" />
+  </Target>
+</Project>

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutDirName>CoreTests</OutDirName>
+  </PropertyGroup>
+  <ImportGroup Label="Settings">
+    <Import Project="..\..\build\Targets\Settings.targets" />
+  </ImportGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{59BABFC3-C19B-4472-A93D-3DD3835BC219}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>DeployCoreClrTestRuntime_DoNotUse</AssemblyName>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <!-- Misspelling, bug in NuGet targets -->
+    <NuGetRuntimeIdentifier>win7-x64</NuGetRuntimeIdentifier>
+    <NoStdLib>true</NoStdLib>
+    <!-- To suppress msbuild warnings -->
+    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" />
+  <ItemGroup>
+    <Compile Include="Class1.cs" />
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.SymbolStore.Client.Tests\Microsoft.SymbolStore.Client.UnitTests.csproj">
+      <Project>{25F19EBE-1E2A-44D3-827D-248D753A5BA1}</Project>
+      <Name>Microsoft.SymbolStore.Client.UnitTests</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ImportGroup Label="Targets">
+    <Import Project="..\..\build\Targets\Imports.targets" />
+  </ImportGroup>
+</Project>
