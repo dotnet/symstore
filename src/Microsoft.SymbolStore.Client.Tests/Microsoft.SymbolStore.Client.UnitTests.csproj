@@ -7,7 +7,7 @@
   <PropertyGroup>
     <ProjectGuid>{25F19EBE-1E2A-44D3-827D-248D753A5BA1}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.SymbolStore.Client.UnitTests</RootNamespace>
+    <RootNamespace>Microsoft.SymbolStore.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.SymbolStore.Client.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
