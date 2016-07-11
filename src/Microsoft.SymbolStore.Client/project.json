@@ -6,7 +6,9 @@
     "System.Reflection.Metadata": "1.4.1-beta-24227-04",
     "System.Runtime": "4.1.0",
     "System.Runtime.Extensions": "4.1.0",
-    "System.Runtime.InteropServices": "4.1.0"
+    "System.Runtime.InteropServices": "4.1.0",
+    "System.Net.Http": "4.1.0",
+    "System.IO.FileSystem": "4.0.1"
   },
   "frameworks": {
     "netstandard1.3": {}

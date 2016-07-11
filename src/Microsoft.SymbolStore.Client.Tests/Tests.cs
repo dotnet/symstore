@@ -3,7 +3,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.SymbolStore.Client.UnitTests
+namespace Microsoft.SymbolStore.UnitTests
 {
     public class Tests
     {
