@@ -1,6 +1,6 @@
 # Microsoft.SymbolStore.Client
 
-TODO
+Implements API for retrieval of symbols and other debug artifacts from symbol store.
 
 [//]: # (Begin current test results)
 
