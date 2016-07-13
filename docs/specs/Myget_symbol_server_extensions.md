@@ -9,7 +9,7 @@ Myget would expose the same per-feed symbol server endpoints it does today, for 
     https://www.myget.org/F/dev-feed/symbols
     https://www.myget.org/F/dev-feed/auth/11111111-1111-1111-1111-11111111111/symbols
     
-If possible, it would also be nice to define an aggregate feed that can serve up any file from a set of feeds. We could then configure a Microsoft-wide aggregate feed for customers to use. This probably needs some further discussion once Maarten is back from vacation.
+If possible, it would also be nice to define an aggregate feed that can serve up any file from a set of feeds. We could then configure a larger organizational aggregate feed for customers to use. This probably needs some further discussion once Maarten is back from vacation.
 
 ## Packages ##
 
@@ -17,7 +17,7 @@ The service operates over all the packages that are active on that feed at a giv
 
 ## Other clientKey sources ##
 
-This feature doesn't preclude MyGet from continuing to satisfy requests using clientKeys there were automatically derived from package contents or any other source, but as mentioned in the [Zip Package Based Symbol Server](Package_Based_Symbol_Server.md) spec those keys can never take precedence to a key mapping provided explicitly by the client.
+This feature doesn't preclude MyGet from continuing to satisfy requests using clientKeys there were automatically derived from package contents or any other source, but those keys should never take precedence to a key mapping provided explicitly by the client in symbol\_index.json.
 
 ## Access Privileges ##
 

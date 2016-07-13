@@ -4,22 +4,38 @@ A zip package based symbol server is a network service that implements the [Simp
 
 ## The zip package format ##
 
-Each symbol package is a compressed container of files in the zip format. At the root of the container there must be one file named 'symbol\_index.json'. There may be an arbitrary number of other files in the container either at the root level or in arbitrarily nested sub-containers. The symbol\_index.json is a json map where the key is the clientKey encoded as a string and the value is the path of a file within the zip container encoded as a string. The path is a filename, preceded by 0 or more container names using '/' as the separator. Each path indicated in the mapping must point to a valid file within the zip archive. For example:
+Each symbol package is a compressed container of files in the zip format. At the root of the container there must be one file named 'symbol\_index.json'. There may be an arbitrary number of other files in the container either at the root level or in arbitrarily nested sub-containers. The symbol\_index.json is a json array where each element identifies a clientKey and a blobPath,  the corresponding file in the zip that should be returned by an SSQP request for the clientKey. The blobPath is a filename, preceded by 0 or more container names using '/' as the separator:
 
-    {
-        "12387532" : "debug_info.txt",
-        "09safnf82asddasdqwd998vds" : "MyProgram.exe",
-        "12-09" : "Content/localized/en-us/data.xml",
-        "312&312-123*&^ndw" : "foo"
+    [
+        {
+            "clientKey" : "12387532",
+            "blobPath" : "debug_info.txt"
+        },
+        {
+            "clientKey" : "MyProgram.exe/09safnf82asddasdqwd998vds/MyProgram.exe",
+            "blobPath" : "MyProgram.exe"
+        },
+        {
+            "clientKey" : "12-09",
+            "blobPath" : "Content/localized/en-us/data.xml"
+        },
+        {
+            "clientKey" : "312&312-123*&^ndw"
+            "blobPath" : "Content/localized/en-us/data.xml"
+        }
     }
 
-## Implementing the service ##
+## Expected service behavior ##
 
-In order to implement the [Simple Symbol Query Protocol](Simple_Symbol_Query_Protocol.md) the service must search within each package's symbol\_index.json for a map entry that uses clientKey as the key. There should be at most one such entry per-package. If more than one package defines an entry with the same clientKey the implementation may choose one of them arbitrarily. If the clientKey isn't located the implementation may return a 404, or it may fallback to other implementation-specific techniques to satisfy the request. If the filename requested in the client's query does not match the filename in the map entry's path, the service implementation should return an HTTP error, 404 is recommended. Otherwise the service should extract the file from the package return it in the HTTP response.
+In order to implement the [Simple Symbol Query Protocol](Simple_Symbol_Query_Protocol.md) the service must identify a map entry in some package's symbol\_index.json which has the matching clientKey and then return the file pointed to by blobPath. If there is more than one entry in the same package which has the same clientKey value that is a bad package and the service may handle the error in an implementation specific way. If more than one package defines an entry with the same clientKey the service may choose one of the entries arbitrarily using implementation specific behavior. If the clientKey isn't present in any package the service may return a 404, or it may fallback to other implementation specific techniques to satisfy the request. The service must be prepared to handle having N different clientKeys all refer to the same blob.
 
-
-It is suggested, but not required, that implementations use caching to lower the processing time required to respond to client requests. The format and protocol have been designed in such a way that it is possible to pre-compute all valid client request URIs and the binary content that should be served back.
 
 ## Combining with other sources of clientKeys ##
 
-It is possible to run an SSQP service that uses more than one data source to determine the total set of clientKey/filename requests it is able to respond to. For example most existing NuGet symbol service implementations compute their own mappings for files in specific portions of a NuGet symbol package if the files are one of a few well-known formats. This specification explicitly allows for these other data sources to be integrated as long as mappings in symbol\_index.json are given precedence whenever they are present.
+It is possible to run an SSQP service that uses more than one data source to determine the total set of clientKey/filename requests it is able to respond to. For example most existing NuGet symbol service implementations compute their own mappings for files in specific portions of a NuGet symbol package if the files are one of a few well-known formats. This specification explicitly allows for these other data sources to be integrated but implementers should document what happens in the event two disparate sources of mapping information request different blobs to be returned for the same clientKey.
+
+## Usage notes ##
+
+SSQP and the package based symbol server are best suited for controlled settings in which all publishers agree on the same conventions for publishing content. For example a set of developers on a particular project or the employees of a small company.
+
+If there is disagreement (or outright malicious actors) these services do not intrinsically provide any way to determine who deserves to be more trusted. Publishers could easily submit packages with conflicting indexing information which will give undefined results to the SSQP clients. Running this service for a large group, such as worldwide unrestricted publishing access, is therefore not recommended without adding additional arbitration procedures.
