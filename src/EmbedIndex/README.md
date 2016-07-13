@@ -1,6 +1,6 @@
 # Sample Nuget Package Indexer #
   
-This is a proof of concept implementation of creating a nuget package which contains the symbol_index.json necessary for the [Package Based Symbol Server](../../Documentation/Specs/Foo.md)  
+This is a proof of concept implementation of creating a nuget package which contains the symbol_index.json necessary for the [Package Based Symbol Server](../../Documentation/Specs/Package_Based_Symbol_Server.md)  
   
 ## Running the example ##
 

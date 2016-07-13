@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using FileFormats.ELF;
 using System;
@@ -16,7 +17,7 @@ namespace EmbedIndex
             try
             {
                 string extension = Path.GetExtension(path);
-                if(!string.IsNullOrEmpty(extension) && extension != ".dbg")
+                if (!string.IsNullOrEmpty(extension) && extension != ".dbg")
                 {
                     return null;
                 }
@@ -30,7 +31,7 @@ namespace EmbedIndex
                 bool isStripped = extension != ".dbg";
                 return "elf-buildid-" + (isStripped ? "" : "sym-") + string.Concat(elf.BuildID.Select(b => b.ToString("x2")));
             }
-            catch(InputParsingException)
+            catch (InputParsingException)
             {
                 return null;
             }

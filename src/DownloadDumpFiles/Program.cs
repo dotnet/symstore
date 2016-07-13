@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using System;
 using System.Collections.Generic;
@@ -24,15 +25,15 @@ namespace DownloadDumpFiles
             p.DownloadFiles().Wait();
         }
 
-        static void PrintUsage()
+        private static void PrintUsage()
         {
             Console.WriteLine("DownloadDumpFiles <dump_file_path> <symbol_server_url> <file_cache>");
         }
 
 
-        string _dumpFilePath;
-        string _symbolServerPath;
-        string _cachePath;
+        private string _dumpFilePath;
+        private string _symbolServerPath;
+        private string _cachePath;
 
         public Program(string dumpFilePath, string symbolServerPath, string cachePath)
         {
@@ -59,7 +60,7 @@ namespace DownloadDumpFiles
                 string path = await client.GetFilePath(lookupKey);
                 WriteLine("SUCCESS: " + path);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 WriteLine("FAIL: " + lookupKey + ": " + e.Message);
             }
@@ -77,7 +78,5 @@ namespace DownloadDumpFiles
                 }
             }
         }
-
-        
     }
 }

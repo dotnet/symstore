@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -264,6 +265,7 @@ namespace FileFormats
         /// <summary>
         /// Adds supports for reading bool, sbyte, byte, char, short, ushort, int, uint, long, ulong, float, and double
         /// </summary>
+        /// <param name="layouts">The layout manager that will hold the new layout</param>
         /// <param name="isBigEndian">True if the primitives should be read in big endian byte order, otherwise little endian</param>
         public static LayoutManager AddPrimitives(this LayoutManager layouts, bool isBigEndian = false)
         {

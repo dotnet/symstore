@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,12 @@ namespace FileFormats.MachO
 {
     public class MachOFatFile
     {
-        IAddressSpace _dataSource;
-        Lazy<MachFatHeaderMagic> _headerMagic;
-        Lazy<Reader> _headerReader;
-        Lazy<MachFatHeader> _header;
-        Lazy<MachFatArch[]> _arches;
-        Lazy<MachOFile[]> _archSpecificFiles;
+        private readonly IAddressSpace _dataSource;
+        private readonly Lazy<MachFatHeaderMagic> _headerMagic;
+        private readonly Lazy<Reader> _headerReader;
+        private readonly Lazy<MachFatHeader> _header;
+        private readonly Lazy<MachFatArch[]> _arches;
+        private readonly Lazy<MachOFile[]> _archSpecificFiles;
 
         public MachOFatFile(IAddressSpace dataSource)
         {
@@ -26,11 +27,11 @@ namespace FileFormats.MachO
             _archSpecificFiles = new Lazy<MachOFile[]>(ReadArchSpecificFiles);
         }
 
-        public MachFatHeaderMagic HeaderMagic {  get { return _headerMagic.Value; } }
-        public MachFatHeader Header {  get { return _header.Value; } }
-        public MachFatArch[] Arches {  get { return _arches.Value; } }
+        public MachFatHeaderMagic HeaderMagic { get { return _headerMagic.Value; } }
+        public MachFatHeader Header { get { return _header.Value; } }
+        public MachFatArch[] Arches { get { return _arches.Value; } }
         public MachOFile[] ArchSpecificFiles { get { return _archSpecificFiles.Value; } }
-        
+
         public bool IsBigEndian
         {
             get
@@ -40,14 +41,14 @@ namespace FileFormats.MachO
             }
         }
 
-        MachFatArch[] ReadArches()
+        private MachFatArch[] ReadArches()
         {
             Header.IsCountFatArchesReasonable.CheckThrowing();
             ulong position = _headerReader.Value.SizeOf<MachFatHeader>();
             return _headerReader.Value.ReadArray<MachFatArch>(position, Header.CountFatArches);
         }
 
-        MachOFile[] ReadArchSpecificFiles()
+        private MachOFile[] ReadArchSpecificFiles()
         {
             return Arches.Select(a => new MachOFile(new RelativeAddressSpace(_dataSource, a.Offset, a.Size))).ToArray();
         }
@@ -55,19 +56,19 @@ namespace FileFormats.MachO
 
     public class MachOFile
     {
-        IAddressSpace _dataSource;
-        ulong _position;
-        bool _dataSourceIsVirtualAddressSpace;
-        Lazy<MachHeaderMagic> _headerMagic;
-        Lazy<Reader> _dataSourceReader;
-        Lazy<MachHeader> _header;
-        Lazy<Tuple<MachLoadCommand, ulong>[]> _loadCommands;
-        Lazy<MachSegment[]> _segments;
-        Lazy<MachSection[]> _sections;
-        Lazy<Reader> _virtualAddressReader;
-        Lazy<Reader> _physicalAddressReader;
-        Lazy<byte[]> _uuid;
-        Lazy<MachSymtab> _symtab;
+        private readonly IAddressSpace _dataSource;
+        private readonly ulong _position;
+        private readonly bool _dataSourceIsVirtualAddressSpace;
+        private readonly Lazy<MachHeaderMagic> _headerMagic;
+        private readonly Lazy<Reader> _dataSourceReader;
+        private readonly Lazy<MachHeader> _header;
+        private readonly Lazy<Tuple<MachLoadCommand, ulong>[]> _loadCommands;
+        private readonly Lazy<MachSegment[]> _segments;
+        private readonly Lazy<MachSection[]> _sections;
+        private readonly Lazy<Reader> _virtualAddressReader;
+        private readonly Lazy<Reader> _physicalAddressReader;
+        private readonly Lazy<byte[]> _uuid;
+        private readonly Lazy<MachSymtab> _symtab;
 
         public MachOFile(IAddressSpace dataSource, ulong position = 0, bool dataSourceIsVirtualAddressSpace = false)
         {
@@ -87,16 +88,16 @@ namespace FileFormats.MachO
         }
 
         public MachHeaderMagic HeaderMagic { get { return _headerMagic.Value; } }
-        
+
         public MachHeader Header { get { return _header.Value; } }
         public byte[] Uuid { get { return _uuid.Value; } }
         public MachSegment[] Segments { get { return _segments.Value; } }
-        public MachSection[] Sections {  get { return _sections.Value; } }
+        public MachSection[] Sections { get { return _sections.Value; } }
         public Reader VirtualAddressReader { get { return _virtualAddressReader.Value; } }
-        public Reader PhysicalAddressReader {  get { return _physicalAddressReader.Value; } }
+        public Reader PhysicalAddressReader { get { return _physicalAddressReader.Value; } }
         public MachSymtab Symtab { get { return _symtab.Value; } }
 
-        Reader DataSourceReader { get { return _dataSourceReader.Value; } }
+        private Reader DataSourceReader { get { return _dataSourceReader.Value; } }
 
         public bool IsBigEndian
         {
@@ -132,7 +133,7 @@ namespace FileFormats.MachO
         {
             get
             {
-                if(_dataSourceIsVirtualAddressSpace)
+                if (_dataSourceIsVirtualAddressSpace)
                 {
                     return _position;
                 }
@@ -143,12 +144,12 @@ namespace FileFormats.MachO
             }
         }
 
-        Reader CreateDataSourceReader()
+        private Reader CreateDataSourceReader()
         {
             return new Reader(_dataSource, new LayoutManager().AddMachTypes(IsBigEndian, Is64Bit));
         }
 
-        Reader CreateVirtualReader()
+        private Reader CreateVirtualReader()
         {
             if (_dataSourceIsVirtualAddressSpace)
             {
@@ -160,7 +161,7 @@ namespace FileFormats.MachO
             }
         }
 
-        Reader CreatePhysicalReader()
+        private Reader CreatePhysicalReader()
         {
             if (!_dataSourceIsVirtualAddressSpace)
             {
@@ -172,7 +173,7 @@ namespace FileFormats.MachO
             }
         }
 
-        Tuple<MachLoadCommand, ulong>[] ReadLoadCommands()
+        private Tuple<MachLoadCommand, ulong>[] ReadLoadCommands()
         {
             Header.IsNumberCommandsReasonable.CheckThrowing();
             ulong position = _position + DataSourceReader.SizeOf<MachHeader>();
@@ -194,7 +195,7 @@ namespace FileFormats.MachO
             return cmds.ToArray();
         }
 
-        byte[] ReadUuid()
+        private byte[] ReadUuid()
         {
             IsAtLeastOneUuidLoadCommand.CheckThrowing();
             IsAtMostOneUuidLoadCommand.CheckThrowing();
@@ -204,7 +205,7 @@ namespace FileFormats.MachO
             return uuidCmd.Uuid;
         }
 
-        MachSegment[] ReadSegments()
+        private MachSegment[] ReadSegments()
         {
             List<MachSegment> segs = new List<MachSegment>();
             foreach (Tuple<MachLoadCommand, ulong> cmdAndPos in _loadCommands.Value)
@@ -221,7 +222,7 @@ namespace FileFormats.MachO
             return segs.ToArray();
         }
 
-        MachSymtab ReadSymtab()
+        private MachSymtab ReadSymtab()
         {
             IsAtLeastOneSymtabLoadCommand.CheckThrowing();
             IsAtMostOneSymtabLoadCommand.CheckThrowing();
@@ -284,13 +285,13 @@ namespace FileFormats.MachO
 
     public class MachSegment
     {
-        Reader _dataSourceReader;
-        ulong _position;
-        bool _readerIsVirtualAddressSpace;
-        Lazy<MachSegmentLoadCommand> _loadCommand;
-        Lazy<MachSection[]> _sections;
-        Lazy<Reader> _physicalContents;
-        Lazy<Reader> _virtualContents;
+        private readonly Reader _dataSourceReader;
+        private readonly ulong _position;
+        private readonly bool _readerIsVirtualAddressSpace;
+        private readonly Lazy<MachSegmentLoadCommand> _loadCommand;
+        private readonly Lazy<MachSection[]> _sections;
+        private readonly Lazy<Reader> _physicalContents;
+        private readonly Lazy<Reader> _virtualContents;
 
         public MachSegment(Reader machReader, ulong position, bool readerIsVirtualAddressSpace = false)
         {
@@ -303,10 +304,10 @@ namespace FileFormats.MachO
             _virtualContents = new Lazy<Reader>(CreateVirtualSegmentAddressSpace);
         }
 
-        public MachSegmentLoadCommand LoadCommand {  get { return _loadCommand.Value; } }
-        public IEnumerable<MachSection> Sections {  get { return _sections.Value; } }
+        public MachSegmentLoadCommand LoadCommand { get { return _loadCommand.Value; } }
+        public IEnumerable<MachSection> Sections { get { return _sections.Value; } }
         public Reader PhysicalContents { get { return _physicalContents.Value; } }
-        public Reader VirtualContents {  get { return _virtualContents.Value; } }
+        public Reader VirtualContents { get { return _virtualContents.Value; } }
 
         private MachSection[] ReadSections()
         {
@@ -314,7 +315,7 @@ namespace FileFormats.MachO
             return _dataSourceReader.ReadArray<MachSection>(sectionStartOffset, _loadCommand.Value.CountSections);
         }
 
-        Reader CreatePhysicalSegmentAddressSpace()
+        private Reader CreatePhysicalSegmentAddressSpace()
         {
             if (!_readerIsVirtualAddressSpace)
             {
@@ -327,9 +328,9 @@ namespace FileFormats.MachO
             }
         }
 
-        Reader CreateVirtualSegmentAddressSpace()
+        private Reader CreateVirtualSegmentAddressSpace()
         {
-            if(_readerIsVirtualAddressSpace)
+            if (_readerIsVirtualAddressSpace)
             {
                 return _dataSourceReader.WithRelativeAddressSpace(LoadCommand.VMAddress, LoadCommand.VMSize, 0);
             }
@@ -357,11 +358,11 @@ namespace FileFormats.MachO
 
     public class MachVirtualAddressSpace : PiecewiseAddressSpace
     {
-        public MachVirtualAddressSpace(IEnumerable<MachSegment> segments) : base( segments.Select(s => ToRange(s)).ToArray())
+        public MachVirtualAddressSpace(IEnumerable<MachSegment> segments) : base(segments.Select(s => ToRange(s)).ToArray())
         {
         }
 
-        static PiecewiseAddressSpaceRange ToRange(MachSegment segment)
+        private static PiecewiseAddressSpaceRange ToRange(MachSegment segment)
         {
             return new PiecewiseAddressSpaceRange()
             {
@@ -375,11 +376,11 @@ namespace FileFormats.MachO
     public class MachPhysicalAddressSpace : PiecewiseAddressSpace
     {
         public MachPhysicalAddressSpace(IAddressSpace virtualAddressSpace, ulong baseLoadAddress, ulong preferredVMBaseAddress, IEnumerable<MachSegment> segments) :
-            base( segments.Select(s => ToRange(virtualAddressSpace, baseLoadAddress, preferredVMBaseAddress, s)).ToArray())
+            base(segments.Select(s => ToRange(virtualAddressSpace, baseLoadAddress, preferredVMBaseAddress, s)).ToArray())
         {
         }
 
-        static PiecewiseAddressSpaceRange ToRange(IAddressSpace virtualAddressSpace, ulong baseLoadAddress, ulong preferredVMBaseAddress, MachSegment segment)
+        private static PiecewiseAddressSpaceRange ToRange(IAddressSpace virtualAddressSpace, ulong baseLoadAddress, ulong preferredVMBaseAddress, MachSegment segment)
         {
             ulong actualSegmentLoadAddress = segment.LoadCommand.VMAddress - preferredVMBaseAddress + baseLoadAddress;
             return new PiecewiseAddressSpaceRange()
@@ -406,12 +407,12 @@ namespace FileFormats.MachO
 
     public class MachSymtab
     {
-        Reader _machReader;
-        ulong _position;
-        Reader _physicalAddressSpace;
-        Lazy<MachSymtabLoadCommand> _loadCommand;
-        Lazy<MachSymbol[]> _symbols;
-        
+        private readonly Reader _machReader;
+        private readonly ulong _position;
+        private readonly Reader _physicalAddressSpace;
+        private readonly Lazy<MachSymtabLoadCommand> _loadCommand;
+        private readonly Lazy<MachSymbol[]> _symbols;
+
 
         public MachSymtab(Reader machReader, ulong position, Reader physicalAddressSpace)
         {
@@ -423,9 +424,9 @@ namespace FileFormats.MachO
         }
 
         public MachSymtabLoadCommand LoadCommand { get { return _loadCommand.Value; } }
-        public IEnumerable<MachSymbol> Symbols {  get { return _symbols.Value; } }
+        public IEnumerable<MachSymbol> Symbols { get { return _symbols.Value; } }
 
-        MachSymbol[] ReadSymbols()
+        private MachSymbol[] ReadSymbols()
         {
             LoadCommand.IsNSymsReasonable.CheckThrowing();
             NList[] nlists = _physicalAddressSpace.ReadArray<NList>(LoadCommand.SymOffset, LoadCommand.SymCount);

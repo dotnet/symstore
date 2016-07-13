@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using FileFormats.MachO;
 using System;
@@ -16,12 +17,12 @@ namespace EmbedIndex
             try
             {
                 string extension = Path.GetExtension(path);
-                if(extension != ".dylib" && extension != ".dylib.dwarf")
+                if (extension != ".dylib" && extension != ".dylib.dwarf")
                 {
                     return null;
                 }
                 MachOFile machO = new MachOFile(new StreamAddressSpace(fileStream));
-                if(!machO.HeaderMagic.IsMagicValid.Check())
+                if (!machO.HeaderMagic.IsMagicValid.Check())
                 {
                     return null;
                 }
@@ -30,7 +31,7 @@ namespace EmbedIndex
                 bool isStripped = extension == ".dylib";
                 return "mach-uuid-" + (isStripped ? "" : "sym-") + string.Concat(machO.Uuid.Select(b => b.ToString("x2")));
             }
-            catch(InputParsingException)
+            catch (InputParsingException)
             {
                 return null;
             }

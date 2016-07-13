@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,26 +8,25 @@ using System.Diagnostics;
 
 namespace FileFormats.PE
 {
-
     /// <summary>
     /// A very basic PE reader that can extract a few useful pieces of information
     /// </summary>
     public class PEFile
     {
         // PE file
-        IAddressSpace _fileAddressSpace;
-        Reader _peHeaderReader;
-        Lazy<ushort> _dosHeaderMagic;
-        Lazy<CoffFileHeader> _coffHeader;
-        Lazy<uint> _peHeaderOffset;
-        Lazy<uint> _peSignature;
-        Lazy<PEOptionalHeaderMagic> _peHeaderOptionalHeaderMagic;
-        Lazy<Reader> _peFileReader;
-        Lazy<PEOptionalHeaderWindows> _peOptionalHeader;
+        private readonly IAddressSpace _fileAddressSpace;
+        private readonly Reader _peHeaderReader;
+        private readonly Lazy<ushort> _dosHeaderMagic;
+        private readonly Lazy<CoffFileHeader> _coffHeader;
+        private readonly Lazy<uint> _peHeaderOffset;
+        private readonly Lazy<uint> _peSignature;
+        private readonly Lazy<PEOptionalHeaderMagic> _peHeaderOptionalHeaderMagic;
+        private readonly Lazy<Reader> _peFileReader;
+        private readonly Lazy<PEOptionalHeaderWindows> _peOptionalHeader;
 
-        const ushort ExpectedDosHeaderMagic = 0x5A4D;     // MZ
-        const int PESignatureOffsetLocation = 0x3C;
-        const uint ExpectedPESignature = 0x00004550;    // PE00
+        private const ushort ExpectedDosHeaderMagic = 0x5A4D;     // MZ
+        private const int PESignatureOffsetLocation = 0x3C;
+        private const uint ExpectedPESignature = 0x00004550;    // PE00
 
         public PEFile(IAddressSpace fileAddressSpace)
         {

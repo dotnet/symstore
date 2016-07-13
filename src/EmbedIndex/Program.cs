@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -91,7 +92,7 @@ namespace EmbedIndex
         {
             TextWriter writer = new StreamWriter(indexStream);
             writer.WriteLine("{");
-            for(int i = 0; i < indexEntries.Count; i++)
+            for (int i = 0; i < indexEntries.Count; i++)
             {
                 Tuple<string, string> entry = indexEntries[i];
                 if (i == indexEntries.Count - 1)
@@ -117,19 +118,17 @@ namespace EmbedIndex
             {
                 return keys;
             }
-            
-            foreach(IFileFormatIndexer indexer in indexers)
+
+            foreach (IFileFormatIndexer indexer in indexers)
             {
                 fileStream.Position = 0;
                 string key = indexer.ComputeIndexKey(archiveRelativePath, fileStream);
-                if(key != null)
+                if (key != null)
                 {
                     keys.Add(key);
                 }
             }
             return keys;
         }
-
-
     }
 }

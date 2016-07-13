@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using FileFormats.PDB;
 using System;
@@ -15,16 +16,16 @@ namespace EmbedIndex
         {
             try
             {
-                if(Path.GetExtension(path) != ".pdb")
+                if (Path.GetExtension(path) != ".pdb")
                 {
                     return null;
                 }
                 PDBFile pdb = new PDBFile(new StreamAddressSpace(fileStream));
-                if(!pdb.Header.IsMagicValid.Check())
+                if (!pdb.Header.IsMagicValid.Check())
                 {
                     return null;
                 }
-                
+
                 return pdb.Signature.ToString().Replace("-", "") + pdb.Age.ToString("X");
             }
             catch (InputParsingException)

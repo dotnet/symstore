@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,10 @@ namespace FileFormats.ELF
 {
     public class ELFCoreFile
     {
-        IAddressSpace _dataSource;
-        ELFFile _elf;
-        Lazy<ELFFileTable> _fileTable;
-        Lazy<ELFLoadedImage[]> _images;
+        private readonly IAddressSpace _dataSource;
+        private readonly ELFFile _elf;
+        private readonly Lazy<ELFFileTable> _fileTable;
+        private readonly Lazy<ELFLoadedImage[]> _images;
 
         public ELFCoreFile(IAddressSpace dataSource)
         {
@@ -24,7 +25,7 @@ namespace FileFormats.ELF
         public ELFFileTable FileTable { get { return _fileTable.Value; } }
         public ELFLoadedImage[] LoadedImages { get { return _images.Value; } }
 
-        ELFFileTable ReadFileTable()
+        private ELFFileTable ReadFileTable()
         {
             foreach (ELFSegment seg in _elf.Segments)
             {
@@ -44,7 +45,7 @@ namespace FileFormats.ELF
             throw new BadInputFormatException("No ELF file table found");
         }
 
-        ELFLoadedImage[] ReadLoadedImages()
+        private ELFLoadedImage[] ReadLoadedImages()
         {
             return FileTable.Files.Select(e => new ELFLoadedImage(new ELFFile(_elf.VirtualAddressReader.DataSource, e.LoadAddress, true), e)).ToArray();
         }
@@ -52,7 +53,7 @@ namespace FileFormats.ELF
 
     public class ELFLoadedImage
     {
-        ELFFileTableEntry _entry;
+        private readonly ELFFileTableEntry _entry;
 
         public ELFLoadedImage(ELFFile image, ELFFileTableEntry entry)
         {
@@ -67,7 +68,7 @@ namespace FileFormats.ELF
 
     public class ELFFileTableEntry
     {
-        ELFFileTableEntryPointers _ptrs;
+        private readonly ELFFileTableEntryPointers _ptrs;
 
         public ELFFileTableEntry(string path, ELFFileTableEntryPointers ptrs)
         {
@@ -81,8 +82,8 @@ namespace FileFormats.ELF
 
     public class ELFFileTable
     {
-        Reader _noteReader;
-        Lazy<IEnumerable<ELFFileTableEntry>> _files;
+        private readonly Reader _noteReader;
+        private readonly Lazy<IEnumerable<ELFFileTableEntry>> _files;
 
         public ELFFileTable(Reader noteReader)
         {

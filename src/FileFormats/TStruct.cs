@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,6 +112,7 @@ namespace FileFormats
         /// Adds support for parsing types derived from TStruct. All the field types used within the TStruct types
         /// must also have layouts available from the LayoutManager.
         /// </summary>
+        /// <param name="layouts">The layout manager that will hold the new layout</param>
         /// <param name="enabledDefines">
         /// The set of defines that can be used to enabled optional fields decorated with the IfAttribute
         /// </param>
@@ -131,17 +133,17 @@ namespace FileFormats
         /// <returns></returns>
         public static LayoutManager AddReflectionTypes(this LayoutManager layouts, IEnumerable<string> enabledDefines, Type requiredBaseType)
         {
-            layouts.AddLayoutProvider((type,layoutManager) => GetTStructLayout(type, layoutManager, enabledDefines, requiredBaseType));
+            layouts.AddLayoutProvider((type, layoutManager) => GetTStructLayout(type, layoutManager, enabledDefines, requiredBaseType));
             return layouts;
         }
 
-        static ILayout GetTStructLayout(Type tStructType, LayoutManager layoutManager, IEnumerable<string> enabledDefines, Type requiredBaseType)
+        private static ILayout GetTStructLayout(Type tStructType, LayoutManager layoutManager, IEnumerable<string> enabledDefines, Type requiredBaseType)
         {
-            if(!requiredBaseType.GetTypeInfo().IsAssignableFrom(tStructType))
+            if (!requiredBaseType.GetTypeInfo().IsAssignableFrom(tStructType))
             {
                 return null;
             }
-            if(enabledDefines == null)
+            if (enabledDefines == null)
             {
                 enabledDefines = Array.Empty<string>();
             }
@@ -202,12 +204,12 @@ namespace FileFormats
             return layout;
         }
 
-        static bool IsFieldIncludedInDefines(FieldInfo fieldInfo, IEnumerable<string> enabledDefines)
+        private static bool IsFieldIncludedInDefines(FieldInfo fieldInfo, IEnumerable<string> enabledDefines)
         {
             IEnumerable<IfAttribute> attrs = fieldInfo.GetCustomAttributes<IfAttribute>();
-            foreach(IfAttribute attr in attrs)
+            foreach (IfAttribute attr in attrs)
             {
-                if(!enabledDefines.Contains(attr.DefineName))
+                if (!enabledDefines.Contains(attr.DefineName))
                 {
                     return false;
                 }
@@ -215,7 +217,7 @@ namespace FileFormats
             return true;
         }
 
-        static ILayout GetFieldLayout(FieldInfo fieldInfo, LayoutManager layoutManager)
+        private static ILayout GetFieldLayout(FieldInfo fieldInfo, LayoutManager layoutManager)
         {
             ILayout fieldLayout = null;
             Type fieldType = fieldInfo.FieldType;
@@ -233,7 +235,7 @@ namespace FileFormats
                 fieldLayout = layoutManager.GetLayout(fieldType);
             }
 
-            if(!fieldLayout.IsFixedSize)
+            if (!fieldLayout.IsFixedSize)
             {
                 throw new LayoutException(fieldInfo.Name + " is not a fixed size field. Only fixed size fields are supported in structures");
             }
@@ -241,7 +243,7 @@ namespace FileFormats
             return fieldLayout;
         }
 
-        static uint AlignUp(uint p, uint align)
+        private static uint AlignUp(uint p, uint align)
         {
             uint remainder = (p % align);
             if (remainder != 0)

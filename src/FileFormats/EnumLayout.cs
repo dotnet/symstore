@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,9 +32,9 @@ namespace FileFormats
             return layoutManager;
         }
 
-        static ILayout GetEnumLayout(Type enumType, LayoutManager layoutManager)
+        private static ILayout GetEnumLayout(Type enumType, LayoutManager layoutManager)
         {
-            if(!enumType.GetTypeInfo().IsEnum)
+            if (!enumType.GetTypeInfo().IsEnum)
             {
                 return null;
             }

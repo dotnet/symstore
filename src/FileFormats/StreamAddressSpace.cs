@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,7 +39,7 @@ namespace FileFormats
                 throw new BadInputFormatException("Unexpected end of data: Expected " + count + " bytes.");
             }
             _stream.Position = (long)position;
-            return (uint) _stream.Read(buffer, (int)bufferOffset, (int)count);
+            return (uint)_stream.Read(buffer, (int)bufferOffset, (int)count);
         }
 
         private Stream _stream;

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace FileFormats
     /// </remarks>
     public class NullTerminatedStringLayout : ILayout
     {
-        Encoding _encoding;
+        private Encoding _encoding;
 
         /// <summary>
         /// Create a new NullTerminatedStringLayout
@@ -100,6 +101,7 @@ namespace FileFormats
         /// <summary>
         /// Add support for parsing null terminated strings as System.String
         /// </summary>
+        /// <param name="layouts">The layout manager that will hold the new layout</param>
         /// <param name="encoding">The encoding used to parse string characters. Currently only UTF8 and ASCII are supported</param>
         public static LayoutManager AddNullTerminatedString(this LayoutManager layouts, Encoding encoding)
         {

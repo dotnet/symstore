@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -78,7 +79,7 @@ namespace FileFormats
         public SizeTPointerLayout(Type pointerType, ILayout storageLayout, ILayout targetLayout) :
             base(pointerType, storageLayout, targetLayout)
         {
-            if(storageLayout.Type != typeof(SizeT))
+            if (storageLayout.Type != typeof(SizeT))
             {
                 throw new ArgumentException("storageLayout must have SizeT type");
             }
@@ -106,7 +107,7 @@ namespace FileFormats
             return "0x" + Value.ToString("x");
         }
 
-        public static implicit operator ulong(Pointer instance)
+        public static implicit operator ulong (Pointer instance)
         {
             return instance.Value;
         }
@@ -158,9 +159,9 @@ namespace FileFormats
             return layouts;
         }
 
-        static ILayout GetPointerLayout(Type pointerType, LayoutManager layoutManager)
+        private static ILayout GetPointerLayout(Type pointerType, LayoutManager layoutManager)
         {
-            if(!typeof(Pointer).GetTypeInfo().IsAssignableFrom(pointerType))
+            if (!typeof(Pointer).GetTypeInfo().IsAssignableFrom(pointerType))
             {
                 return null;
             }
@@ -199,7 +200,7 @@ namespace FileFormats
             {
                 return new SizeTPointerLayout(pointerType, storageLayout, targetLayout);
             }
-            else if(storageLayout.Type == typeof(ulong))
+            else if (storageLayout.Type == typeof(ulong))
             {
                 return new UInt64PointerLayout(pointerType, storageLayout, targetLayout);
             }

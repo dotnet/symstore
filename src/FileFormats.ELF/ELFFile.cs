@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using System;
 using System.Collections.Generic;
@@ -7,18 +8,17 @@ using System.Linq;
 
 namespace FileFormats.ELF
 {
-
     public class ELFFile
     {
-        IAddressSpace _dataSource;
-        ulong _position;
-        bool _isDataSourceVirtualAddressSpace;
-        Lazy<ELFHeaderIdent> _ident;
-        Lazy<Reader> _dataSourceReader;
-        Lazy<ELFHeader> _header;
-        Lazy<IEnumerable<ELFSegment>> _segments;
-        Lazy<Reader> _virtualAddressReader;
-        Lazy<byte[]> _buildId;
+        private readonly IAddressSpace _dataSource;
+        private readonly ulong _position;
+        private readonly bool _isDataSourceVirtualAddressSpace;
+        private readonly Lazy<ELFHeaderIdent> _ident;
+        private readonly Lazy<Reader> _dataSourceReader;
+        private readonly Lazy<ELFHeader> _header;
+        private readonly Lazy<IEnumerable<ELFSegment>> _segments;
+        private readonly Lazy<Reader> _virtualAddressReader;
+        private readonly Lazy<byte[]> _buildId;
 
         public ELFFile(IAddressSpace dataSource, ulong position = 0, bool isDataSourceVirtualAddressSpace = false)
         {
@@ -33,11 +33,11 @@ namespace FileFormats.ELF
             _buildId = new Lazy<byte[]>(ReadBuildID);
         }
 
-        public ELFHeaderIdent Ident {  get { return _ident.Value; } }
+        public ELFHeaderIdent Ident { get { return _ident.Value; } }
         public ELFHeader Header { get { return _header.Value; } }
-        Reader DataSourceReader { get { return _dataSourceReader.Value; } }
-        public IEnumerable<ELFSegment> Segments {  get { return _segments.Value; } }
-        public Reader VirtualAddressReader {  get { return _virtualAddressReader.Value; } }
+        private Reader DataSourceReader { get { return _dataSourceReader.Value; } }
+        public IEnumerable<ELFSegment> Segments { get { return _segments.Value; } }
+        public Reader VirtualAddressReader { get { return _virtualAddressReader.Value; } }
         public byte[] BuildID { get { return _buildId.Value; } }
 
         public bool IsBigEndian
@@ -63,20 +63,20 @@ namespace FileFormats.ELF
         private IEnumerable<ELFSegment> ReadSegments()
         {
             Header.IsProgramHeaderCountReasonable.CheckThrowing();
-            IsHeaderPhOffValid.CheckThrowing();
-            IsHeaderPhEntSizeValid.CheckThrowing();
+            IsHeaderProgramHeaderOffsetValid.CheckThrowing();
+            IsHeaderProgramHeaderEntrySizeValid.CheckThrowing();
             List<ELFSegment> segments = new List<ELFSegment>();
             for (uint i = 0; i < Header.ProgramHeaderCount; i++)
             {
-                segments.Add(new ELFSegment(DataSourceReader, _position, 
-                    _position + Header.ProgramHeaderOffset + i*Header.ProgramHeaderEntrySize, _isDataSourceVirtualAddressSpace));
+                segments.Add(new ELFSegment(DataSourceReader, _position,
+                    _position + Header.ProgramHeaderOffset + i * Header.ProgramHeaderEntrySize, _isDataSourceVirtualAddressSpace));
             }
             return segments;
         }
 
-        Reader CreateVirtualAddressReader()
+        private Reader CreateVirtualAddressReader()
         {
-            if(_isDataSourceVirtualAddressSpace)
+            if (_isDataSourceVirtualAddressSpace)
             {
                 return DataSourceReader;
             }
@@ -108,7 +108,7 @@ namespace FileFormats.ELF
         }
 
         #region Validation Rules
-        public ValidationRule IsHeaderPhOffValid
+        public ValidationRule IsHeaderProgramHeaderOffsetValid
         {
             get
             {
@@ -117,12 +117,12 @@ namespace FileFormats.ELF
                                               return Header.ProgramHeaderOffset < _dataSource.Length &&
                                                      Header.ProgramHeaderOffset + (ulong)(Header.ProgramHeaderEntrySize * Header.ProgramHeaderCount) <= _dataSource.Length;
                                           },
-                                          IsHeaderPhEntSizeValid,
+                                          IsHeaderProgramHeaderEntrySizeValid,
                                           Header.IsProgramHeaderCountReasonable);
             }
         }
 
-        public ValidationRule IsHeaderPhEntSizeValid
+        public ValidationRule IsHeaderProgramHeaderEntrySizeValid
         {
             get
             {
@@ -135,8 +135,8 @@ namespace FileFormats.ELF
 
     public class ELFVirtualAddressSpace : IAddressSpace
     {
-        ELFSegment[] _segments;
-        ulong _length;
+        private readonly ELFSegment[] _segments;
+        private readonly ulong _length;
 
         public ELFVirtualAddressSpace(IEnumerable<ELFSegment> segments)
         {
@@ -158,7 +158,7 @@ namespace FileFormats.ELF
                     uint bytesRead = _segments[i].Contents.Read(segmentOffset, buffer, bufferOffset, fileBytes);
 
                     //zero the rest of the buffer if it is in the virtual address space but not the physical address space
-                    if(bytesRead == fileBytes && fileBytes != count)
+                    if (bytesRead == fileBytes && fileBytes != count)
                     {
                         Array.Clear(buffer, (int)(bufferOffset + fileBytes), (int)(count - fileBytes));
                         bytesRead = count;
@@ -173,10 +173,10 @@ namespace FileFormats.ELF
 
     public class ELFSegment
     {
-        Reader _dataSourceReader;
-        ulong _programHeaderOffset;
-        Lazy<ELFProgramHeader> _header;
-        Lazy<Reader> _contents;
+        private readonly Reader _dataSourceReader;
+        private readonly ulong _programHeaderOffset;
+        private readonly Lazy<ELFProgramHeader> _header;
+        private readonly Lazy<Reader> _contents;
 
         public ELFSegment(Reader dataSourceReader, ulong elfOffset, ulong programHeaderOffset, bool isDataSourceVirtualAddressSpace)
         {
@@ -184,7 +184,7 @@ namespace FileFormats.ELF
             _programHeaderOffset = programHeaderOffset;
             _header = new Lazy<ELFProgramHeader>(() => _dataSourceReader.Read<ELFProgramHeader>(_programHeaderOffset));
             //TODO: validate p_vaddr, p_offset, p_filesz
-            if(isDataSourceVirtualAddressSpace)
+            if (isDataSourceVirtualAddressSpace)
             {
                 _contents = new Lazy<Reader>(() => _dataSourceReader.WithRelativeAddressSpace(elfOffset + Header.VirtualAddress, Header.FileSize));
             }
@@ -192,7 +192,6 @@ namespace FileFormats.ELF
             {
                 _contents = new Lazy<Reader>(() => _dataSourceReader.WithRelativeAddressSpace(elfOffset + Header.FileOffset, Header.FileSize));
             }
-            
         }
 
         public ELFProgramHeader Header { get { return _header.Value; } }
@@ -200,7 +199,7 @@ namespace FileFormats.ELF
 
         public override string ToString()
         {
-            if(_header.IsValueCreated)
+            if (_header.IsValueCreated)
             {
                 return "Segment@[" + Header.VirtualAddress.ToString() + "-" + (Header.VirtualAddress + Header.VirtualSize).ToString() + ")";
             }
@@ -213,8 +212,8 @@ namespace FileFormats.ELF
 
     public class ELFNoteList
     {
-        Reader _elfSegmentReader;
-        Lazy<IEnumerable<ELFNote>> _notes;
+        private readonly Reader _elfSegmentReader;
+        private readonly Lazy<IEnumerable<ELFNote>> _notes;
 
         public ELFNoteList(Reader elfSegmentReader)
         {
@@ -222,13 +221,13 @@ namespace FileFormats.ELF
             _notes = new Lazy<IEnumerable<ELFNote>>(ReadNotes);
         }
 
-        public IEnumerable<ELFNote> Notes {  get { return _notes.Value; } }
+        public IEnumerable<ELFNote> Notes { get { return _notes.Value; } }
 
         private IEnumerable<ELFNote> ReadNotes()
         {
             List<ELFNote> notes = new List<ELFNote>();
             ulong position = 0;
-            while(position < _elfSegmentReader.Length)
+            while (position < _elfSegmentReader.Length)
             {
                 ELFNote note = new ELFNote(_elfSegmentReader, position);
                 notes.Add(note);
@@ -240,17 +239,17 @@ namespace FileFormats.ELF
 
     public class ELFNote
     {
-        Reader _elfSegmentReader;
-        ulong _noteHeaderOffset;
-        Lazy<ELFNoteHeader> _header;
-        Lazy<string> _name;
-        Lazy<Reader> _contents;
+        private readonly Reader _elfSegmentReader;
+        private readonly ulong _noteHeaderOffset;
+        private readonly Lazy<ELFNoteHeader> _header;
+        private readonly Lazy<string> _name;
+        private readonly Lazy<Reader> _contents;
 
         public ELFNote(Reader elfSegmentReader, ulong offset)
         {
             _elfSegmentReader = elfSegmentReader;
             _noteHeaderOffset = offset;
-            _header = new Lazy<ELFNoteHeader>(() => _elfSegmentReader.Read<ELFNoteHeader>( _noteHeaderOffset));
+            _header = new Lazy<ELFNoteHeader>(() => _elfSegmentReader.Read<ELFNoteHeader>(_noteHeaderOffset));
             _name = new Lazy<string>(ReadName);
             _contents = new Lazy<Reader>(CreateContentsReader);
         }
@@ -259,7 +258,7 @@ namespace FileFormats.ELF
         //TODO: validate these fields
         public uint Size { get { return HeaderSize + Align4(Header.NameSize) + Align4(Header.ContentSize); } }
         public string Name { get { return _name.Value; } }
-        public Reader Contents {  get { return _contents.Value; } }
+        public Reader Contents { get { return _contents.Value; } }
 
         private uint HeaderSize
         {
@@ -269,7 +268,7 @@ namespace FileFormats.ELF
         private string ReadName()
         {
             ulong nameOffset = _noteHeaderOffset + HeaderSize;
-            return _elfSegmentReader.WithRelativeAddressSpace(nameOffset, Align4(Header.NameSize)).Read<string>(0); 
+            return _elfSegmentReader.WithRelativeAddressSpace(nameOffset, Align4(Header.NameSize)).Read<string>(0);
         }
 
         private Reader CreateContentsReader()
@@ -283,6 +282,4 @@ namespace FileFormats.ELF
             return (x + 3U) & ~3U;
         }
     }
-
-    
 }

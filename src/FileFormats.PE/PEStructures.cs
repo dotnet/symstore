@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +45,7 @@ namespace FileFormats.PE
         {
             get
             {
-                return new ValidationRule("PE Optional Header has invalid magic field", () => Enum.IsDefined(typeof(PEMagic),Magic));
+                return new ValidationRule("PE Optional Header has invalid magic field", () => Enum.IsDefined(typeof(PEMagic), Magic));
             }
         }
         #endregion

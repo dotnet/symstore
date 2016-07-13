@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using System;
 using System.Collections.Generic;
@@ -77,7 +78,7 @@ namespace FileFormats.MachO
         {
             get
             {
-                return new ValidationRule("Mach Header FileType is invalid", 
+                return new ValidationRule("Mach Header FileType is invalid",
                                           () => Enum.IsDefined(typeof(MachHeaderFileType), FileType));
             }
         }
@@ -100,7 +101,6 @@ namespace FileFormats.MachO
         Thread = 4,
         Segment64 = 25,
         Uuid = 27,
-        
     }
 
     public class MachLoadCommand : TStruct
@@ -165,7 +165,7 @@ namespace FileFormats.MachO
         public uint Flags;
 
         #region Validation Rules
-        ValidationRule IsCommandValid
+        private ValidationRule IsCommandValid
         {
             get
             {

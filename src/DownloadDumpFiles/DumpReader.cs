@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using FileFormats.MachO;
 using System;
@@ -11,7 +12,7 @@ namespace DownloadDumpFiles
 {
     public class DumpReader
     {
-        Stream _dumpStream;
+        private Stream _dumpStream;
         public DumpReader(Stream dumpStream)
         {
             _dumpStream = dumpStream;
@@ -24,10 +25,10 @@ namespace DownloadDumpFiles
             {
                 TryParseMachODump
             };
-            foreach(var parser in parsers)
+            foreach (var parser in parsers)
             {
                 IEnumerable<IDumpModule> modules = parser(dumpDataSource);
-                if(modules != null)
+                if (modules != null)
                 {
                     return modules;
                 }
@@ -36,10 +37,10 @@ namespace DownloadDumpFiles
             throw new Exception("Dump did not match any supported format");
         }
 
-        IEnumerable<IDumpModule> TryParseMachODump(IAddressSpace dumpDataSource)
+        private IEnumerable<IDumpModule> TryParseMachODump(IAddressSpace dumpDataSource)
         {
             MachCore core = new MachCore(dumpDataSource);
-            if(!core.IsValidCoreFile)
+            if (!core.IsValidCoreFile)
             {
                 return null;
             }
@@ -49,7 +50,7 @@ namespace DownloadDumpFiles
 
     public class MachDumpModule : IDumpModule
     {
-        MachLoadedImage _loadedImage;
+        private MachLoadedImage _loadedImage;
         public MachDumpModule(MachLoadedImage loadedImage)
         {
             _loadedImage = loadedImage;

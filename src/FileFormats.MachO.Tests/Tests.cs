@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +11,7 @@ namespace FileFormats.MachO.Tests
 {
     public class Tests
     {
-        [Fact(Skip ="Need an alternate scheme to acquire the binary this test was reading")]
+        [Fact(Skip = "Need an alternate scheme to acquire the binary this test was reading")]
         public void CheckIndexingInfo()
         {
             //https://dotnet.myget.org/feed/dotnet-core/package/nuget/runtime.osx.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR/1.0.2

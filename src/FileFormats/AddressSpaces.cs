@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,10 @@ namespace FileFormats
     /// </summary>
     public class RelativeAddressSpace : IAddressSpace
     {
-        IAddressSpace _baseAddressSpace;
-        ulong _baseStart;
-        ulong _length;
-        long _baseToRelativeShift;
+        private IAddressSpace _baseAddressSpace;
+        private ulong _baseStart;
+        private ulong _length;
+        private long _baseToRelativeShift;
 
 
         public RelativeAddressSpace(IAddressSpace baseAddressSpace, ulong startOffset, ulong length) :
@@ -40,7 +41,6 @@ namespace FileFormats
             _baseStart = startOffset;
             _length = length;
             _baseToRelativeShift = baseToRelativeShift;
-
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace FileFormats
         public uint Read(ulong position, byte[] buffer, uint bufferOffset, uint count)
         {
             ulong basePosition = (ulong)((long)position - _baseToRelativeShift);
-            if(basePosition < _baseStart)
+            if (basePosition < _baseStart)
             {
                 return 0;
             }
@@ -79,7 +79,7 @@ namespace FileFormats
 
         public uint Read(ulong position, byte[] buffer, uint bufferOffset, uint count)
         {
-            if(position >= Length)
+            if (position >= Length)
             {
                 return 0;
             }
@@ -98,7 +98,7 @@ namespace FileFormats
 
     public class PiecewiseAddressSpace : IAddressSpace
     {
-        PiecewiseAddressSpaceRange[] _ranges;
+        private PiecewiseAddressSpaceRange[] _ranges;
 
         public PiecewiseAddressSpace(params PiecewiseAddressSpaceRange[] ranges)
         {
@@ -111,17 +111,17 @@ namespace FileFormats
         public uint Read(ulong position, byte[] buffer, uint bufferOffset, uint count)
         {
             uint bytesRead = 0;
-            while(bytesRead != count)
+            while (bytesRead != count)
             {
                 int i = 0;
-                for(;i < _ranges.Length; i++)
+                for (; i < _ranges.Length; i++)
                 {
                     ulong upper = _ranges[i].Start + _ranges[i].Length;
                     if (_ranges[i].Start <= position && position < upper)
                     {
                         uint bytesToReadRange = (uint)Math.Min(count - bytesRead, upper - position);
                         uint bytesReadRange = _ranges[i].AddressSpace.Read(position, buffer, bufferOffset, bytesToReadRange);
-                        if(bytesReadRange == 0)
+                        if (bytesReadRange == 0)
                         {
                             return bytesRead;
                         }
@@ -131,7 +131,7 @@ namespace FileFormats
                         break;
                     }
                 }
-                if(i == _ranges.Length)
+                if (i == _ranges.Length)
                 {
                     return bytesRead;
                 }

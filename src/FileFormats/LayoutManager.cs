@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,9 +14,9 @@ namespace FileFormats
     /// </summary>
     public class LayoutManager
     {
-        Dictionary<Type, ILayout> _layouts = new Dictionary<Type, ILayout>();
-        List<Func<Type, LayoutManager, ILayout>> _layoutProviders = new List<Func<Type, LayoutManager, ILayout>>();
-        Dictionary<Tuple<Type, uint>, ILayout> _arrayLayouts = new Dictionary<Tuple<Type, uint>, ILayout>();
+        private Dictionary<Type, ILayout> _layouts = new Dictionary<Type, ILayout>();
+        private List<Func<Type, LayoutManager, ILayout>> _layoutProviders = new List<Func<Type, LayoutManager, ILayout>>();
+        private Dictionary<Tuple<Type, uint>, ILayout> _arrayLayouts = new Dictionary<Tuple<Type, uint>, ILayout>();
 
         public LayoutManager() { }
 
@@ -64,17 +65,17 @@ namespace FileFormats
         public ILayout GetLayout(Type t)
         {
             ILayout layout;
-            if(!_layouts.TryGetValue(t, out layout))
+            if (!_layouts.TryGetValue(t, out layout))
             {
-                foreach(Func<Type, LayoutManager, ILayout> provider in _layoutProviders)
+                foreach (Func<Type, LayoutManager, ILayout> provider in _layoutProviders)
                 {
                     layout = provider(t, this);
-                    if(layout != null)
+                    if (layout != null)
                     {
                         break;
                     }
                 }
-                if(layout == null)
+                if (layout == null)
                 {
                     throw new LayoutException("Unable to create layout for type " + t.FullName);
                 }

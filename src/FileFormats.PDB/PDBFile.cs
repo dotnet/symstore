@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,11 +10,11 @@ namespace FileFormats.PDB
 {
     public class PDBFile
     {
-        IAddressSpace _fileAddressSpace;
-        Reader _pdbFileReader;
-        Lazy<PDBFileHeader> _pdbFileHeader;
-        Lazy<Reader[]> _streams;
-        Lazy<PDBNameStream> _nameStream;
+        private readonly IAddressSpace _fileAddressSpace;
+        private readonly Reader _pdbFileReader;
+        private readonly Lazy<PDBFileHeader> _pdbFileHeader;
+        private readonly Lazy<Reader[]> _streams;
+        private readonly Lazy<PDBNameStream> _nameStream;
 
         public PDBFile(IAddressSpace fileAddressSpace)
         {
@@ -26,11 +27,11 @@ namespace FileFormats.PDB
 
         public PDBFileHeader Header { get { return _pdbFileHeader.Value; } }
         public IList<Reader> Streams { get { return _streams.Value; } }
-        public PDBNameStream NameStream {  get { return _nameStream.Value; } }
+        public PDBNameStream NameStream { get { return _nameStream.Value; } }
         public uint Age { get { return NameStream.Header.Age; } }
         public Guid Signature { get { return new Guid(NameStream.Header.Guid); } }
 
-        Reader[] ReadDirectory()
+        private Reader[] ReadDirectory()
         {
             Header.IsMagicValid.CheckThrowing();
             uint secondLevelPageCount = ToPageCount(Header.DirectorySize);
@@ -46,18 +47,18 @@ namespace FileFormats.PDB
             for (uint i = 0; i < streamSizes.Length; i++)
             {
                 streams[i] = new Reader(CreatePagedAddressSpace(directoryContent, position, streamSizes[i]));
-                position += ToPageCount(streamSizes[i])*4;
+                position += ToPageCount(streamSizes[i]) * 4;
             }
             return streams;
         }
 
-        PDBPagedAddressSpace CreatePagedAddressSpace(IAddressSpace indiciesData, ulong offset, uint length)
+        private PDBPagedAddressSpace CreatePagedAddressSpace(IAddressSpace indiciesData, ulong offset, uint length)
         {
             uint[] indicies = new Reader(indiciesData).ReadArray<uint>(offset, ToPageCount(length));
             return new PDBPagedAddressSpace(_pdbFileReader.DataSource, indicies, Header.PageSize, length);
         }
 
-        uint ToPageCount(uint size)
+        private uint ToPageCount(uint size)
         {
             return (Header.PageSize + size - 1) / Header.PageSize;
         }
@@ -81,11 +82,11 @@ namespace FileFormats.PDB
     /// physical page index 0x9, physical offset 0x56
     /// physical address is 0x956
     /// </remarks>
-    class PDBPagedAddressSpace : IAddressSpace
+    internal class PDBPagedAddressSpace : IAddressSpace
     {
-        IAddressSpace _physicalAddresses;
-        uint[] _pageIndicies;
-        uint _pageSize;
+        private readonly IAddressSpace _physicalAddresses;
+        private readonly uint[] _pageIndicies;
+        private readonly uint _pageSize;
 
         public PDBPagedAddressSpace(IAddressSpace physicalAddresses, uint[] pageIndicies, uint pageSize, ulong length)
         {
@@ -105,7 +106,7 @@ namespace FileFormats.PDB
             }
 
             uint bytesRead = 0;
-            while(bytesRead != count)
+            while (bytesRead != count)
             {
                 ulong virtualAddressToRead = position + bytesRead;
                 uint virtualPageOffset;
@@ -132,8 +133,8 @@ namespace FileFormats.PDB
 
     public class PDBNameStream
     {
-        Reader _streamReader;
-        Lazy<NameIndexStreamHeader> _header;
+        private readonly Reader _streamReader;
+        private readonly Lazy<NameIndexStreamHeader> _header;
 
 
         public PDBNameStream(Reader streamReader)

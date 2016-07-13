@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,15 +11,15 @@ namespace DownloadDumpFiles
 {
     public class SymbolServerClient
     {
-        string _cachePath;
-        string _serverEndpoint;
-        HttpClient _client;
+        private string _cachePath;
+        private string _serverEndpoint;
+        private HttpClient _client;
 
         public SymbolServerClient(string cachePath, string serverEndpoint)
         {
             _cachePath = cachePath;
             _serverEndpoint = serverEndpoint;
-            if(!_serverEndpoint.EndsWith("/"))
+            if (!_serverEndpoint.EndsWith("/"))
             {
                 _serverEndpoint += "/";
             }
@@ -27,13 +28,13 @@ namespace DownloadDumpFiles
 
         public async Task<string> GetFilePath(string lookupKey)
         {
-            if(!IsKeyValid(lookupKey))
+            if (!IsKeyValid(lookupKey))
             {
                 throw new Exception("Lookup key \'" + lookupKey + "\' is invalid");
             }
 
             string cachedFile = Path.Combine(_cachePath, lookupKey);
-            if(File.Exists(cachedFile))
+            if (File.Exists(cachedFile))
             {
                 return cachedFile;
             }
@@ -45,7 +46,7 @@ namespace DownloadDumpFiles
             {
                 await response.Content.CopyToAsync(cacheStream);
             }
-            return cachedFile;   
+            return cachedFile;
         }
 
         private bool IsKeyValid(string lookupKey)
@@ -55,13 +56,13 @@ namespace DownloadDumpFiles
             // conventions also meet)
 
             string[] parts = lookupKey.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            if(parts.Length != 3)
+            if (parts.Length != 3)
             {
                 return false;
             }
-            for(int i = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
             {
-                foreach(char c in parts[i])
+                foreach (char c in parts[i])
                 {
                     if (char.IsLetterOrDigit(c))
                         continue;

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace FileFormats
 {
-    class ArrayLayout : LayoutBase
+    internal class ArrayLayout : LayoutBase
     {
-        public ArrayLayout(Type arrayType, ILayout elementLayout, uint numElements) : 
-            base(arrayType, numElements*elementLayout.Size, elementLayout.NaturalAlignment)
+        public ArrayLayout(Type arrayType, ILayout elementLayout, uint numElements) :
+            base(arrayType, numElements * elementLayout.Size, elementLayout.NaturalAlignment)
         {
             _elementLayout = elementLayout;
             _numElements = numElements;

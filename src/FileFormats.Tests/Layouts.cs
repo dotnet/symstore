@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using FileFormats;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace FileFormats.Tests
             Assert.Equal((uint)0x08070605, reader.Read<uint>(4));
         }
 
-        class SimpleStruct : TStruct
+        private class SimpleStruct : TStruct
         {
             public int X;
             public short Y;
@@ -32,7 +33,7 @@ namespace FileFormats.Tests
             Assert.Equal(0x0706, s.Y);
         }
 
-        class DerivedStruct : SimpleStruct
+        private class DerivedStruct : SimpleStruct
         {
             public int Z;
         }
@@ -48,7 +49,7 @@ namespace FileFormats.Tests
             Assert.Equal(0x0d0c0b0a, s.Z);
         }
 
-        class ArrayStruct : TStruct
+        private class ArrayStruct : TStruct
         {
             [ArraySize(3)]
             public short[] array;
@@ -68,12 +69,12 @@ namespace FileFormats.Tests
             Assert.Equal(0x0d0c0b0a, s.X);
         }
 
-        enum FooEnum : ushort
+        private enum FooEnum : ushort
         {
             ThreeTwo = 0x0302
         }
 
-        class EnumStruct : TStruct
+        private class EnumStruct : TStruct
         {
             public FooEnum E;
             public int X;
@@ -89,10 +90,10 @@ namespace FileFormats.Tests
             Assert.Equal(0x09080706, s.X);
         }
 
-        class VariableSizedPointer<T> : Pointer<T, SizeT> { }
-        class UInt32Pointer<T> : Pointer<T, uint> { }
-        class UInt64Pointer<T> : Pointer<T, ulong> { }
-        class PointerStruct : TStruct
+        private class VariableSizedPointer<T> : Pointer<T, SizeT> { }
+        private class UInt32Pointer<T> : Pointer<T, uint> { }
+        private class UInt64Pointer<T> : Pointer<T, ulong> { }
+        private class PointerStruct : TStruct
         {
             public VariableSizedPointer<uint> P;
             public UInt32Pointer<byte> P32;
@@ -127,7 +128,6 @@ namespace FileFormats.Tests
         [Fact]
         public void DefineTest()
         {
-            
             MemoryBufferAddressSpace dataSource = new MemoryBufferAddressSpace(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 });
             LayoutManager a = new LayoutManager().AddPrimitives().AddTStructTypes(new string[] { "A" });
             Reader readerA = new Reader(dataSource, a);

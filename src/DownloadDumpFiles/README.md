@@ -1,6 +1,6 @@
 # Sample Dump Symbols Downloader #
   
-This is a proof of concept implementation of downloading all the files needed for debugging using [SSQP](todo/add/the/right/link)  
+This is a proof of concept implementation of downloading all the files needed for debugging using [SSQP](../../docs/specs/Simple_Symbol_Query_Protocol.md)  
   
 ## Running the example ##
 
