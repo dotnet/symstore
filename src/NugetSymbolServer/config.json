@@ -1,0 +1,8 @@
+﻿{
+  "FileCache": {
+    "CachePath": "%TEMP%\\NugetSymbolServerFileCache"
+  },
+  "PackageSource": {
+    "SourcePath": ".\\nuget_feed"
+  }
+}
