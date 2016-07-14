@@ -41,7 +41,6 @@ project.lock.json
 *.meta
 *.obj
 *.pch
-*.pdb
 *.pgc
 *.pgd
 *.sbr

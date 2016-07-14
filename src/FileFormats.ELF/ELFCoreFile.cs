@@ -1,0 +1,111 @@
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace FileFormats.ELF
+{
+    public class ELFCoreFile
+    {
+        private readonly IAddressSpace _dataSource;
+        private readonly ELFFile _elf;
+        private readonly Lazy<ELFFileTable> _fileTable;
+        private readonly Lazy<ELFLoadedImage[]> _images;
+
+        public ELFCoreFile(IAddressSpace dataSource)
+        {
+            _dataSource = dataSource;
+            _elf = new ELFFile(dataSource);
+            _fileTable = new Lazy<ELFFileTable>(ReadFileTable);
+            _images = new Lazy<ELFLoadedImage[]>(ReadLoadedImages);
+        }
+
+        public ELFFileTable FileTable { get { return _fileTable.Value; } }
+        public ELFLoadedImage[] LoadedImages { get { return _images.Value; } }
+
+        private ELFFileTable ReadFileTable()
+        {
+            foreach (ELFSegment seg in _elf.Segments)
+            {
+                if (seg.Header.Type == ELFProgramHeaderType.Note)
+                {
+                    ELFNoteList noteList = new ELFNoteList(seg.Contents);
+                    foreach (ELFNote note in noteList.Notes)
+                    {
+                        if (note.Header.Type == ELFNoteType.File)
+                        {
+                            return new ELFFileTable(note.Contents);
+                        }
+                    }
+                }
+            }
+
+            throw new BadInputFormatException("No ELF file table found");
+        }
+
+        private ELFLoadedImage[] ReadLoadedImages()
+        {
+            return FileTable.Files.Select(e => new ELFLoadedImage(new ELFFile(_elf.VirtualAddressReader.DataSource, e.LoadAddress, true), e)).ToArray();
+        }
+    }
+
+    public class ELFLoadedImage
+    {
+        private readonly ELFFileTableEntry _entry;
+
+        public ELFLoadedImage(ELFFile image, ELFFileTableEntry entry)
+        {
+            Image = image;
+            _entry = entry;
+        }
+
+        public ulong LoadAddress { get { return _entry.LoadAddress; } }
+        public string Path { get { return _entry.Path; } }
+        public ELFFile Image { get; private set; }
+    }
+
+    public class ELFFileTableEntry
+    {
+        private readonly ELFFileTableEntryPointers _ptrs;
+
+        public ELFFileTableEntry(string path, ELFFileTableEntryPointers ptrs)
+        {
+            Path = path;
+            _ptrs = ptrs;
+        }
+
+        public ulong LoadAddress { get { return _ptrs.Start; } }
+        public string Path { get; private set; }
+    }
+
+    public class ELFFileTable
+    {
+        private readonly Reader _noteReader;
+        private readonly Lazy<IEnumerable<ELFFileTableEntry>> _files;
+
+        public ELFFileTable(Reader noteReader)
+        {
+            _noteReader = noteReader;
+            _files = new Lazy<IEnumerable<ELFFileTableEntry>>(ReadFiles);
+        }
+
+        public IEnumerable<ELFFileTableEntry> Files { get { return _files.Value; } }
+
+        private IEnumerable<ELFFileTableEntry> ReadFiles()
+        {
+            List<ELFFileTableEntry> files = new List<ELFFileTableEntry>();
+            ulong readPosition = 0;
+            ELFFileTableHeader header = _noteReader.Read<ELFFileTableHeader>(ref readPosition);
+
+            //TODO: sanity check the entryCount
+            ELFFileTableEntryPointers[] ptrs = _noteReader.ReadArray<ELFFileTableEntryPointers>(ref readPosition, (uint)(ulong)header.EntryCount);
+            for (int i = 0; i < (int)(ulong)header.EntryCount; i++)
+            {
+                files.Add(new ELFFileTableEntry(_noteReader.Read<string>(ref readPosition), ptrs[i]));
+            }
+            return files;
+        }
+    }
+}

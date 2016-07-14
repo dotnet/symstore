@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="Settings">
+    <Import Project="..\..\build\Targets\Settings.targets" />
+  </ImportGroup>
+  <PropertyGroup>
+    <ProjectGuid>{8940133A-92BF-4356-9438-62E2D2CF2125}</ProjectGuid>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <RootNamespace>DownloadDumpFiles</RootNamespace>
+    <AssemblyName>DownloadDumpFiles</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
+    <NuGetTargetMoniker>.NETStandard,Version=v1.5</NuGetTargetMoniker>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
+  <ItemGroup>
+    <ProjectReference Include="..\FileFormats.ELF\FileFormats.ELF.csproj">
+      <Project>{2f8ba26c-da53-45cb-a122-f96c654078d8}</Project>
+      <Name>FileFormats.ELF</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FileFormats.MachO\FileFormats.MachO.csproj">
+      <Project>{06d60fc0-ff3c-4713-a19d-a8f0d3682972}</Project>
+      <Name>FileFormats.MachO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FileFormats.PDB\FileFormats.PDB.csproj">
+      <Project>{5b0ba4e9-fd55-4507-bccb-b03aae4cf179}</Project>
+      <Name>FileFormats.PDB</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FileFormats.PE\FileFormats.PE.csproj">
+      <Project>{455e157d-e0f0-4c1f-9073-cbc8b0bc1537}</Project>
+      <Name>FileFormats.PE</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FileFormats\FileFormats.csproj">
+      <Project>{256f3afa-b659-44b0-bc6f-3c9912e9dd4f}</Project>
+      <Name>FileFormats</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="project.json" />
+  </ItemGroup>
+  <ImportGroup Label="Targets">
+    <Import Project="..\..\build\Targets\Imports.targets" />
+  </ImportGroup>
+</Project>
