@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EmbedIndex
@@ -26,7 +27,15 @@ namespace EmbedIndex
                     return null;
                 }
 
-                return pdb.Signature.ToString().Replace("-", "") + pdb.Age.ToString("X");
+                string filename = Path.GetFileName(path).ToLowerInvariant();
+                StringBuilder key = new StringBuilder();
+                key.Append(filename);
+                key.Append("/");
+                key.Append(pdb.Signature.ToString().Replace("-", "").ToLowerInvariant());
+                key.Append(pdb.Age.ToString("x").ToLowerInvariant());
+                key.Append("/");
+                key.Append(filename);
+                return key.ToString();
             }
             catch (InputParsingException)
             {

@@ -31,10 +31,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileFormats.MachO", "src\Fi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileFormats.MachO.Tests", "src\FileFormats.MachO.Tests\FileFormats.MachO.Tests.csproj", "{2CD8523F-9C6E-4193-A628-CB9912E47F9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmbedIndex", "src\EmbedIndex\EmbedIndex.csproj", "{2783CAAB-B254-4F13-9E20-AE2DB95C980F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DownloadDumpFiles", "src\DownloadDumpFiles\DownloadDumpFiles.csproj", "{8940133A-92BF-4356-9438-62E2D2CF2125}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,22 +151,6 @@ Global
 		{2CD8523F-9C6E-4193-A628-CB9912E47F9B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2CD8523F-9C6E-4193-A628-CB9912E47F9B}.Release|x64.ActiveCfg = Release|Any CPU
 		{2CD8523F-9C6E-4193-A628-CB9912E47F9B}.Release|x64.Build.0 = Release|Any CPU
-		{2783CAAB-B254-4F13-9E20-AE2DB95C980F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2783CAAB-B254-4F13-9E20-AE2DB95C980F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2783CAAB-B254-4F13-9E20-AE2DB95C980F}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2783CAAB-B254-4F13-9E20-AE2DB95C980F}.Debug|x64.Build.0 = Debug|Any CPU
-		{2783CAAB-B254-4F13-9E20-AE2DB95C980F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2783CAAB-B254-4F13-9E20-AE2DB95C980F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2783CAAB-B254-4F13-9E20-AE2DB95C980F}.Release|x64.ActiveCfg = Release|Any CPU
-		{2783CAAB-B254-4F13-9E20-AE2DB95C980F}.Release|x64.Build.0 = Release|Any CPU
-		{8940133A-92BF-4356-9438-62E2D2CF2125}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8940133A-92BF-4356-9438-62E2D2CF2125}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8940133A-92BF-4356-9438-62E2D2CF2125}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8940133A-92BF-4356-9438-62E2D2CF2125}.Debug|x64.Build.0 = Debug|Any CPU
-		{8940133A-92BF-4356-9438-62E2D2CF2125}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8940133A-92BF-4356-9438-62E2D2CF2125}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8940133A-92BF-4356-9438-62E2D2CF2125}.Release|x64.ActiveCfg = Release|Any CPU
-		{8940133A-92BF-4356-9438-62E2D2CF2125}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

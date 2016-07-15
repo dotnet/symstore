@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EmbedIndex
@@ -26,10 +27,19 @@ namespace EmbedIndex
                 {
                     return null;
                 }
+
+                string filename = Path.GetFileName(path).ToLowerInvariant();
+                StringBuilder key = new StringBuilder();
+                key.Append(filename);
+                key.Append("/elf-buildid-");
                 //TODO: it would be nice to check if the file is really stripped rather than blindly
                 //trusting the file extension
                 bool isStripped = extension != ".dbg";
-                return "elf-buildid-" + (isStripped ? "" : "sym-") + string.Concat(elf.BuildID.Select(b => b.ToString("x2")));
+                key.Append(isStripped ? "" : "sym-");
+                key.Append(string.Concat(elf.BuildID.Select(b => b.ToString("x2"))).ToLowerInvariant());
+                key.Append("/");
+                key.Append(filename);
+                return key.ToString();
             }
             catch (InputParsingException)
             {

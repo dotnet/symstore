@@ -16,7 +16,8 @@ Follow the directions to make a HelloWorld sample here: https://www.microsoft.co
 
 ### Build the EmbedIndex project in this directory ###
 
-    C:\git\symstore\src\EmbedIndex>dotnet restore
+    C:\git\symstore\src>dotnet restore
+    C:\git\symstore\src>cd EmbedIndex
     C:\git\symstore\src\EmbedIndex>dotnet build
 
 ### Run the EmbedIndex app
@@ -27,12 +28,15 @@ It uses arguments <path\_to\_existing\_package> <path\_to\_new\_indexed\_package
     
 When you open the package at C:\hwapp\indexed you will see a symbol\_index.json has been added. You can open package using tools like package explorer or by changing the extension to .zip and using standard tools. The symbol\_index.json file looks like this:
 
-    {
-      "5784a7cb00008000" : "lib/netcoreapp1.0/hwapp.dll"
-    }
+    [
+      {
+        "clientKey": "5784a7cb8000",
+        "blobPath": "lib/netcoreapp1.0/hwapp.dll"
+      }
+    ]
 
 ## Further exploration ##
 
 The embed index tool handles a variety of managed and native formats. Give it a try on other packages.
 
-Check out the [SSQP key conventions](todo/add/this/spec) for more details about how the indexing keys are generated.
+Check out the [SSQP key conventions](../../docs/specs/SSQP_Key_Conventions.md) for more details about how the indexing keys are generated.
