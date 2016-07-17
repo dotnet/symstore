@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -59,11 +61,13 @@ namespace NugetSymbolServer.Service.Models
         Dictionary<string, Package> _packages = new Dictionary<string, Package>();
         IFileStore _cachedFileStorage;
         int _counter;
+        ILogger _logger;
 
-        public PackageStore(IFileStore cachedFileStorage)
+        public PackageStore(IFileStore cachedFileStorage, ILoggerFactory loggerFactory)
         {
             _cachedFileStorage = cachedFileStorage;
             _counter = 0;
+            _logger = loggerFactory.CreateLogger("NugetSymbolServer.Service.Models.PackageStore");
         }
 
         private string GetUniquePackageCacheStorageDir(string packageFilePath)
@@ -87,6 +91,7 @@ namespace NugetSymbolServer.Service.Models
                     {
                         throw new Exception("Package at the same path can't be added twice");
                     }
+                    _logger.LogInformation("Adding package " + packageFilePath);
                     OnPackageAdded(p);
                     _packages.Add(packageFilePath, p);
                     p = null;

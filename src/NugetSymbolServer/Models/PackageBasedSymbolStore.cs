@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,15 +14,13 @@ namespace NugetSymbolServer.Service.Models
     {
         class PackageSymbolIndexEntry : IDisposable
         {
-            public PackageSymbolIndexEntry(string clientKey, string packageRelativeFilePath, FileReference cachedFileRef)
+            public PackageSymbolIndexEntry(string clientKey, FileReference cachedFileRef)
             {
                 ClientKey = clientKey;
-                PackageRelativeFilePath = packageRelativeFilePath;
                 CachedFileRef = cachedFileRef;
             }
 
             public string ClientKey { get; private set; }
-            public string PackageRelativeFilePath { get; private set; }
             public FileReference CachedFileRef { get; private set; }
 
             public void Dispose()
@@ -30,36 +30,31 @@ namespace NugetSymbolServer.Service.Models
             }
         }
 
-        public class SymbolStoreKey : Tuple<string, string>
-        {
-            public SymbolStoreKey(string clientKey, string filename) :
-                base(clientKey.ToLowerInvariant(), filename.ToLowerInvariant())
-            { }
-        }
-
         /// <summary>
         /// A mapping between each package and the list of symbol indexing entries it provides
         /// </summary>
         Dictionary<Package, List<PackageSymbolIndexEntry>> _packageSymbolIndex;
 
         /// <summary>
-        /// A global mapping across all packages for clientKey,filename => cached file
+        /// A global mapping across all packages for clientKey => cached file
         /// </summary>
-        Dictionary<SymbolStoreKey, List<FileReference>> _globalSymbolIndex;
+        Dictionary<string, List<FileReference>> _globalSymbolIndex;
 
-        public PackageBasedSymbolStore(IFileStore cachedFileStorage) : base(cachedFileStorage)
+        ILogger _logger;
+
+        public PackageBasedSymbolStore(IFileStore cachedFileStorage, ILoggerFactory loggerFactory) : base(cachedFileStorage, loggerFactory)
         {
             _packageSymbolIndex = new Dictionary<Package, List<PackageSymbolIndexEntry>>();
-            _globalSymbolIndex = new Dictionary<SymbolStoreKey, List<FileReference>>();
+            _globalSymbolIndex = new Dictionary<string, List<FileReference>>();
+            _logger = loggerFactory.CreateLogger(GetType().FullName);
         }
 
-        public FileReference GetSymbolFileRef(string clientKey, string fileName)
+        public FileReference GetSymbolFileRef(string clientKey)
         {
-            SymbolStoreKey key = new SymbolStoreKey(clientKey, fileName);
             List<FileReference> refs = new List<FileReference>();
             lock (this)
             {
-                if (_globalSymbolIndex.TryGetValue(key, out refs))
+                if (_globalSymbolIndex.TryGetValue(clientKey, out refs))
                 {
                     // arbitrarily select a result if there is more than one
                     return refs[0].Clone();
@@ -86,13 +81,13 @@ namespace NugetSymbolServer.Service.Models
             {
                 foreach(PackageSymbolIndexEntry entry in symbolIndex)
                 {
-                    SymbolStoreKey key = new SymbolStoreKey(entry.ClientKey, Path.GetFileName(entry.PackageRelativeFilePath));
                     List<FileReference> refs;
-                    if(!_globalSymbolIndex.TryGetValue(key, out refs))
+                    if(!_globalSymbolIndex.TryGetValue(entry.ClientKey, out refs))
                     {
                         refs = new List<FileReference>();
-                        _globalSymbolIndex.Add(key, refs);
+                        _globalSymbolIndex.Add(entry.ClientKey, refs);
                     }
+                    _logger.LogInformation("Adding symbol entry " + entry.ClientKey + " => " + entry.CachedFileRef.FilePath);
                     refs.Add(entry.CachedFileRef);
                 }
             }
@@ -110,32 +105,39 @@ namespace NugetSymbolServer.Service.Models
             {
                 foreach (PackageSymbolIndexEntry entry in symbolIndex)
                 {
-                    SymbolStoreKey key = new SymbolStoreKey(entry.ClientKey, Path.GetFileName(entry.PackageRelativeFilePath));
-                    List<FileReference> refs = _globalSymbolIndex[key];
+                    List<FileReference> refs = _globalSymbolIndex[entry.ClientKey];
                     refs.Remove(entry.CachedFileRef);
                     if (refs.Count == 0)
                     {
-                        _globalSymbolIndex.Remove(key);
+                        _globalSymbolIndex.Remove(entry.ClientKey);
                     }
                     entry.Dispose();
                 }
             }
         }
 
+        class JsonSymbolIndexEntry
+        {
+            [JsonProperty(PropertyName="clientKey")]
+            public string ClientKey;
+            [JsonProperty(PropertyName="blobPath")]
+            public string BlobPath;
+        }
+
         List<PackageSymbolIndexEntry> ReadSymbolIndex(Package p, string symbolIndexJsonFilePath)
         {
             string jsonText = File.ReadAllText(symbolIndexJsonFilePath);
-            Dictionary<string, string> jsonSymbolIndexEntries = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonText);
+            List<JsonSymbolIndexEntry> jsonEntries = JsonConvert.DeserializeObject<List<JsonSymbolIndexEntry>>(jsonText);
             List<PackageSymbolIndexEntry> entries = new List<PackageSymbolIndexEntry>();
-            foreach (KeyValuePair<string,string> entry in jsonSymbolIndexEntries)
+            foreach (JsonSymbolIndexEntry entry in jsonEntries)
             {
-                FileReference cachedSymbolFile = p.GetFile(entry.Value);
+                FileReference cachedSymbolFile = p.GetFile(entry.BlobPath);
                 if(cachedSymbolFile == null)
                 {
                     //symbol packages shouldn't refer to files that don't exist in the package
                     throw new Exception("Badly formatted package");
                 }
-                entries.Add(new PackageSymbolIndexEntry(entry.Key, entry.Value, cachedSymbolFile));
+                entries.Add(new PackageSymbolIndexEntry(entry.ClientKey.ToLowerInvariant(), cachedSymbolFile));
             }
             return entries;
         }

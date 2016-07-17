@@ -1,5 +1,7 @@
 ﻿{
   "dependencies": {
+    "FileFormats": "1.0.0",
+    "FileFormats.PE": "1.0.0",
     "NETStandard.Library": "1.6.0",
     "xunit": "2.1.0",
     "xunit.runner.console": "2.1.0",

@@ -5,6 +5,6 @@ namespace NugetSymbolServer.Service.Models
 {
     public interface ISymbolAccess
     {
-        FileReference GetSymbolFileRef(string clientKey, string fileName);
+        FileReference GetSymbolFileRef(string clientKey);
     }
 }

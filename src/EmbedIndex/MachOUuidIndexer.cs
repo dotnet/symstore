@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EmbedIndex
@@ -26,10 +27,19 @@ namespace EmbedIndex
                 {
                     return null;
                 }
+
+                string filename = Path.GetFileName(path).ToLowerInvariant();
+                StringBuilder key = new StringBuilder();
+                key.Append(filename);
+                key.Append("/mach-uuid-");
                 //TODO: it would be nice to really check if the file is stripped rather than
                 // assuming it is based on the extension
                 bool isStripped = extension == ".dylib";
-                return "mach-uuid-" + (isStripped ? "" : "sym-") + string.Concat(machO.Uuid.Select(b => b.ToString("x2")));
+                key.Append(isStripped ? "" : "sym-");
+                key.Append(string.Concat(machO.Uuid.Select(b => b.ToString("x2"))).ToLowerInvariant());
+                key.Append("/");
+                key.Append(filename);
+                return key.ToString();
             }
             catch (InputParsingException)
             {

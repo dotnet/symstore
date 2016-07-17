@@ -12,12 +12,22 @@ namespace EmbedIndex
     {
         public static void Main(string[] args)
         {
+            if(args.Length != 2)
+            {
+                PrintUsage();
+                return;
+            }
             string nugetPackagePath = args[0];
             string nugetPackageOutputPath = args[1];
 
             Directory.CreateDirectory(Path.GetDirectoryName(nugetPackageOutputPath));
             File.Copy(nugetPackagePath, nugetPackageOutputPath, true);
             IndexPackage(nugetPackageOutputPath, GetIndexers());
+        }
+
+        private static void PrintUsage()
+        {
+            Console.WriteLine("EmbedIndex <path_to_existing_nuget_package> <output_path_to_indexed_nuget_package>");
         }
 
         private static IEnumerable<IFileFormatIndexer> GetIndexers()
@@ -91,20 +101,24 @@ namespace EmbedIndex
         private static void SerializeIndex(List<Tuple<string, string>> indexEntries, Stream indexStream)
         {
             TextWriter writer = new StreamWriter(indexStream);
-            writer.WriteLine("{");
+            writer.WriteLine("[");
             for (int i = 0; i < indexEntries.Count; i++)
             {
                 Tuple<string, string> entry = indexEntries[i];
-                if (i == indexEntries.Count - 1)
+                writer.WriteLine("    {");
+                writer.WriteLine("        \"clientKey\" : \"{0}\",", entry.Item1);
+                writer.WriteLine("        \"blobPath\" : \"{0}\"", entry.Item2);
+                
+                if (i != indexEntries.Count - 1)
                 {
-                    writer.WriteLine("  \"{0}\" : \"{1}\"", entry.Item1, entry.Item2);
+                    writer.WriteLine("    },");
                 }
                 else
                 {
-                    writer.WriteLine("  \"{0}\" : \"{1}\",", entry.Item1, entry.Item2);
+                    writer.WriteLine("    }");
                 }
             }
-            writer.WriteLine("}");
+            writer.WriteLine("]");
             writer.Flush();
         }
 

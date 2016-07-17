@@ -19,19 +19,14 @@ namespace ConsoleApplication
             _logger = loggerFactory.CreateLogger(GetType().FullName);
         }
 
-        [HttpGet("symbol/{filename}/{clientKey}/{filename2}")]
-        async public Task<ActionResult> GetFile([FromRoute] string clientKey, [FromRoute] string filename, [FromRoute] string filename2) 
+        [HttpGet("symbol/{*clientKey}")]
+        async public Task<ActionResult> GetFile([FromRoute] string clientKey) 
         {
-            if (filename2 != filename)
-            {
-                return new NotFoundResult();
-            }
-
             //make sure we are done ingesting all the packages before we answer any queries about
             //what symbols we have
             await _packageSource.EnsurePackagesProcessed();
 
-            FileReference symbolFile = _symbolStore.GetSymbolFileRef(clientKey, filename);
+            FileReference symbolFile = _symbolStore.GetSymbolFileRef(clientKey.ToLowerInvariant());
             if (symbolFile != null)
             {
                 using (symbolFile)

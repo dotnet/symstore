@@ -4,6 +4,7 @@ using FileFormats;
 using FileFormats.PE;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace EmbedIndex
 {
@@ -25,8 +26,15 @@ namespace EmbedIndex
                 {
                     return null;
                 }
-                string key = reader.Timestamp.ToString("x8") + reader.SizeOfImage.ToString("x8");
-                return key.ToLowerInvariant();
+                string filename = Path.GetFileName(path).ToLowerInvariant();
+                StringBuilder key = new StringBuilder();
+                key.Append(filename);
+                key.Append("/");
+                key.Append(reader.Timestamp.ToString("x").ToLowerInvariant());
+                key.Append(reader.SizeOfImage.ToString("x").ToLowerInvariant());
+                key.Append("/");
+                key.Append(filename);
+                return key.ToString();
             }
             catch (InputParsingException)
             {
