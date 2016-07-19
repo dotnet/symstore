@@ -25,13 +25,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Tests.cs" />    
+    <Compile Include="Tests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json" />    
+    <None Include="project.json" />
     <None Include="Microsoft.SymbolStore.Client.UnitTests.xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ImportGroup>
     <Import Project="..\..\build\Targets\Imports.targets" />
