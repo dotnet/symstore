@@ -18,7 +18,7 @@ namespace EmbedIndex
             try
             {
                 string extension = Path.GetExtension(path);
-                if (!string.IsNullOrEmpty(extension) && extension != ".dbg")
+                if (!string.IsNullOrEmpty(extension) && extension != ".so" && extension != ".dbg")
                 {
                     return null;
                 }
@@ -27,7 +27,12 @@ namespace EmbedIndex
                 {
                     return null;
                 }
-
+                if(elf.BuildID == null || elf.BuildID.Length != 20)
+                {
+                    Console.WriteLine("WARNING: ELF file is missing build id - " + path);
+                    return null;
+                }
+                
                 string filename = Path.GetFileName(path).ToLowerInvariant();
                 StringBuilder key = new StringBuilder();
                 key.Append(filename);
