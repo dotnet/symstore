@@ -17,17 +17,35 @@ namespace EmbedIndex
                 PrintUsage();
                 return;
             }
-            string nugetPackagePath = args[0];
-            string nugetPackageOutputPath = args[1];
 
-            Directory.CreateDirectory(Path.GetDirectoryName(nugetPackageOutputPath));
-            File.Copy(nugetPackagePath, nugetPackageOutputPath, true);
-            IndexPackage(nugetPackageOutputPath, GetIndexers());
+            if(Directory.Exists(args[0]))
+            {
+                string inputDir = args[0];
+                string outputDir = args[1];
+                Directory.CreateDirectory(outputDir);
+                foreach(string nugetPath in Directory.EnumerateFiles(inputDir, "*.nupkg", SearchOption.AllDirectories))
+                {
+                    Console.WriteLine(nugetPath);
+                    string indexedNugetPath = Path.Combine(outputDir, Path.GetFileName(nugetPath));
+                    File.Copy(nugetPath, indexedNugetPath, true);
+                    IndexPackage(indexedNugetPath, GetIndexers());
+                }
+            }
+            else
+            {
+                string nugetPackagePath = args[0];
+                string nugetPackageOutputPath = args[1];
+                Directory.CreateDirectory(Path.GetDirectoryName(nugetPackageOutputPath));
+                File.Copy(nugetPackagePath, nugetPackageOutputPath, true);
+                IndexPackage(nugetPackageOutputPath, GetIndexers());
+            }
         }
 
         private static void PrintUsage()
         {
-            Console.WriteLine("EmbedIndex <path_to_existing_nuget_package> <output_path_to_indexed_nuget_package>");
+            Console.WriteLine("Either:");
+            Console.WriteLine("  EmbedIndex <path_to_existing_nuget_package> <output_path_to_indexed_nuget_package>");
+            Console.WriteLine("  EmbedIndex <path_to_directory_of_nuget_packages> <output_path_to_directory_of_indexed_nuget_packages>");
         }
 
         private static IEnumerable<IFileFormatIndexer> GetIndexers()
