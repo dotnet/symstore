@@ -7,4 +7,5 @@
   <Import Project="..\Toolset\DefaultImports.targets"/>
   <Import Project="..\Toolset\GenerateAssemblyInfo.targets" />
   <Import Project="..\Toolset\GenerateInternalsVisibleTo.targets" />
+  <Import Project="..\Toolset\DotNetPublish.targets" />
 </Project>

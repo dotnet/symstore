@@ -7,6 +7,7 @@ Param(
   [switch] $help,
   [switch] $official,
   [switch] $skipBuild,
+  [switch] $skipEmbedIndexBuild,
   [switch] $skipDeploy,
   [switch] $skipRestore,
   [switch] $skipInstallRoslyn,
@@ -263,6 +264,33 @@ function Perform-Build {
   Write-Host -object "The build completed successfully." -foregroundColor Green
 }
 
+function Perform-Build-EmbedIndex {
+  Write-Host -object ""
+
+  if ($skipEmbedIndexBuild) {
+    Write-Host -object "Skipping EmbedIndex build..."
+    return
+  }
+
+  $artifactsPath = Locate-ArtifactsPath
+  $msbuild = Locate-MSBuild
+  $msbuildLogPath = Locate-MSBuildLogPath
+  $embedIndexProjectPath = "$(Locate-RootPath)\src\EmbedIndex\EmbedIndex.xproj"
+
+  $msbuildSummaryLog = Join-Path -path $msbuildLogPath -childPath "EmbedIndexMSBuild.log"
+  $msbuildWarningLog = Join-Path -path $msbuildLogPath -childPath "EmbedIndexMSBuild.wrn"
+  $msbuildFailureLog = Join-Path -path $msbuildLogPath -childPath "EmbedIndexMSBuild.err"
+
+  Write-Host -object "Starting EmbedIndex build..."
+  & $msbuild /t:DotNetPublish /p:Configuration=$configuration /p:OfficialBuild=$official /m /tv:$msbuildVersion /v:m /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog /nr:false $embedIndexProjectPath
+
+  if ($lastExitCode -ne 0) {
+    throw "The EmbedIndex build failed with an exit code of '$lastExitCode'."
+  }
+
+  Write-Host -object "The EmbedIndex build completed successfully." -foregroundColor Green
+}
+
 function Perform-Restore {
   Write-Host -object ""
 
@@ -426,6 +454,7 @@ function Print-Help {
   Write-Host -object ""
   Write-Host -object "    Official              - [Switch] - Indicates this is an official build which changes the semantic version."
   Write-Host -object "    SkipBuild             - [Switch] - Indicates the build step should be skipped."
+  Write-Host -object "    SkipEmbedIndexBuild   - [Switch] - Indicates the EmbedIndex build step should be skipped."
   Write-Host -object "    SkipDeploy            - [Switch] - Indicates the VSIX deployment step should be skipped."
   Write-Host -object "    SkipInstallRoslyn     - [Switch] - Indicates the installation of Roslyn VSIX step should be skipped."
   Write-Host -object "    SkipRestore           - [Switch] - Indicates the restore step should be skipped."
@@ -448,6 +477,7 @@ if ((-not $skipTest) -and $integration) {
 Print-Help
 Perform-Restore
 Perform-Build
+Perform-Build-EmbedIndex
 Perform-Install-Roslyn-Vsixes
 Perform-Test-x86
 Perform-Test-x64

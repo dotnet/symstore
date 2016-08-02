@@ -5,6 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="..\..\build\Targets\Settings.targets" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>4e7a01b0-57ce-4a96-9500-d6c8566e6483</ProjectGuid>
     <RootNamespace>DownloadDumpFiles</RootNamespace>
@@ -15,4 +16,5 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="..\..\build\Targets\Imports.targets" />
 </Project>
