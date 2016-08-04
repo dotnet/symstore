@@ -16,5 +16,6 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="..\..\build\Toolset\DotNetPublish.targets" />
   <Import Project="..\..\build\Targets\Imports.targets" />
 </Project>

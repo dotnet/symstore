@@ -276,13 +276,27 @@ function Perform-Build-EmbedIndex {
   $msbuild = Locate-MSBuild
   $msbuildLogPath = Locate-MSBuildLogPath
   $embedIndexProjectPath = "$(Locate-RootPath)\src\EmbedIndex\EmbedIndex.xproj"
+  $dotnetDir = "$artifactsPath\dotnetCLI"
+  $dotnetZipPath = "$dotnetDir\dotnet-dev-win-x64.1.0.0-preview2-003121.zip"
+  $dotnetCommandPath = "$dotnetDir\dotnet.exe"
+
+  # Obtain dotnet CLI.
+  if (!(Test-Path $dotnetZipPath)) {
+    Write-Host -object "Downloading dotnet CLI..."
+    New-Item -Force -Type Directory $dotnetDir | Out-Null
+    Download-File "https://go.microsoft.com/fwlink/?LinkID=809126" $dotnetZipPath
+
+    Write-Host -object "Extracting dotnet CLI..."
+    Add-Type -Assembly System.IO.Compression.FileSystem | Out-Null
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($dotnetZipPath, $dotnetDir)
+  }
 
   $msbuildSummaryLog = Join-Path -path $msbuildLogPath -childPath "EmbedIndexMSBuild.log"
   $msbuildWarningLog = Join-Path -path $msbuildLogPath -childPath "EmbedIndexMSBuild.wrn"
   $msbuildFailureLog = Join-Path -path $msbuildLogPath -childPath "EmbedIndexMSBuild.err"
 
   Write-Host -object "Starting EmbedIndex build..."
-  & $msbuild /t:DotNetPublish /p:Configuration=$configuration /p:OfficialBuild=$official /m /tv:$msbuildVersion /v:m /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog /nr:false $embedIndexProjectPath
+  & $msbuild /t:DotNetPublish /p:DotNetCommandPath=$dotnetCommandPath /p:Configuration=$configuration /p:OfficialBuild=$official /m /tv:$msbuildVersion /v:m /flp1:Summary`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildSummaryLog /flp2:WarningsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildWarningLog /flp3:ErrorsOnly`;Verbosity=diagnostic`;Encoding=UTF-8`;LogFile=$msbuildFailureLog /nr:false $embedIndexProjectPath
 
   if ($lastExitCode -ne 0) {
     throw "The EmbedIndex build failed with an exit code of '$lastExitCode'."

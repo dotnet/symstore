@@ -2,20 +2,18 @@
   <!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 
   <!-- Custom target to produce EmbedIndex package as a build tool. -->
-  <Target Name="DotNetPublish" DependsOnTargets="GetSDKToolingInfoTarget">
+  <Target Name="DotNetPublish">
     <PropertyGroup>
-      <DotNetCommand>"$(SDKToolingExe)"</DotNetCommand>
-      <PackageOutputDir>$(OutputPath)\Packages</PackageOutputDir>
       <AllProjectRestoreDir>$(MSBuildProjectDirectory)\..</AllProjectRestoreDir>
       <PublishDir>$(OutputPath)\ToolPublish</PublishDir>
     </PropertyGroup>
 
     <!-- Restore with the same tool used for 'publish' for compatibility.. -->
     <Message Text="Restoring $(AllProjectRestoreDir)..." />
-    <Exec Command="$(DotNetCommand) restore $(AllProjectRestoreDir) --verbosity Minimal" />
+    <Exec Command="$(DotNetCommandPath) restore $(AllProjectRestoreDir) --verbosity Minimal" />
 
     <Message Text="Publishing $(MSBuildProjectDirectory) to $(PublishDir)..." />
-    <Exec Command="$(DotNetCommand) publish $(MSBuildProjectDirectory) -o $(PublishDir)" />
+    <Exec Command="$(DotNetCommandPath) publish $(MSBuildProjectDirectory) -o $(PublishDir)" />
 
     <!-- Make sure lack of compatibility between restores can't cause strange issues further along. -->
     <ItemGroup>
