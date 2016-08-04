@@ -59,6 +59,23 @@ namespace FileFormats.ELF
                 return (Ident.Class == ELFClass.Class64);
             }
         }
+        public ulong PreferredVMBaseAddress
+        {
+            get
+            {
+                ulong minAddr = ulong.MaxValue;
+
+                foreach(var segment in Segments)
+                {
+                    if(segment.Header.Type == ELFProgramHeaderType.Load)
+                    {
+                        minAddr = Math.Min(minAddr, segment.Header.VirtualAddress);
+                    }
+                }
+
+                return minAddr;
+            }
+        }
 
         private IEnumerable<ELFSegment> ReadSegments()
         {
@@ -184,9 +201,9 @@ namespace FileFormats.ELF
             _programHeaderOffset = programHeaderOffset;
             _header = new Lazy<ELFProgramHeader>(() => _dataSourceReader.Read<ELFProgramHeader>(_programHeaderOffset));
             //TODO: validate p_vaddr, p_offset, p_filesz
-            if (isDataSourceVirtualAddressSpace)
+            if (isDataSourceVirtualAddressSpace && _header.Value.Type == ELFProgramHeaderType.Load)
             {
-                _contents = new Lazy<Reader>(() => _dataSourceReader.WithRelativeAddressSpace(elfOffset + Header.VirtualAddress, Header.FileSize));
+                _contents = new Lazy<Reader>(() => _dataSourceReader.WithRelativeAddressSpace(Header.VirtualAddress, Header.FileSize));
             }
             else
             {
@@ -201,7 +218,7 @@ namespace FileFormats.ELF
         {
             if (_header.IsValueCreated)
             {
-                return "Segment@[" + Header.VirtualAddress.ToString() + "-" + (Header.VirtualAddress + Header.VirtualSize).ToString() + ")";
+                return "Segment@[" + Header.VirtualAddress.ToString() + "-" + (Header.VirtualAddress + Header.VirtualSize).ToString("x") + ")";
             }
             else
             {

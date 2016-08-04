@@ -47,7 +47,17 @@ namespace FileFormats.ELF
 
         private ELFLoadedImage[] ReadLoadedImages()
         {
-            return FileTable.Files.Select(e => new ELFLoadedImage(new ELFFile(_elf.VirtualAddressReader.DataSource, e.LoadAddress, true), e)).ToArray();
+            Dictionary<string, ELFFileTableEntry> normalizedFiles = new Dictionary<string, ELFFileTableEntry>();
+
+            foreach(var fte in FileTable.Files)
+            {
+                if(!normalizedFiles.ContainsKey(fte.Path) || fte.LoadAddress < normalizedFiles[fte.Path].LoadAddress)
+                {
+                    normalizedFiles[fte.Path] = fte;
+                }
+            }
+
+            return normalizedFiles.Select(e => new ELFLoadedImage(new ELFFile(_elf.VirtualAddressReader.DataSource, e.Value.LoadAddress, true), e.Value)).ToArray();
         }
     }
 
