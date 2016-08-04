@@ -275,7 +275,7 @@ function Perform-Build-EmbedIndex {
   $artifactsPath = Locate-ArtifactsPath
   $msbuild = Locate-MSBuild
   $msbuildLogPath = Locate-MSBuildLogPath
-  $embedIndexProjectPath = "$(Locate-RootPath)\src\EmbedIndex\EmbedIndex.xproj"
+  $embedIndexProjectPath = "$(Locate-RootPath)\src\EmbedIndex\PublishEmbedIndex.proj"
   $dotnetDir = "$artifactsPath\dotnetCLI"
   $dotnetZipPath = "$dotnetDir\dotnet-dev-win-x64.1.0.0-preview2-003121.zip"
   $dotnetCommandPath = "$dotnetDir\dotnet.exe"
