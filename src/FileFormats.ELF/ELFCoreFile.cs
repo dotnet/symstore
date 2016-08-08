@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -49,7 +50,7 @@ namespace FileFormats.ELF
         {
             Dictionary<string, ELFFileTableEntry> normalizedFiles = new Dictionary<string, ELFFileTableEntry>();
 
-            foreach(var fte in FileTable.Files)
+            foreach(var fte in FileTable.Files.Where(fte => !fte.Path.StartsWith("/dev/zero")))
             {
                 if(!normalizedFiles.ContainsKey(fte.Path) || fte.LoadAddress < normalizedFiles[fte.Path].LoadAddress)
                 {
