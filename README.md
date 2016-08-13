@@ -2,6 +2,8 @@
 
 Implements API for retrieval of symbols and other debug artifacts from symbol store.
 
+Pre-release builds are available on MyGet gallery: https://dotnet.myget.org/Gallery/symstore.
+
 [//]: # (Begin current test results)
 
 ### Windows - Unit Tests
