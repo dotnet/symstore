@@ -1,13 +1,8 @@
-﻿using FileFormats.Minidump;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.IO;
 using TestHelpers;
 using Xunit;
 
-namespace FileFormats.Minidumps
+namespace FileFormats.Minidump
 {
     public class Tests
     {
