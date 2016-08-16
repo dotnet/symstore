@@ -21,6 +21,7 @@ namespace Microsoft.SymbolStore.Client
                 Directory.CreateDirectory(location);
         }
 
+        #region PDB Functions
         public string GetPdbFromCache(string pdbName, Guid guid, int age)
         {
             pdbName = Path.GetFileName(pdbName);
@@ -28,15 +29,16 @@ namespace Microsoft.SymbolStore.Client
             return GetFile(fullPath);
         }
 
-        public string GetPEFileFromCache(string filename, int timestamp, int filesize)
+        public string StorePdb(Stream stream, string pdbName, Guid guid, int age)
         {
-            filename = Path.GetFileName(filename);
-            string fullPath = GetCacheLocation(filename, timestamp, filesize);
-            return GetFile(fullPath);
+            pdbName = Path.GetFileName(pdbName);
+            if (string.IsNullOrWhiteSpace(pdbName))
+                throw new ArgumentException($"Invalid PDB filename {pdbName}.");
+
+            string fullPath = GetCacheLocation(pdbName, guid, age);
+            return StoreFile(stream, fullPath);
         }
-
-
-
+        
         public bool RemovePdbFromCache(string pdbName, Guid guid, int age)
         {
             pdbName = Path.GetFileName(pdbName);
@@ -44,7 +46,26 @@ namespace Microsoft.SymbolStore.Client
 
             return RemoveFromCache(fullPath);
         }
+        #endregion
 
+        #region PEFiles
+        public string GetPEFileFromCache(string filename, int timestamp, int filesize)
+        {
+            filename = Path.GetFileName(filename);
+            string fullPath = GetCacheLocation(filename, timestamp, filesize);
+            return GetFile(fullPath);
+        }
+
+        public string StorePEFile(Stream stream, string filename, int timestamp, int filesize)
+        {
+            filename = Path.GetFileName(filename);
+            if (string.IsNullOrWhiteSpace(filename))
+                throw new ArgumentException($"Invalid PE file name {filename}.");
+
+            string fullPath = GetCacheLocation(filename, timestamp, filesize);
+            return StoreFile(stream, fullPath);
+        }
+        
         public bool RemovePEFileFromCache(string filename, int timestamp, int filesize)
         {
             filename = Path.GetFileName(filename);
@@ -52,26 +73,9 @@ namespace Microsoft.SymbolStore.Client
 
             return RemoveFromCache(fullPath);
         }
+        #endregion
 
-        private static bool RemoveFromCache(string fullPath)
-        {
-            if (!File.Exists(fullPath))
-                return true;
-
-            try
-            {
-                // Lock the file to ensure it's done copying in another thread/process
-                using (FileSemaphore.LockFile(fullPath))
-                    File.Delete(fullPath);
-                
-                return true;
-            }
-            catch
-            {
-                return File.Exists(fullPath);
-            }
-        }
-
+        #region Helpers
         private static string GetFile(string fullPath)
         {
             FileInfo fi = new FileInfo(fullPath);
@@ -83,27 +87,6 @@ namespace Microsoft.SymbolStore.Client
                     return fullPath;
 
             return null;
-        }
-
-
-        public string StorePEFile(Stream stream, string filename, int timestamp, int filesize)
-        {
-            filename = Path.GetFileName(filename);
-            if (string.IsNullOrWhiteSpace(filename))
-                throw new ArgumentException($"Invalid PE file name {filename}.");
-
-            string fullPath = GetCacheLocation(filename, timestamp, filesize);
-            return StoreFile(stream, fullPath);
-        }
-
-        public string StorePdb(Stream stream, string pdbName, Guid guid, int age)
-        {
-            pdbName = Path.GetFileName(pdbName);
-            if (string.IsNullOrWhiteSpace(pdbName))
-                throw new ArgumentException($"Invalid PDB filename {pdbName}.");
-
-            string fullPath = GetCacheLocation(pdbName, guid, age);
-            return StoreFile(stream, fullPath);
         }
 
         private static string StoreFile(Stream stream, string fullPath)
@@ -136,6 +119,25 @@ namespace Microsoft.SymbolStore.Client
             return fullPath;
         }
 
+        private static bool RemoveFromCache(string fullPath)
+        {
+            if (!File.Exists(fullPath))
+                return true;
+
+            try
+            {
+                // Lock the file to ensure it's done copying in another thread/process
+                using (FileSemaphore.LockFile(fullPath))
+                    File.Delete(fullPath);
+
+                return true;
+            }
+            catch
+            {
+                return File.Exists(fullPath);
+            }
+        }
+
         private string GetCacheLocation(string filename, int timestamp, int imagesize)
         {
             string indexPath = StoreQueryBuilder.GetPEFileIndexPath(filename, timestamp, imagesize);
@@ -153,5 +155,6 @@ namespace Microsoft.SymbolStore.Client
 
             return Path.Combine(_location, indexPath);
         }
+        #endregion
     }
 }
