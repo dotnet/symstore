@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileFormats.CrashDump
+namespace FileFormats.Minidump
 {
     public static class CrashDumpLayoutManagerExtensions
     {

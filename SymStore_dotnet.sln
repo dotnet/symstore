@@ -31,7 +31,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FileFormats.PE.Tests", "src
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FileFormats.Minidump", "src\FileFormats.Minidump\FileFormats.Minidump.xproj", "{BB9EBBAE-B057-49E3-BF8C-4F3B6AB53D29}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FileFormats.Minidumps.Tests", "src\FileFormats.Minidumps.Tests\FileFormats.Minidumps.Tests.xproj", "{B5A5C4F1-AF21-45B6-9489-D35D85AC2DB6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FileFormats.Minidump.Tests", "src\FileFormats.Minidump.Tests\FileFormats.Minidump.Tests.xproj", "{B5A5C4F1-AF21-45B6-9489-D35D85AC2DB6}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TestHelpers", "src\TestHelpers\TestHelpers.xproj", "{BFB3FD89-7534-4DEF-B24A-FBFBB6CE4CE9}"
 EndProject
