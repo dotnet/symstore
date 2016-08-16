@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SymbolStore
+namespace Microsoft.SymbolStore.Client
 {
     internal static class StoreQueryBuilder
     {
