@@ -40,7 +40,7 @@ namespace Microsoft.SymbolStore.Client
             Assert.True(server.IsReachable());
             Assert.True(server.IsRemoteServer);
 
-            SymbolServerResult result = server.FindBinary(PEFileName, PEFileSize, PEFileTimestamp);
+            SymbolServerResult result = server.FindPEFile(PEFileName, PEFileTimestamp, PEFileSize);
             Assert.NotNull(result);
             Assert.True(result.Compressed); // This particular symbol server should always provide us with compressed binaries
         }

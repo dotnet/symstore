@@ -125,10 +125,10 @@ namespace Microsoft.SymbolStore.Client
             {
                 ISymbolServer privateSymbolServer = await s_privateSymbolServer;
                 if (privateSymbolServer != null)
-                    processing.Add(privateSymbolServer.FindBinaryAsync(filename, filesize, timestamp));
+                    processing.Add(privateSymbolServer.FindPEFileAsync(filename, timestamp, filesize));
             }
 
-            processing.AddRange(_symbolServers.Select(server => server.FindBinaryAsync(filename, filesize, timestamp)));
+            processing.AddRange(_symbolServers.Select(server => server.FindPEFileAsync(filename, timestamp, filesize)));
             return await GetFirstNonNullResult(processing);
         }
 

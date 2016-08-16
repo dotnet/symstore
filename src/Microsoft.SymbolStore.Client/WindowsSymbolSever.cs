@@ -37,10 +37,9 @@ namespace Microsoft.SymbolStore.Client
         bool IsRemoteServer { get; }
         bool IsReachable();
         bool IsReachable(int timeout);
-
-
-        SymbolServerResult FindBinary(string filename, int imageSize, int buildTimeStamp);
-        Task<SymbolServerResult> FindBinaryAsync(string filename, int imageSize, int buildTimeStamp);
+        
+        SymbolServerResult FindPEFile(string filename, int buildTimeStamp, int imageSize);
+        Task<SymbolServerResult> FindPEFileAsync(string filename, int buildTimeStamp, int imageSize);
         SymbolServerResult FindPdb(string pdbName, Guid guid, int age);
         Task<SymbolServerResult> FindPdbAsync(string pdbName, Guid guid, int age);
     }
@@ -109,9 +108,9 @@ namespace Microsoft.SymbolStore.Client
         }
 
 
-        public SymbolServerResult FindBinary(string filename, int imageSize, int buildTimeStamp)
+        public SymbolServerResult FindPEFile(string filename, int buildTimeStamp, int imageSize)
         {
-            return FindBinaryAsync(filename, imageSize, buildTimeStamp).Result;
+            return FindPEFileAsync(filename, buildTimeStamp, imageSize).Result;
         }
 
         public SymbolServerResult FindPdb(string pdbName, Guid guid, int age)
@@ -119,9 +118,9 @@ namespace Microsoft.SymbolStore.Client
             return FindPdbAsync(pdbName, guid, age).Result;
         }
 
-        public async Task<SymbolServerResult> FindBinaryAsync(string filename, int imageSize, int buildTimeStamp)
+        public async Task<SymbolServerResult> FindPEFileAsync(string filename, int buildTimeStamp, int imageSize)
         {
-            string indexPath = $"{filename}/{buildTimeStamp.ToString("x")}{imageSize.ToString("x")}/{filename}";
+            string indexPath = StoreQueryBuilder.GetPEFileIndexPath(filename, buildTimeStamp, imageSize);
             if (_isServer)
                 return await TryGetFileFromServer(indexPath);
 
@@ -136,7 +135,6 @@ namespace Microsoft.SymbolStore.Client
                 }
                 catch
                 {
-                    Trace();
                 }
             }
 
@@ -145,7 +143,7 @@ namespace Microsoft.SymbolStore.Client
 
         public async Task<SymbolServerResult> FindPdbAsync(string pdbName, Guid guid, int age)
         {
-            string indexPath = $"{pdbName}/{guid.ToString().Replace("-", "")}{age.ToString("x")}/{pdbName}";
+            string indexPath = StoreQueryBuilder.GetWindowsPdbQueryString(pdbName, guid, age);
             if (_isServer)
                 return await TryGetFileFromServer(indexPath);
 
@@ -160,7 +158,6 @@ namespace Microsoft.SymbolStore.Client
                 }
                 catch
                 {
-                    Trace();
                 }
             }
 
@@ -199,7 +196,6 @@ namespace Microsoft.SymbolStore.Client
                     }
                     catch
                     {
-                        Trace();
                     }
                 }
             }
@@ -213,11 +209,6 @@ namespace Microsoft.SymbolStore.Client
                 return new SymbolServerResult(response, false);
 
             return null;
-        }
-
-        private void Trace()
-        {
-            throw new NotImplementedException();
         }
 
         private async Task<WebResponse> GetPhysicalFileFromServer(string indexPath)

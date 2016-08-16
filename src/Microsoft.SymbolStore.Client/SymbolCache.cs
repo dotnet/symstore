@@ -138,17 +138,20 @@ namespace Microsoft.SymbolStore.Client
 
         private string GetCacheLocation(string filename, int timestamp, int imagesize)
         {
-            string result = Path.Combine(_location, filename, timestamp.ToString("x") + imagesize.ToString("x"), filename);
-            return result;
+            string indexPath = StoreQueryBuilder.GetPEFileIndexPath(filename, timestamp, imagesize);
+            if (Path.DirectorySeparatorChar != '/')
+                indexPath.Replace('/', Path.DirectorySeparatorChar);
+
+            return Path.Combine(_location, indexPath);
         }
 
         private string GetCacheLocation(string pdbSimpleName, Guid guid, int age)
         {
-            Debug.Assert(pdbSimpleName == Path.GetFileName(pdbSimpleName));
-            Debug.Assert(age >= 0);
+            string indexPath = StoreQueryBuilder.GetWindowsPdbQueryString(pdbSimpleName, guid, age);
+            if (Path.DirectorySeparatorChar != '/')
+                indexPath.Replace('/', Path.DirectorySeparatorChar);
 
-            string result = Path.Combine(_location, pdbSimpleName, guid.ToString().Replace("-", "") + age.ToString("x"), pdbSimpleName);
-            return result;
+            return Path.Combine(_location, indexPath);
         }
     }
 }
