@@ -11,18 +11,13 @@ namespace Microsoft.SymbolStore.Client
 {
     public sealed class SymbolLocator
     {
-        private const string c_privateSymbolServerName = "symweb.corp.microsoft.com";
-        private static string[] s_microsoftSymbolServers = new string[] { "http://msdl.microsoft.com/download/symbols", "https://nuget.smbsrc.net", "http://referencesource.microsoft.com/symbols", "https://dotnet.myget.org/F/dotnet-core/symbols" };
-        private static Task<WindowsSymbolSever> s_privateSymbolServer;
-        private static bool s_usePrivateSymbolServer = true;
-        private static ISymbolServer[] s_symbolServers;
+        private static string[] s_microsoftSymbolServerUrls = new string[] { "http://msdl.microsoft.com/download/symbols", "https://nuget.smbsrc.net", "http://referencesource.microsoft.com/symbols", "https://dotnet.myget.org/F/dotnet-core/symbols" };
+        private static ISymbolServer[] s_microsoftSymbolServers = s_microsoftSymbolServerUrls.Select(url => new WindowsSymbolSever(url)).Cast<ISymbolServer>().ToArray();
 
         private ISymbolServer[] _symbolServers;
 
         public SymbolCache Cache { get; private set; }
-
-        public ISymbolServer PrivateSymbolServer { get { return s_privateSymbolServer.Result; } }
-
+        
         public static string DefaultSymbolCacheLocation
         {
             get
@@ -31,22 +26,20 @@ namespace Microsoft.SymbolStore.Client
             }
         }
 
-        public bool UsePrivateSymbolSever { get; set; }
-
         public SymbolLocator()
-            : this(new SymbolCache(DefaultSymbolCacheLocation))
+            : this(new SymbolCache(DefaultSymbolCacheLocation), s_microsoftSymbolServers)
         {
         }
 
         public SymbolLocator(SymbolCache cache)
-            : this(cache, s_symbolServers)
+            : this(cache, s_microsoftSymbolServers)
         {
         }
 
         public SymbolLocator(SymbolCache cache, IEnumerable<ISymbolServer> symbolServers)
         {
             Cache = cache;
-            _symbolServers = symbolServers.ToArray();
+            _symbolServers = symbolServers.OrderBy(s=>!s.PreferThisServer).ToArray();
         }
         
         public async Task<string> FindPdbAsync(string pdbName, Guid guid, int age)
@@ -78,7 +71,7 @@ namespace Microsoft.SymbolStore.Client
                 return cachePath;
 
             // Otherwise attempt to find the file.
-            SymbolServerResult result = await FindPdbWorkerAsync(pdbName, guid, age);
+            SymbolServerResult result = await SearchServers((ISymbolServer server) => server.FindPdbAsync(pdbName, guid, age));
             if (result == null)
                 return null;
 
@@ -102,7 +95,7 @@ namespace Microsoft.SymbolStore.Client
                 return cachePath;
 
             // Look for it on the server.
-            SymbolServerResult result = await FindPEFileWorkerAsync(filename, timestamp, filesize);
+            SymbolServerResult result = await SearchServers((ISymbolServer server) => server.FindPEFileAsync(filename, timestamp, filesize));
             if (result == null)
                 return null;
 
@@ -115,44 +108,38 @@ namespace Microsoft.SymbolStore.Client
                 return Cache.StorePEFile(stream, filename, timestamp, filesize);
         }
 
-        private async Task<SymbolServerResult> FindPEFileWorkerAsync(string filename, int timestamp, int filesize)
+        private async Task<SymbolServerResult> SearchServers(Func<ISymbolServer, Task<SymbolServerResult>> getTask)
         {
-            List<Task<SymbolServerResult>> processing = new List<Task<SymbolServerResult>>(_symbolServers.Length + 1);
+            IEnumerable<Task<SymbolServerResult>> tasks = _symbolServers.Where(server => server.PreferThisServer).Select(server => getTask(server));
+            Task<SymbolServerResult> primaryResult = GetFirstNonNullResult(new List<Task<SymbolServerResult>>(tasks));
 
-            // PEFiles from either public or private symbol servers are the same, no need to treat them differently.
-            // We just check all of them at once.
-            if (s_usePrivateSymbolServer && UsePrivateSymbolSever)
-            {
-                ISymbolServer privateSymbolServer = await s_privateSymbolServer;
-                if (privateSymbolServer != null)
-                    processing.Add(privateSymbolServer.FindPEFileAsync(filename, timestamp, filesize));
-            }
+            tasks = _symbolServers.Where(server => !server.PreferThisServer).Select(server => getTask(server));
+            Task<SymbolServerResult> secondaryResult = GetFirstNonNullResult(new List<Task<SymbolServerResult>>(tasks));
 
-            processing.AddRange(_symbolServers.Select(server => server.FindPEFileAsync(filename, timestamp, filesize)));
-            return await GetFirstNonNullResult(processing);
+            return await primaryResult ?? await secondaryResult;
         }
 
         private async Task<SymbolServerResult> FindPdbWorkerAsync(string pdbName, Guid guid, int age)
         {
+            List<Task<SymbolServerResult>> processing = new List<Task<SymbolServerResult>>(_symbolServers.Length);
+            List<ISymbolServer> onDeck = new List<ISymbolServer>(_symbolServers.Length);
 
-            // The internal symbol server can give private PDBs, so we actually check that location first and if it fails we fall
-            // back to the public servers.
-            SymbolServerResult result = null;
-            if (s_usePrivateSymbolServer && UsePrivateSymbolSever)
-            {
-                ISymbolServer privateSymbolServer = await s_privateSymbolServer;
-                if (privateSymbolServer != null)
-                {
-                    result = await privateSymbolServer.FindPdbAsync(pdbName, guid, age);
-                    if (result != null)
-                        return result;
-                }
-            }
+            Task<SymbolServerResult> preferredResult = SearchServers((ISymbolServer server) => server.PreferThisServer, (ISymbolServer server) => server.FindPdbAsync(pdbName, guid, age));
+            Task<SymbolServerResult> secondaryResult = SearchServers((ISymbolServer server) => !server.PreferThisServer, (ISymbolServer server) => server.FindPdbAsync(pdbName, guid, age));
 
-            List<Task<SymbolServerResult>> processing = new List<Task<SymbolServerResult>>(_symbolServers.Select(server=>server.FindPdbAsync(pdbName, guid, age)));
-            return await GetFirstNonNullResult(processing);
+            SymbolServerResult result = await preferredResult;
+            if (result != null)
+                return result;
+
+            return await secondaryResult;
         }
 
+        private Task<SymbolServerResult> SearchServers(Func<ISymbolServer, bool> predicate, Func<ISymbolServer, Task<SymbolServerResult>> getTask)
+        {
+            var tasks = _symbolServers.Where(server => predicate(server)).Select(server => getTask(server));
+            return GetFirstNonNullResult(new List<Task<SymbolServerResult>>(tasks));
+        }
+        
         async Task<T> GetFirstNonNullResult<T>(List<Task<T>> tasks) where T : class
         {
             while (tasks.Count > 0)
@@ -171,36 +158,5 @@ namespace Microsoft.SymbolStore.Client
 
             return null;
         }
-
-        #region Static Constructor
-        static SymbolLocator()
-        {
-            s_privateSymbolServer = new Task<WindowsSymbolSever>(FindPrivateSymbolServer);
-            s_privateSymbolServer.Start();
-
-            s_symbolServers = s_microsoftSymbolServers.Select(url => new WindowsSymbolSever(url)).Cast<ISymbolServer>().ToArray();
-        }
-
-        private static WindowsSymbolSever FindPrivateSymbolServer()
-        {
-            try
-            {
-                IPAddress[] result = null;
-                Task<IPAddress[]> addresses = System.Net.Dns.GetHostAddressesAsync(c_privateSymbolServerName);
-                
-                if (addresses.Wait(700))
-                    result = addresses.Result;
-
-                if (result != null && result.Length > 0)
-                    return new WindowsSymbolSever($"http://{c_privateSymbolServerName}");
-            }
-            catch
-            {
-            }
-
-            s_usePrivateSymbolServer = false;
-            return null;
-        }
-        #endregion
     }
 }

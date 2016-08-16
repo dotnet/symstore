@@ -34,6 +34,8 @@ namespace Microsoft.SymbolStore.Client
 
     public interface ISymbolServer
     {
+        bool PreferThisServer { get; set; }
+
         bool IsRemoteServer { get; }
         bool IsReachable();
         bool IsReachable(int timeout);
@@ -48,6 +50,8 @@ namespace Microsoft.SymbolStore.Client
     {
         private string _path = null;
         private bool _isServer = false;
+
+        public bool PreferThisServer { get; set; }
 
         public bool IsRemoteServer
         {
