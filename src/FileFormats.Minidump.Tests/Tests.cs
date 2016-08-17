@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Linq;
 using System.IO;
 using System.IO.Compression;
-using System.Threading.Tasks;
 using TestHelpers;
 using Xunit;
+using System.Collections.ObjectModel;
 
 namespace FileFormats.Minidump
 {
@@ -12,10 +11,34 @@ namespace FileFormats.Minidump
     {
         const string x86Dump = "TestBinaries/minidump_x86.dmp.gz";
         const string x64Dump = "TestBinaries/minidump_x64.dmp.gz";
-
-        static Tests()
+        
+        [Fact]
+        public void CheckMemoryRanges()
         {
+            using (Stream stream = GetCrashDump(x86Dump))
+                CheckMemoryRanges(GetMinidumpFromStream(stream));
+
+            using (Stream stream = GetCrashDump(x64Dump))
+                CheckMemoryRanges(GetMinidumpFromStream(stream));
+        }
+
+        private void CheckMemoryRanges(Minidump minidump)
+        {
+            ReadOnlyCollection<MinidumpLoadedImage> images = minidump.LoadedImages;
+            ReadOnlyCollection<MinidumpSegment> memory = minidump.Segments;
             
+            // Ensure that all of our images actually correspond to memory in the crash dump.  Note that our minidumps used
+            // for this test are all full dumps with all memory (including images) in them.
+            foreach (var image in images)
+            {
+                int count = memory.Where(m => m.StartOfMemoryRange <= image.BaseOfImage && image.BaseOfImage < m.StartOfMemoryRange + m.Size).Count();
+                Assert.Equal(1, count);
+                
+                // Check the start of each image for the PE header 'MZ'
+                byte[] header = minidump.VirtualAddressReader.Read(image.BaseOfImage, 2);
+                Assert.Equal((byte)'M', header[0]);
+                Assert.Equal((byte)'Z', header[1]);
+            }
         }
 
         [Fact]
@@ -30,11 +53,10 @@ namespace FileFormats.Minidump
 
         private static void CheckLoadedModules(Stream stream)
         {
-            IAddressSpace sas = new StreamAddressSpace(stream);
-            Minidump minidump = new Minidump(sas);
+            Minidump minidump = GetMinidumpFromStream(stream);
 
             var modules = minidump.LoadedImages;
-            Assert.True(modules.Length > 0);
+            Assert.True(modules.Count > 0);
         }
 
         [Fact]
@@ -69,6 +91,13 @@ namespace FileFormats.Minidump
             using (GZipStream gs = new GZipStream(fs, CompressionMode.Decompress))
                 gs.CopyTo(ms);
             return ms;
+        }
+        
+        private static Minidump GetMinidumpFromStream(Stream stream)
+        {
+            IAddressSpace sas = new StreamAddressSpace(stream);
+            Minidump minidump = new Minidump(sas);
+            return minidump;
         }
     }
 }

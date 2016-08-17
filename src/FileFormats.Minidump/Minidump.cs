@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -28,6 +29,38 @@ namespace FileFormats.Minidump
         }
     }
 
+    public class MinidumpSegment
+    {
+        public ulong Rva { get; private set; }
+        public ulong Size { get; private set; }
+        public ulong StartOfMemoryRange { get; private set; }
+
+        public bool Contains(ulong address)
+        {
+            return StartOfMemoryRange <= address && address < StartOfMemoryRange + Size;
+        }
+
+        internal static MinidumpSegment Create(Minidump.MINIDUMP_MEMORY_DESCRIPTOR region)
+        {
+            MinidumpSegment result = new MinidumpSegment();
+            result.Rva = region.Memory.Rva;
+            result.Size = region.Memory.DataSize;
+            result.StartOfMemoryRange = region.StartOfMemoryRange;
+
+            return result;
+        }
+
+        internal static MinidumpSegment Create(Minidump.MINIDUMP_MEMORY_DESCRIPTOR64 region, ulong rva)
+        {
+            MinidumpSegment result = new MinidumpSegment();
+            result.Rva = rva;
+            result.Size = region.DataSize;
+            result.StartOfMemoryRange = region.StartOfMemoryRange;
+
+            return result;
+        }
+    }
+
     public class Minidump
     {
         private readonly ulong _position;
@@ -37,7 +70,9 @@ namespace FileFormats.Minidump
         private readonly MINIDUMP_DIRECTORY[] _directory;
         private readonly MINIDUMP_SYSTEM_INFO _systemInfo;
         private readonly int _moduleListStream = -1;
-        private readonly Lazy<MinidumpLoadedImage[]> _loadedImages;
+        private readonly Lazy<List<MinidumpLoadedImage>> _loadedImages;
+        private readonly Lazy<List<MinidumpSegment>> _memoryRanges;
+        private Lazy<Reader> _virtualAddressReader;
 
         public Minidump(IAddressSpace addressSpace, ulong position = 0)
         {
@@ -74,11 +109,15 @@ namespace FileFormats.Minidump
             _systemInfo = headerReader.Read<MINIDUMP_SYSTEM_INFO>(_position + _directory[systemIndex].Rva);
 
             _dataSourceReader = new Reader(_dataSource, new LayoutManager().AddCrashDumpTypes(false, Is64Bit));
-            _loadedImages = new Lazy<MinidumpLoadedImage[]>(GetLoadedImages);
+            _loadedImages = new Lazy<List<MinidumpLoadedImage>>(CreateLoadedImageList);
+            _memoryRanges = new Lazy<List<MinidumpSegment>>(CreateSegmentList);
+            _virtualAddressReader = new Lazy<Reader>(CreateVirtualAddressReader);
         }
 
-        public MinidumpLoadedImage[] LoadedImages { get { return _loadedImages.Value; } }
-
+        public Reader DataSourceReader { get { return _dataSourceReader; } }
+        public Reader VirtualAddressReader { get { return _virtualAddressReader.Value; } }
+        public ReadOnlyCollection<MinidumpLoadedImage> LoadedImages { get { return _loadedImages.Value.AsReadOnly(); } }
+        public ReadOnlyCollection<MinidumpSegment> Segments { get { return _memoryRanges.Value.AsReadOnly(); } }
 
         public bool Is64Bit
         {
@@ -89,18 +128,62 @@ namespace FileFormats.Minidump
             }
         }
 
-        private MinidumpLoadedImage[] GetLoadedImages()
+        private Reader CreateVirtualAddressReader()
+        {
+            return _dataSourceReader.WithAddressSpace(new MinidumpVirtualAddressSpace(Segments, _dataSource));
+        }
+
+        private List<MinidumpLoadedImage> CreateLoadedImageList()
         {
             if (_moduleListStream == -1)
                 throw new BadInputFormatException("Minidump does not contain a ModuleStreamList in its directory.");
             
             MINIDUMP_MODULE[] modules = _dataSourceReader.ReadCountedArray<MINIDUMP_MODULE>(_directory[_moduleListStream].Rva);
-            return modules.Select(module => new MinidumpLoadedImage(module)).ToArray();
+            return new List<MinidumpLoadedImage>(modules.Select(module => new MinidumpLoadedImage(module)));
+        }
+
+        private List<MinidumpSegment> CreateSegmentList()
+        {
+            List<MinidumpSegment> ranges = new List<MinidumpSegment>();
+
+            foreach (MINIDUMP_DIRECTORY item in _directory)
+            {
+                if (item.StreamType == MINIDUMP_STREAM_TYPE.MemoryListStream)
+                {
+                    MINIDUMP_MEMORY_DESCRIPTOR[] memoryRegions = _dataSourceReader.ReadCountedArray<MINIDUMP_MEMORY_DESCRIPTOR>(item.Rva);
+
+                    foreach (var region in memoryRegions)
+                    {
+                        MinidumpSegment range = MinidumpSegment.Create(region);
+                        ranges.Add(range);
+                    }
+
+                }
+                else if (item.StreamType == MINIDUMP_STREAM_TYPE.Memory64ListStream)
+                {
+                    ulong position = item.Rva;
+                    ulong count = _dataSourceReader.Read<ulong>(ref position);
+                    ulong rva = _dataSourceReader.Read<ulong>(ref position);
+
+                    MINIDUMP_MEMORY_DESCRIPTOR64[] memoryRegions = _dataSourceReader.ReadArray<MINIDUMP_MEMORY_DESCRIPTOR64>(position, checked((uint)count));
+                    foreach (var region in memoryRegions)
+                    {
+                        MinidumpSegment range = MinidumpSegment.Create(region, rva);
+                        ranges.Add(range);
+
+                        rva += region.DataSize;
+                    }
+                }
+            }
+
+            ranges.Sort((MinidumpSegment a, MinidumpSegment b) => a.StartOfMemoryRange.CompareTo(b.StartOfMemoryRange));
+            return ranges;
         }
 
 
+
         #region Native Structures
-        #pragma warning disable 0649
+#pragma warning disable 0649
 
         private class MINIDUMP_HEADER : TStruct
         {
@@ -209,7 +292,7 @@ namespace FileFormats.Minidump
         internal sealed class MINIDUMP_LOCATION_DESCRIPTOR : TStruct
         {
             public uint DataSize;
-            public int Rva;
+            public uint Rva;
         }
 
         [TStructPack(4)]
@@ -225,6 +308,19 @@ namespace FileFormats.Minidump
             public MINIDUMP_LOCATION_DESCRIPTOR MiscRecord;
             private ulong _reserved0;
             private ulong _reserved1;
+        }
+
+        internal sealed class MINIDUMP_MEMORY_DESCRIPTOR : TStruct
+        {
+            public ulong StartOfMemoryRange;
+            public MINIDUMP_LOCATION_DESCRIPTOR Memory;
+
+        }
+
+        internal sealed class MINIDUMP_MEMORY_DESCRIPTOR64 : TStruct
+        {
+            public ulong StartOfMemoryRange;
+            public ulong DataSize;
         }
         #endregion
     }
