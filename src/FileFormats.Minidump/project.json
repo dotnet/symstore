@@ -3,6 +3,7 @@
 
   "dependencies": {
     "FileFormats": "1.0.0-*",
+    "FileFormats.PE": "1.0.0-*",
     "NETStandard.Library": "1.6.0"
   },
 

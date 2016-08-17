@@ -22,7 +22,6 @@ namespace Microsoft.SymbolStore.Client
 
             using (IDisposable lck = FileSemaphore.LockFile(FileName))
             {
-
                 Assert.True(File.Exists(LockFile));
 
                 for (int i = 0; i < 10; i++)
@@ -31,8 +30,6 @@ namespace Microsoft.SymbolStore.Client
                 Task t = ReleaseLock(lck);
                 t.Wait();
                 Assert.False(File.Exists(LockFile));
-                
-
             } // lck will be double-disposed, make sure that doesn't throw or cause problems
 
             Assert.False(File.Exists(LockFile));

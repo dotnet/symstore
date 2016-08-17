@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FileFormats.PE;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -11,21 +12,25 @@ namespace FileFormats.Minidump
 {
     public class MinidumpLoadedImage
     {
+        private readonly Lazy<PEFile> _peFile;
+        private readonly Lazy<string> _moduleName;
+
         public ulong BaseOfImage { get; private set; }
         public uint SizeOfImage { get; private set; }
         public uint CheckSum { get; private set; }
         public uint TimeDateStamp { get; private set; }
-        public uint ModuleNameRva { get; private set; }
+        public string ModuleName { get { return _moduleName.Value; } }
+        public PEFile Image { get { return _peFile.Value; } }
 
-        internal MinidumpLoadedImage(Minidump.MINIDUMP_MODULE module)
+        internal MinidumpLoadedImage(Minidump.MINIDUMP_MODULE module, Reader virtualAddressReader, Reader reader)
         {
             BaseOfImage = module.Baseofimage;
             SizeOfImage = module.SizeOfImage;
             CheckSum = module.CheckSum;
             TimeDateStamp = module.TimeDateStamp;
-            ModuleNameRva = module.ModuleNameRva;
 
-            // TODO:  Version info.
+            _peFile = new Lazy<PEFile>(() => new PEFile(virtualAddressReader.DataSource, BaseOfImage));
+            _moduleName = new Lazy<string>(() => reader.Read<string>(module.ModuleNameRva));
         }
     }
 
@@ -139,7 +144,7 @@ namespace FileFormats.Minidump
                 throw new BadInputFormatException("Minidump does not contain a ModuleStreamList in its directory.");
             
             MINIDUMP_MODULE[] modules = _dataSourceReader.ReadCountedArray<MINIDUMP_MODULE>(_directory[_moduleListStream].Rva);
-            return new List<MinidumpLoadedImage>(modules.Select(module => new MinidumpLoadedImage(module)));
+            return new List<MinidumpLoadedImage>(modules.Select(module => new MinidumpLoadedImage(module, VirtualAddressReader, DataSourceReader)));
         }
 
         private List<MinidumpSegment> CreateSegmentList()
@@ -184,6 +189,7 @@ namespace FileFormats.Minidump
 
         #region Native Structures
 #pragma warning disable 0649
+#pragma warning disable 0169
 
         private class MINIDUMP_HEADER : TStruct
         {

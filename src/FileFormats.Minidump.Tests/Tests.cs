@@ -4,6 +4,7 @@ using System.IO.Compression;
 using TestHelpers;
 using Xunit;
 using System.Collections.ObjectModel;
+using System;
 
 namespace FileFormats.Minidump
 {
@@ -12,6 +13,25 @@ namespace FileFormats.Minidump
         const string x86Dump = "TestBinaries/minidump_x86.dmp.gz";
         const string x64Dump = "TestBinaries/minidump_x64.dmp.gz";
         
+        [Fact]
+        public void CheckNestedPEImages()
+        {
+            using (Stream stream = GetCrashDump(x86Dump))
+                CheckNestedPEImages(GetMinidumpFromStream(stream));
+
+            using (Stream stream = GetCrashDump(x64Dump))
+                CheckNestedPEImages(GetMinidumpFromStream(stream));
+        }
+
+        private void CheckNestedPEImages(Minidump minidump)
+        {
+            foreach (var loadedImage in minidump.LoadedImages)
+            {
+                Assert.True(loadedImage.Image.HasValidDosSignature.Check());
+                Assert.True(loadedImage.Image.HasValidPESignature.Check());
+            }
+        }
+
         [Fact]
         public void CheckMemoryRanges()
         {
