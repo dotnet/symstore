@@ -30,7 +30,7 @@ namespace FileFormats.Minidump
             TimeDateStamp = module.TimeDateStamp;
 
             _peFile = new Lazy<PEFile>(() => new PEFile(virtualAddressReader.DataSource, BaseOfImage));
-            _moduleName = new Lazy<string>(() => reader.Read<string>(module.ModuleNameRva));
+            _moduleName = new Lazy<string>(() => reader.ReadCountedString(module.ModuleNameRva, Encoding.Unicode));
         }
     }
 

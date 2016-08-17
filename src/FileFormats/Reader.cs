@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace FileFormats
@@ -22,6 +23,12 @@ namespace FileFormats
         public LayoutManager LayoutManager { get; private set; }
         public IAddressSpace DataSource { get; private set; }
 
+        public string ReadCountedString(ulong position, Encoding encoding)
+        {
+            uint elementCount = Read<uint>(ref position);
+            byte[] buffer = Read(position, elementCount);
+            return encoding.GetString(buffer);
+        }
 
         public T[] ReadCountedArray<T>(ulong position)
         {

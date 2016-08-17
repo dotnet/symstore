@@ -12,7 +12,26 @@ namespace FileFormats.Minidump
     {
         const string x86Dump = "TestBinaries/minidump_x86.dmp.gz";
         const string x64Dump = "TestBinaries/minidump_x64.dmp.gz";
-        
+
+
+        [Fact]
+        public void CheckModuleNames()
+        {
+            using (Stream stream = GetCrashDump(x86Dump))
+                CheckModuleNames(GetMinidumpFromStream(stream));
+
+            using (Stream stream = GetCrashDump(x64Dump))
+                CheckModuleNames(GetMinidumpFromStream(stream));
+        }
+
+        private void CheckModuleNames(Minidump minidump)
+        {
+            Assert.Equal(1, minidump.LoadedImages.Where(i => i.ModuleName.EndsWith(@"\clr.dll")).Count());
+
+            foreach (var module in minidump.LoadedImages)
+                Assert.NotNull(module.ModuleName);
+        }
+
         [Fact]
         public void CheckNestedPEImages()
         {
