@@ -72,18 +72,4 @@ namespace FileFormats.Minidump
             return null;
         }
     }
-
-    /*
-     
-    public class ELFVirtualAddressSpace : IAddressSpace
-    {
-        private readonly ELFSegment[] _segments;
-        private readonly ulong _length;
-
-        public ELFVirtualAddressSpace(IEnumerable<ELFSegment> segments)
-        {
-            _segments = segments.ToArray();
-            _length = _segments.Max(s => s.Header.VirtualAddress + s.Header.VirtualSize);
-        }
-     */
 }
