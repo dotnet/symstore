@@ -41,11 +41,11 @@ namespace FileFormats
     }
 
     [AttributeUsage(AttributeTargets.Class)]
-    public class TStructPackAttribute : Attribute
+    public class PackAttribute : Attribute
     {
         public uint Pack { get; private set; }
 
-        public TStructPackAttribute(uint pack)
+        public PackAttribute(uint pack)
         {
             Pack = pack;
         }
@@ -161,7 +161,7 @@ namespace FileFormats
 
             TypeInfo typeInfo = tStructType.GetTypeInfo();
 
-            TStructPackAttribute pack = typeInfo.GetCustomAttributes().Where(attr => attr is TStructPackAttribute).Cast<TStructPackAttribute>().SingleOrDefault();
+            PackAttribute pack = typeInfo.GetCustomAttributes().Where(attr => attr is PackAttribute).Cast<PackAttribute>().SingleOrDefault();
 
             FieldInfo[] reflectionFields = typeInfo.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             reflectionFields = reflectionFields.OrderBy(f => f.MetadataToken).ToArray();

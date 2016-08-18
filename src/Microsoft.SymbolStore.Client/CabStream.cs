@@ -115,16 +115,13 @@ namespace Microsoft.SymbolStore.Client
             {
                 case NotificationType.CopyFile:
                     _outputHandle = CreateStreamPointer(_output);
-                    Debug.WriteLine($"Notify({type}, {notification}) - {ToHex(_outputHandle)}");
                     return _outputHandle;
 
                 case NotificationType.CloseFileInfo:
                     FreeStreamPointer(_outputHandle);
-                    Debug.WriteLine($"Notify({type}, {notification}) - 0");
                     return IntPtr.Zero;
 
                 default:
-                    Debug.WriteLine($"Notify({type}, {notification}) - 0");
                     return IntPtr.Zero;
             }
 
@@ -133,16 +130,12 @@ namespace Microsoft.SymbolStore.Client
         private IntPtr Open(string fileName, int oflag, int pmode)
         {
             IntPtr result = CreateStreamPointer(_input);
-
-            Debug.WriteLine($"Open({fileName}, {oflag:x}, {pmode:x}) - {ToHex(result)}");
             return result;
         }
 
         private int Close(IntPtr ptr)
         {
             FreeStreamPointer(ptr);
-
-            Debug.WriteLine($"Close({ToHex(ptr)}) - 0");
             return 0;
         }
 
@@ -150,8 +143,6 @@ namespace Microsoft.SymbolStore.Client
         {
             MemoryStream stream = PointerToStream(ptr);
             int result = (int)stream.Seek(offset, (SeekOrigin)seektype);
-
-            Debug.WriteLine($"Seek({ToHex(ptr)}, {offset:x}, {seektype:x}) - {result:x}");
             return result;
         }
         
@@ -161,7 +152,6 @@ namespace Microsoft.SymbolStore.Client
             Debug.Assert(stream == _input);
 
             int result = stream.Read(buffer, 0, count);
-            Debug.WriteLine($"Read({ToHex(ptr)}, {count:x}) - {result:x}");
             return result;
         }
 
@@ -171,21 +161,17 @@ namespace Microsoft.SymbolStore.Client
             Debug.Assert(stream == _output);
 
             stream.Write(buffer, 0, count);
-            Debug.WriteLine($"Write({ToHex(ptr)}, {count:x}) - {count:x}");
             return count;
         }
 
         private IntPtr Alloc(int count)
         {
             IntPtr result = Marshal.AllocHGlobal(count);
-
-            Debug.WriteLine($"Alloc({count:x}) - {ToHex(result)}");
             return result;
         }
 
         private void Free(IntPtr ptr)
         {
-            Debug.WriteLine($"Free({ToHex(ptr)})");
             Marshal.FreeHGlobal(ptr);
         }
 

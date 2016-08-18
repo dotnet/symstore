@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileFormats
 {
@@ -23,29 +18,6 @@ namespace FileFormats
         public LayoutManager LayoutManager { get; private set; }
         public IAddressSpace DataSource { get; private set; }
 
-        public string ReadCountedString(ulong position, Encoding encoding)
-        {
-            uint elementCount = Read<uint>(ref position);
-            byte[] buffer = Read(position, elementCount);
-            return encoding.GetString(buffer);
-        }
-
-        public T[] ReadCountedArray<T>(ulong position)
-        {
-            uint elementCount = Read<uint>(ref position);
-            var layout = LayoutManager.GetArrayLayout<T[]>(elementCount);
-            return (T[])LayoutManager.GetArrayLayout<T[]>(elementCount).Read(DataSource, position);
-        }
-
-        public T[] ReadCountedArray<T>(ref ulong position)
-        {
-            uint elementCount = Read<uint>(ref position);
-
-            uint bytesRead;
-            T[] ret = (T[])LayoutManager.GetArrayLayout<T[]>(elementCount).Read(DataSource, position, out bytesRead);
-            position += bytesRead;
-            return ret;
-        }
 
         public T[] ReadArray<T>(ulong position, uint elementCount)
         {

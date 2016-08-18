@@ -23,9 +23,9 @@ namespace FileFormats.Minidump
 #pragma warning disable 0649
 #pragma warning disable 0169
 
-    internal class MINIDUMP_HEADER : TStruct
+    internal class MinidumpHeader : TStruct
     {
-        public const int MINIDUMP_VERSION = 0x504d444d;
+        public const int MinidumpVersion = 0x504d444d;
 
         public uint Signature;
         public uint Version;
@@ -41,20 +41,20 @@ namespace FileFormats.Minidump
             {
                 return new ValidationRule("Invalid minidump header signature", () =>
                 {
-                    return Signature == MINIDUMP_VERSION;
+                    return Signature == MinidumpVersion;
                 });
             }
         }
     }
 
-    internal class MINIDUMP_DIRECTORY : TStruct
+    internal class MinidumpDirectory : TStruct
     {
-        public MINIDUMP_STREAM_TYPE StreamType;
+        public MinidumpStreamType StreamType;
         public uint DataSize;
         public uint Rva;
     }
 
-    internal enum MINIDUMP_STREAM_TYPE
+    internal enum MinidumpStreamType
     {
         UnusedStream = 0,
         ReservedStream0 = 1,
@@ -78,7 +78,7 @@ namespace FileFormats.Minidump
     }
 
 
-    internal class MINIDUMP_SYSTEM_INFO : TStruct
+    internal class MinidumpSystemInfo : TStruct
     {
         public ProcessorArchitecture ProcessorArchitecture;
         public ushort ProcessorLevel;
@@ -94,68 +94,68 @@ namespace FileFormats.Minidump
 
     internal enum ProcessorArchitecture : ushort
     {
-        PROCESSOR_ARCHITECTURE_INTEL = 0,
-        PROCESSOR_ARCHITECTURE_MIPS = 1,
-        PROCESSOR_ARCHITECTURE_ALPHA = 2,
-        PROCESSOR_ARCHITECTURE_PPC = 3,
-        PROCESSOR_ARCHITECTURE_SHX = 4,
-        PROCESSOR_ARCHITECTURE_ARM = 5,
-        PROCESSOR_ARCHITECTURE_IA64 = 6,
-        PROCESSOR_ARCHITECTURE_ALPHA64 = 7,
-        PROCESSOR_ARCHITECTURE_MSIL = 8,
-        PROCESSOR_ARCHITECTURE_AMD64 = 9,
-        PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 = 10,
+        Intel = 0,
+        Mips = 1,
+        Alpha = 2,
+        Ppc = 3,
+        Shx = 4,
+        Arm = 5,
+        Ia64 = 6,
+        Alpha64 = 7,
+        Msil = 8,
+        Amd64 = 9,
+        Ia32OnWin64 = 10,
     }
 
-    internal sealed class VS_FIXEDFILEINFO : TStruct
+    internal sealed class FixedFileInfo : TStruct
     {
-        public uint dwSignature;            /* e.g. 0xfeef04bd */
-        public uint dwStrucVersion;         /* e.g. 0x00000042 = "0.42" */
-        public uint dwFileVersionMS;        /* e.g. 0x00030075 = "3.75" */
-        public uint dwFileVersionLS;        /* e.g. 0x00000031 = "0.31" */
-        public uint dwProductVersionMS;     /* e.g. 0x00030010 = "3.10" */
-        public uint dwProductVersionLS;     /* e.g. 0x00000031 = "0.31" */
-        public uint dwFileFlagsMask;        /* = 0x3F for version "0.42" */
-        public uint dwFileFlags;            /* e.g. VFF_DEBUG | VFF_PRERELEASE */
-        public uint dwFileOS;               /* e.g. VOS_DOS_WINDOWS16 */
-        public uint dwFileType;             /* e.g. VFT_DRIVER */
-        public uint dwFileSubtype;          /* e.g. VFT2_DRV_KEYBOARD */
+        public uint Signature;            /* e.g. 0xfeef04bd */
+        public uint StrucVersion;         /* e.g. 0x00000042 = "0.42" */
+        public uint FileVersionMS;        /* e.g. 0x00030075 = "3.75" */
+        public uint FileVersionLS;        /* e.g. 0x00000031 = "0.31" */
+        public uint ProductVersionMS;     /* e.g. 0x00030010 = "3.10" */
+        public uint ProductVersionLS;     /* e.g. 0x00000031 = "0.31" */
+        public uint FileFlagsMask;        /* = 0x3F for version "0.42" */
+        public uint FileFlags;            /* e.g. VFF_DEBUG | VFF_PRERELEASE */
+        public uint FileOS;               /* e.g. VOS_DOS_WINDOWS16 */
+        public uint FileType;             /* e.g. VFT_DRIVER */
+        public uint FileSubtype;          /* e.g. VFT2_DRV_KEYBOARD */
 
         // Timestamps would be useful, but they're generally missing (0).
-        public uint dwFileDateMS;           /* e.g. 0 */
-        public uint dwFileDateLS;           /* e.g. 0 */
+        public uint FileDateMS;           /* e.g. 0 */
+        public uint FileDateLS;           /* e.g. 0 */
     }
 
 
-    internal sealed class MINIDUMP_LOCATION_DESCRIPTOR : TStruct
+    internal sealed class MinidumpLocationDescriptor : TStruct
     {
         public uint DataSize;
         public uint Rva;
     }
 
-    [TStructPack(4)]
-    internal sealed class MINIDUMP_MODULE : TStruct
+    [Pack(4)]
+    internal sealed class MinidumpModule : TStruct
     {
         public ulong Baseofimage;
         public uint SizeOfImage;
         public uint CheckSum;
         public uint TimeDateStamp;
         public uint ModuleNameRva;
-        public VS_FIXEDFILEINFO VersionInfo;
-        public MINIDUMP_LOCATION_DESCRIPTOR CvRecord;
-        public MINIDUMP_LOCATION_DESCRIPTOR MiscRecord;
+        public FixedFileInfo VersionInfo;
+        public MinidumpLocationDescriptor CvRecord;
+        public MinidumpLocationDescriptor MiscRecord;
         private ulong _reserved0;
         private ulong _reserved1;
     }
 
-    internal sealed class MINIDUMP_MEMORY_DESCRIPTOR : TStruct
+    internal sealed class MinidumpMemoryDescriptor : TStruct
     {
         public ulong StartOfMemoryRange;
-        public MINIDUMP_LOCATION_DESCRIPTOR Memory;
+        public MinidumpLocationDescriptor Memory;
 
     }
 
-    internal sealed class MINIDUMP_MEMORY_DESCRIPTOR64 : TStruct
+    internal sealed class MinidumpMemoryDescriptor64 : TStruct
     {
         public ulong StartOfMemoryRange;
         public ulong DataSize;

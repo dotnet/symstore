@@ -11,10 +11,17 @@ namespace Microsoft.SymbolStore.Client
 {
     public sealed class SymbolLocator
     {
-        private static string[] s_microsoftSymbolServerUrls = new string[] { "http://msdl.microsoft.com/download/symbols", "https://nuget.smbsrc.net", "http://referencesource.microsoft.com/symbols", "https://dotnet.myget.org/F/dotnet-core/symbols" };
-        private static ISymbolServer[] s_microsoftSymbolServers = s_microsoftSymbolServerUrls.Select(url => new WindowsSymbolSever(url)).Cast<ISymbolServer>().ToArray();
+        private static readonly string[] s_microsoftSymbolServerUrls = new string[]
+        {
+            "http://msdl.microsoft.com/download/symbols",
+            "https://nuget.smbsrc.net",
+            "http://referencesource.microsoft.com/symbols",
+            "https://dotnet.myget.org/F/dotnet-core/symbols"
+        };
 
-        private ISymbolServer[] _symbolServers;
+        private static readonly ISymbolServer[] s_microsoftSymbolServers = s_microsoftSymbolServerUrls.Select(url => new WindowsSymbolSever(url)).Cast<ISymbolServer>().ToArray();
+
+        private readonly ISymbolServer[] _symbolServers;
 
         public SymbolCache Cache { get; private set; }
         

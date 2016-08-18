@@ -42,14 +42,14 @@ namespace FileFormats.Minidump
         /// </summary>
         public PEFile Image { get { return _peFile.Value; } }
 
-        internal MinidumpLoadedImage(MINIDUMP_MODULE module, Reader virtualAddressReader, Reader reader)
+        internal MinidumpLoadedImage(MinidumpModule module, Reader virtualAddressReader, Reader reader)
         {
             BaseAddress = module.Baseofimage;
             ImageSize = module.SizeOfImage;
             CheckSum = module.CheckSum;
             TimeDateStamp = module.TimeDateStamp;
 
-            _peFile = new Lazy<PEFile>(() => new PEFile(virtualAddressReader.DataSource, BaseAddress));
+            _peFile = new Lazy<PEFile>(() => new PEFile(new RelativeAddressSpace(virtualAddressReader.DataSource, BaseAddress, virtualAddressReader.Length)));
             _moduleName = new Lazy<string>(() => reader.ReadCountedString(module.ModuleNameRva, Encoding.Unicode));
         }
     }

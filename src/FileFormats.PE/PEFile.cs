@@ -14,7 +14,6 @@ namespace FileFormats.PE
     public class PEFile
     {
         // PE file
-        private readonly ulong _position;
         private readonly IAddressSpace _fileAddressSpace;
         private readonly Reader _peHeaderReader;
         private readonly Lazy<ushort> _dosHeaderMagic;
@@ -29,14 +28,13 @@ namespace FileFormats.PE
         private const int PESignatureOffsetLocation = 0x3C;
         private const uint ExpectedPESignature = 0x00004550;    // PE00
 
-        public PEFile(IAddressSpace fileAddressSpace, ulong position = 0)
+        public PEFile(IAddressSpace fileAddressSpace)
         {
-            _position = position;
             _fileAddressSpace = fileAddressSpace;
             _peHeaderReader = new Reader(_fileAddressSpace);
-            _dosHeaderMagic = new Lazy<ushort>(() => _peHeaderReader.Read<ushort>(_position));
+            _dosHeaderMagic = new Lazy<ushort>(() => _peHeaderReader.Read<ushort>(0));
             _peHeaderOffset = new Lazy<uint>(ReadPEHeaderOffset);
-            _peSignature = new Lazy<uint>(() => _peHeaderReader.Read<uint>(_position + PEHeaderOffset));
+            _peSignature = new Lazy<uint>(() => _peHeaderReader.Read<uint>(PEHeaderOffset));
             _coffHeader = new Lazy<CoffFileHeader>(ReadCoffFileHeader);
             _peHeaderOptionalHeaderMagic = new Lazy<PEOptionalHeaderMagic>(ReadPEOptionalHeaderMagic);
             _peFileReader = new Lazy<Reader>(CreatePEFileReader);
@@ -56,19 +54,19 @@ namespace FileFormats.PE
         private uint ReadPEHeaderOffset()
         {
             HasValidDosSignature.CheckThrowing();
-            return _peHeaderReader.Read<uint>(_position + PESignatureOffsetLocation);
+            return _peHeaderReader.Read<uint>(PESignatureOffsetLocation);
         }
 
         private CoffFileHeader ReadCoffFileHeader()
         {
             HasValidPESignature.CheckThrowing();
-            return _peHeaderReader.Read<CoffFileHeader>(_position + PEHeaderOffset + 0x4);
+            return _peHeaderReader.Read<CoffFileHeader>(PEHeaderOffset + 0x4);
         }
 
         private PEOptionalHeaderMagic ReadPEOptionalHeaderMagic()
         {
             ulong offset = _peHeaderReader.SizeOf<CoffFileHeader>() + PEHeaderOffset + 0x4;
-            return _peHeaderReader.Read<PEOptionalHeaderMagic>(_position + offset);
+            return _peHeaderReader.Read<PEOptionalHeaderMagic>(offset);
         }
 
         private Reader CreatePEFileReader()
@@ -81,7 +79,7 @@ namespace FileFormats.PE
         private PEOptionalHeaderWindows ReadPEOptionalHeaderWindows()
         {
             ulong offset = FileReader.SizeOf<CoffFileHeader>() + PEHeaderOffset + 0x4;
-            return FileReader.Read<PEOptionalHeaderWindows>(_position + offset);
+            return FileReader.Read<PEOptionalHeaderWindows>(offset);
         }
 
         #region Validation Rules

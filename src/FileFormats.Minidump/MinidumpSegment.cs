@@ -31,24 +31,18 @@
             return VirtualAddress <= address && address < VirtualAddress + Size;
         }
 
-        internal static MinidumpSegment Create(MINIDUMP_MEMORY_DESCRIPTOR region)
+        internal MinidumpSegment(MinidumpMemoryDescriptor region)
         {
-            MinidumpSegment result = new MinidumpSegment();
-            result.FileOffset = region.Memory.Rva;
-            result.Size = region.Memory.DataSize;
-            result.VirtualAddress = region.StartOfMemoryRange;
-
-            return result;
+            FileOffset = region.Memory.Rva;
+            Size = region.Memory.DataSize;
+            VirtualAddress = region.StartOfMemoryRange;
         }
 
-        internal static MinidumpSegment Create(MINIDUMP_MEMORY_DESCRIPTOR64 region, ulong rva)
+        internal MinidumpSegment(MinidumpMemoryDescriptor64 region, ulong rva)
         {
-            MinidumpSegment result = new MinidumpSegment();
-            result.FileOffset = rva;
-            result.Size = region.DataSize;
-            result.VirtualAddress = region.StartOfMemoryRange;
-
-            return result;
+            FileOffset = rva;
+            Size = region.DataSize;
+            VirtualAddress = region.StartOfMemoryRange;
         }
     }
 }

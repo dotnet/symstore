@@ -14,9 +14,9 @@ namespace FileFormats.Minidump
         private readonly ulong _position;
         private readonly IAddressSpace _dataSource;
         private readonly Reader _dataSourceReader;
-        private readonly MINIDUMP_HEADER _header;
-        private readonly MINIDUMP_DIRECTORY[] _directory;
-        private readonly MINIDUMP_SYSTEM_INFO _systemInfo;
+        private readonly MinidumpHeader _header;
+        private readonly MinidumpDirectory[] _directory;
+        private readonly MinidumpSystemInfo _systemInfo;
         private readonly int _moduleListStream = -1;
         private readonly Lazy<List<MinidumpLoadedImage>> _loadedImages;
         private readonly Lazy<List<MinidumpSegment>> _memoryRanges;
@@ -34,23 +34,23 @@ namespace FileFormats.Minidump
             _position = position;
 
             Reader headerReader = new Reader(_dataSource);
-            _header = headerReader.Read<MINIDUMP_HEADER>(_position);
+            _header = headerReader.Read<MinidumpHeader>(_position);
             _header.IsSignatureValid.CheckThrowing();
 
             int systemIndex = -1;
-            _directory = new MINIDUMP_DIRECTORY[_header.NumberOfStreams];
+            _directory = new MinidumpDirectory[_header.NumberOfStreams];
             ulong streamPos = _position + _header.StreamDirectoryRva;
             for (int i = 0; i < _directory.Length; i++)
             {
-                _directory[i] = headerReader.Read<MINIDUMP_DIRECTORY>(ref streamPos);
+                _directory[i] = headerReader.Read<MinidumpDirectory>(ref streamPos);
 
                 var streamType = _directory[i].StreamType;
-                if (streamType == MINIDUMP_STREAM_TYPE.SystemInfoStream)
+                if (streamType == MinidumpStreamType.SystemInfoStream)
                 {
                     Debug.Assert(systemIndex == -1);
                     systemIndex = i;
                 }
-                else if (streamType == MINIDUMP_STREAM_TYPE.ModuleListStream)
+                else if (streamType == MinidumpStreamType.ModuleListStream)
                 {
                     Debug.Assert(_moduleListStream == -1);
                     _moduleListStream = i;
@@ -60,7 +60,7 @@ namespace FileFormats.Minidump
             if (systemIndex == -1)
                 throw new BadInputFormatException("Minidump does not contain a MINIDUMP_SYSTEM_INFO stream");
 
-            _systemInfo = headerReader.Read<MINIDUMP_SYSTEM_INFO>(_position + _directory[systemIndex].Rva);
+            _systemInfo = headerReader.Read<MinidumpSystemInfo>(_position + _directory[systemIndex].Rva);
 
             _dataSourceReader = new Reader(_dataSource, new LayoutManager().AddCrashDumpTypes(false, Is64Bit));
             _loadedImages = new Lazy<List<MinidumpLoadedImage>>(CreateLoadedImageList);
@@ -96,7 +96,7 @@ namespace FileFormats.Minidump
             get
             {
                 var arch = _systemInfo.ProcessorArchitecture;
-                return arch == ProcessorArchitecture.PROCESSOR_ARCHITECTURE_ALPHA64 || arch == ProcessorArchitecture.PROCESSOR_ARCHITECTURE_AMD64 || arch == ProcessorArchitecture.PROCESSOR_ARCHITECTURE_IA64;
+                return arch == ProcessorArchitecture.Alpha64 || arch == ProcessorArchitecture.Amd64 || arch == ProcessorArchitecture.Ia64;
             }
         }
 
@@ -110,7 +110,7 @@ namespace FileFormats.Minidump
             if (_moduleListStream == -1)
                 throw new BadInputFormatException("Minidump does not contain a ModuleStreamList in its directory.");
             
-            MINIDUMP_MODULE[] modules = _dataSourceReader.ReadCountedArray<MINIDUMP_MODULE>(_directory[_moduleListStream].Rva);
+            MinidumpModule[] modules = _dataSourceReader.ReadCountedArray<MinidumpModule>(_position + _directory[_moduleListStream].Rva);
             return new List<MinidumpLoadedImage>(modules.Select(module => new MinidumpLoadedImage(module, VirtualAddressReader, DataSourceReader)));
         }
 
@@ -118,29 +118,29 @@ namespace FileFormats.Minidump
         {
             List<MinidumpSegment> ranges = new List<MinidumpSegment>();
 
-            foreach (MINIDUMP_DIRECTORY item in _directory)
+            foreach (MinidumpDirectory item in _directory)
             {
-                if (item.StreamType == MINIDUMP_STREAM_TYPE.MemoryListStream)
+                if (item.StreamType == MinidumpStreamType.MemoryListStream)
                 {
-                    MINIDUMP_MEMORY_DESCRIPTOR[] memoryRegions = _dataSourceReader.ReadCountedArray<MINIDUMP_MEMORY_DESCRIPTOR>(item.Rva);
+                    MinidumpMemoryDescriptor[] memoryRegions = _dataSourceReader.ReadCountedArray<MinidumpMemoryDescriptor>(_position + item.Rva);
 
                     foreach (var region in memoryRegions)
                     {
-                        MinidumpSegment range = MinidumpSegment.Create(region);
+                        MinidumpSegment range = new MinidumpSegment(region);
                         ranges.Add(range);
                     }
 
                 }
-                else if (item.StreamType == MINIDUMP_STREAM_TYPE.Memory64ListStream)
+                else if (item.StreamType == MinidumpStreamType.Memory64ListStream)
                 {
                     ulong position = item.Rva;
                     ulong count = _dataSourceReader.Read<ulong>(ref position);
                     ulong rva = _dataSourceReader.Read<ulong>(ref position);
 
-                    MINIDUMP_MEMORY_DESCRIPTOR64[] memoryRegions = _dataSourceReader.ReadArray<MINIDUMP_MEMORY_DESCRIPTOR64>(position, checked((uint)count));
+                    MinidumpMemoryDescriptor64[] memoryRegions = _dataSourceReader.ReadArray<MinidumpMemoryDescriptor64>(position + _position, checked((uint)count));
                     foreach (var region in memoryRegions)
                     {
-                        MinidumpSegment range = MinidumpSegment.Create(region, rva);
+                        MinidumpSegment range = new MinidumpSegment(region, rva);
                         ranges.Add(range);
 
                         rva += region.DataSize;

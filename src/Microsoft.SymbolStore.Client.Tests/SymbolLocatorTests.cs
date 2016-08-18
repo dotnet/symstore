@@ -15,30 +15,18 @@ namespace Microsoft.SymbolStore.Client
         [Fact]
         public async void SymbolServerEndToEnd()
         {
+            ClearSymbolCache();
+
             SymbolLocator locator = new SymbolLocator(new SymbolCache(CacheLocation), new ISymbolServer[] { CreateWindowsSymbolServer() });
-
-            Task<string>[] tasks = new Task<string>[2];
-            tasks[0] = locator.FindPEFileAsync(PEFileName, PEFileTimestamp, PEFileSize);
-            tasks[1] = locator.FindPdbAsync(PDBFileName, PDBGuid, PDBAge);
-            
-            Task<string> result = await Task.WhenAny(tasks);
-
-            if (result == tasks[0])
-            {
-                ValidatePEFile(locator, result.Result);
-                ValidatePdb(locator, await tasks[1]);
-            }
-            else
-            {
-                ValidatePdb(locator, result.Result);
-                ValidatePEFile(locator, await tasks[0]);
-            }
+            await Task.WhenAll(ValidatePdb(locator), ValidatePEFile(locator));
 
             ClearSymbolCache();
         }
 
-        private void ValidatePdb(SymbolLocator locator, string path)
+        private async Task ValidatePdb(SymbolLocator locator)
         {
+            string path = await locator.FindPdbAsync(PDBFileName, PDBGuid, PDBAge);
+
             Assert.NotNull(path);
             Assert.True(File.Exists(path));
 
@@ -53,8 +41,9 @@ namespace Microsoft.SymbolStore.Client
             }
         }
 
-        private void ValidatePEFile(SymbolLocator locator, string path)
+        private async Task ValidatePEFile(SymbolLocator locator)
         {
+            string path = await locator.FindPEFileAsync(PEFileName, PEFileTimestamp, PEFileSize);
             Assert.NotNull(path);
             Assert.True(File.Exists(path));
 

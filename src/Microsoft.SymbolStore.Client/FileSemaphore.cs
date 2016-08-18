@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -42,7 +43,8 @@ namespace Microsoft.SymbolStore.Client
             
             ~LockedFile()
             {
-               Dispose(false);
+                Debug.Fail("We reached the destructor of locked file, we should have called dispose instead!");
+                Dispose(false);
             }
             
             public void Dispose()
@@ -61,17 +63,14 @@ namespace Microsoft.SymbolStore.Client
                 throw new DirectoryNotFoundException(di.FullName);
 
             string lockName = fullPath + ".sem";
-            while (true)
+            try
             {
-                try
-                {
-                    FileStream fs = File.Open(lockName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-                    return new LockedFile(lockName, fs);
-                }
-                catch (IOException)
-                {
-                    return null;
-                }
+                FileStream fs = File.Open(lockName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+                return new LockedFile(lockName, fs);
+            }
+            catch (IOException)
+            {
+                return null;
             }
         }
 
