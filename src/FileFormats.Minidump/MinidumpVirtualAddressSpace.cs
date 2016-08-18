@@ -26,7 +26,7 @@ namespace FileFormats.Minidump
             _addressSpace = addressSpace;
             _segments = segments;
             MinidumpSegment last = segments.Last();
-            _length = last.StartOfMemoryRange + last.Size;
+            _length = last.VirtualAddress + last.Size;
         }
 
         public uint Read(ulong position, byte[] buffer, uint bufferOffset, uint count)
@@ -39,8 +39,8 @@ namespace FileFormats.Minidump
                 return 0;
             
             // TODO: What if they read past the end of the segment?
-            Debug.Assert(position >= seg.StartOfMemoryRange);
-            ulong offset = position - seg.StartOfMemoryRange + seg.Rva;
+            Debug.Assert(position >= seg.VirtualAddress);
+            ulong offset = position - seg.VirtualAddress + seg.FileOffset;
             return _addressSpace.Read(offset, buffer, bufferOffset, count);
         }
 
@@ -54,11 +54,11 @@ namespace FileFormats.Minidump
                 int mid = (min + max) / 2;
                 MinidumpSegment current = _segments[mid];
 
-                if (position < current.StartOfMemoryRange)
+                if (position < current.VirtualAddress)
                 {
                     max = mid - 1;
                 }
-                else if (position >= current.StartOfMemoryRange + current.Size)
+                else if (position >= current.VirtualAddress + current.Size)
                 {
                     min = mid + 1;
                 }

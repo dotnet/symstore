@@ -70,11 +70,11 @@ namespace FileFormats.Minidump
             // for this test are all full dumps with all memory (including images) in them.
             foreach (var image in images)
             {
-                int count = memory.Where(m => m.StartOfMemoryRange <= image.BaseOfImage && image.BaseOfImage < m.StartOfMemoryRange + m.Size).Count();
+                int count = memory.Where(m => m.VirtualAddress <= image.BaseAddress && image.BaseAddress < m.VirtualAddress + m.Size).Count();
                 Assert.Equal(1, count);
                 
                 // Check the start of each image for the PE header 'MZ'
-                byte[] header = minidump.VirtualAddressReader.Read(image.BaseOfImage, 2);
+                byte[] header = minidump.VirtualAddressReader.Read(image.BaseAddress, 2);
                 Assert.Equal((byte)'M', header[0]);
                 Assert.Equal((byte)'Z', header[1]);
             }

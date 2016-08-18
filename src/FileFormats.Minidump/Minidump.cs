@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace FileFormats.Minidump
 {
+    /// <summary>
+    /// A class which represents a Minidump (Microsoft "crash dump").
+    /// </summary>
     public class Minidump
     {
         private readonly ulong _position;
@@ -19,6 +22,12 @@ namespace FileFormats.Minidump
         private readonly Lazy<List<MinidumpSegment>> _memoryRanges;
         private Lazy<Reader> _virtualAddressReader;
 
+        /// <summary>
+        /// Constructor.  This constructor will throw exceptions if the file is not a minidump or contains corrupted data
+        /// which interferes with parsing it.
+        /// </summary>
+        /// <param name="addressSpace">The memory which backs this object.</param>
+        /// <param name="position">The offset within addressSpace this minidump is located at.</param>
         public Minidump(IAddressSpace addressSpace, ulong position = 0)
         {
             _dataSource = addressSpace;
@@ -59,11 +68,29 @@ namespace FileFormats.Minidump
             _virtualAddressReader = new Lazy<Reader>(CreateVirtualAddressReader);
         }
 
+        /// <summary>
+        /// A raw data reader for the underlying minidump file itself.
+        /// </summary>
         public Reader DataSourceReader { get { return _dataSourceReader; } }
+
+        /// <summary>
+        /// A raw data reader for the memory in virtual address space of this minidump.
+        /// </summary>
         public Reader VirtualAddressReader { get { return _virtualAddressReader.Value; } }
+
+        /// <summary>
+        /// A collection of loaded images in the minidump.  This does NOT contain unloaded modules.
+        /// </summary>
         public ReadOnlyCollection<MinidumpLoadedImage> LoadedImages { get { return _loadedImages.Value.AsReadOnly(); } }
+
+        /// <summary>
+        /// A collection of all the memory segments in minidump.
+        /// </summary>
         public ReadOnlyCollection<MinidumpSegment> Segments { get { return _memoryRanges.Value.AsReadOnly(); } }
 
+        /// <summary>
+        /// Returns true if the original process represented by this minidump was running as an x64 process or not.
+        /// </summary>
         public bool Is64Bit
         {
             get
@@ -121,7 +148,7 @@ namespace FileFormats.Minidump
                 }
             }
 
-            ranges.Sort((MinidumpSegment a, MinidumpSegment b) => a.StartOfMemoryRange.CompareTo(b.StartOfMemoryRange));
+            ranges.Sort((MinidumpSegment a, MinidumpSegment b) => a.VirtualAddress.CompareTo(b.VirtualAddress));
             return ranges;
         }
     }
