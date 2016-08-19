@@ -12,7 +12,8 @@
   <Import Project="NuGet.props" />
 
   <PropertyGroup>
-    <ToolsetCompilerPropsFilePath>$(NuGetPackageRoot)\Microsoft.Net.Compilers\$(ToolsetCompilerPackageVersion)\build\Microsoft.Net.Compilers.props</ToolsetCompilerPropsFilePath>
+    <ToolsetCompilerPackageDir>$(NuGetPackageRoot)\Microsoft.Net.Compilers\$(ToolsetCompilerPackageVersion)</ToolsetCompilerPackageDir>
+    <ToolsetCompilerPropsFilePath>$(ToolsetCompilerPackageDir)\build\Microsoft.Net.Compilers.props</ToolsetCompilerPropsFilePath>
     <XUnitConsoleRunnerExeFilePath>$(NuGetPackageRoot)\xunit.runner.console\$(XUnitConsoleRunnerPackageVersion)\tools\xunit.console.x86.exe</XUnitConsoleRunnerExeFilePath>
   </PropertyGroup>
   

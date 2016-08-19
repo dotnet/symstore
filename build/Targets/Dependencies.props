@@ -1,6 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MicroBuildCoreVersion>0.2.0</MicroBuildCoreVersion>
+    <RoslynToolsMicrosoftSignToolVersion>0.2.0-beta</RoslynToolsMicrosoftSignToolVersion>
     <ToolsetCompilerPackageVersion>2.0.0-beta3-60616-03</ToolsetCompilerPackageVersion>
     <XUnitConsoleRunnerPackageVersion>2.1.0</XUnitConsoleRunnerPackageVersion>
   

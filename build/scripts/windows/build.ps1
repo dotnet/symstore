@@ -3,7 +3,7 @@ Param(
   [string] $configuration = "Debug",
   [string] $deployHive = "TestImpact",
   [string] $msbuildVersion = "14.0",
-  [string] $nugetVersion = "3.5.0-beta",
+  [string] $nugetVersion = "3.5.0-beta2",
   [switch] $help,
   [switch] $official,
   [switch] $skipBuild,
