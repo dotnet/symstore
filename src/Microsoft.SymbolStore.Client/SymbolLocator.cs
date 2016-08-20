@@ -53,25 +53,7 @@ namespace Microsoft.SymbolStore.Client
         {
             string fullPath = pdbName;
             pdbName = Path.GetFileName(pdbName);
-
-            // Does the PDB file exist on disk with the right criteria?  If so use it and don't archive
-            // it in the cache.  (This scenario is for developers hitting F5 on their machine.)
-            if (fullPath != pdbName && File.Exists(fullPath))
-            {
-                try
-                {
-                    using (FileStream fs = File.OpenRead(fullPath))
-                    {
-                        PDBFile pdb = new PDBFile(new StreamAddressSpace(fs));
-                        if (pdb.Signature == guid && pdb.Age == age)
-                            return fullPath;
-                    }
-                }
-                catch
-                {
-                }
-            }
-
+            
             // Check the cache for the file.
             string cachePath = Cache.GetPdbFromCache(pdbName, guid, age);
             if (cachePath != null)
@@ -117,10 +99,10 @@ namespace Microsoft.SymbolStore.Client
 
         private async Task<SymbolServerResult> SearchServers(Func<ISymbolServer, Task<SymbolServerResult>> getTask)
         {
-            IEnumerable<Task<SymbolServerResult>> tasks = _symbolServers.Where(server => server.PreferThisServer).Select(server => getTask(server));
+            IEnumerable<Task<SymbolServerResult>> tasks = _symbolServers.Where(server => server.PreferThisServer).Select(getTask);
             Task<SymbolServerResult> primaryResult = GetFirstNonNullResult(new List<Task<SymbolServerResult>>(tasks));
 
-            tasks = _symbolServers.Where(server => !server.PreferThisServer).Select(server => getTask(server));
+            tasks = _symbolServers.Where(server => !server.PreferThisServer).Select(getTask);
             Task<SymbolServerResult> secondaryResult = GetFirstNonNullResult(new List<Task<SymbolServerResult>>(tasks));
 
             return await primaryResult ?? await secondaryResult;
@@ -143,7 +125,7 @@ namespace Microsoft.SymbolStore.Client
 
         private Task<SymbolServerResult> SearchServers(Func<ISymbolServer, bool> predicate, Func<ISymbolServer, Task<SymbolServerResult>> getTask)
         {
-            var tasks = _symbolServers.Where(server => predicate(server)).Select(server => getTask(server));
+            var tasks = _symbolServers.Where(server => predicate(server)).Select(getTask);
             return GetFirstNonNullResult(new List<Task<SymbolServerResult>>(tasks));
         }
         

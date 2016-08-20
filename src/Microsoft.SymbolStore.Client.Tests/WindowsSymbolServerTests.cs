@@ -22,9 +22,6 @@ namespace Microsoft.SymbolStore.Client
         {
             // We should always be able to find 4.0 RTM on the public symbol server.
             WindowsSymbolSever server = CreateWindowsSymbolServer();
-
-            Assert.True(server.IsReachable());
-            Assert.True(server.IsRemoteServer);
             SymbolServerResult result = server.FindPdb(PDBFileName, PDBGuid, PDBAge);
             
             Assert.NotNull(result);
@@ -36,8 +33,6 @@ namespace Microsoft.SymbolStore.Client
         {
             // We should always be able to find 4.0 RTM on the public symbol server.
             WindowsSymbolSever server = CreateWindowsSymbolServer();
-
-            Assert.True(server.IsReachable());
             Assert.True(server.IsRemoteServer);
 
             SymbolServerResult result = server.FindPEFile(PEFileName, PEFileTimestamp, PEFileSize);

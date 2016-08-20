@@ -37,8 +37,6 @@ namespace Microsoft.SymbolStore.Client
         bool PreferThisServer { get; set; }
 
         bool IsRemoteServer { get; }
-        bool IsReachable();
-        bool IsReachable(int timeout);
         
         SymbolServerResult FindPEFile(string filename, int buildTimeStamp, int imageSize);
         Task<SymbolServerResult> FindPEFileAsync(string filename, int buildTimeStamp, int imageSize);
@@ -81,37 +79,7 @@ namespace Microsoft.SymbolStore.Client
             _path = path;
             _isServer = isServer;
         }
-
-        public bool IsReachable()
-        {
-            return IsReachable(700);
-        }
-
-        public bool IsReachable(int timeout)
-        {
-            try
-            {
-                string path = _path;
-                Uri uri = new Uri(path);
-                string host = uri.DnsSafeHost;
-
-                if (!_isServer)
-                    throw new InvalidOperationException("Cannot use IsReachable if this is not a remote server.");
-                Task<IPAddress[]> addresses = System.Net.Dns.GetHostAddressesAsync(uri.DnsSafeHost);
-
-                if (!addresses.Wait(700))
-                    return false;
-
-                IPAddress[] result = addresses.Result;
-                return result != null && result.Length > 0;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-
+        
         public SymbolServerResult FindPEFile(string filename, int buildTimeStamp, int imageSize)
         {
             return FindPEFileAsync(filename, buildTimeStamp, imageSize).Result;
