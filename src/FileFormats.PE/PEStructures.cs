@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace FileFormats.PE
@@ -97,14 +98,14 @@ namespace FileFormats.PE
 
     public class ImageDebugDirectory : TStruct
     {
-        public int Characteristics;
-        public int TimeDateStamp;
+        public uint Characteristics;
+        public uint TimeDateStamp;
         public short MajorVersion;
         public short MinorVersion;
         public ImageDebugType Type;
-        public int SizeOfData;
-        public int AddressOfRawData;
-        public int PointerToRawData;
+        public uint SizeOfData;
+        public uint AddressOfRawData;
+        public uint PointerToRawData;
     };
 
     public enum ImageDebugType
@@ -116,4 +117,27 @@ namespace FileFormats.PE
         Misc = 4,
         Bbt = 10,
     };
+
+    public class PESectionHeader : TStruct
+    {
+        [ArraySize(8)]
+        public byte[] Name;
+        public uint VirtualSize;
+        public uint VirtualAddress;
+        public uint SizeOfRawData;
+        public uint PointerToRawData;
+        public uint PointerToRelocations;
+        public uint PointerToLinenumbers;
+        public ushort NumberOfRelocations;
+        public ushort NumberOfLinenumbers;
+        public uint Characteristics;
+    }
+
+    internal class CV_INFO_PDB70 : TStruct
+    {
+        public const int PDB70CvSignature = 0x53445352; // RSDS in ascii
+        public int CvSignature;
+        public Guid Signature;
+        public int Age;
+    }
 }
