@@ -88,4 +88,32 @@ namespace FileFormats.PE
         public uint LoaderFlags;
         public uint NumberOfRvaAndSizes;
     }
+
+    public class PEImageDataDirectory : TStruct
+    {
+        public uint VirtualAddress;
+        public uint Size;
+    }
+
+    public class ImageDebugDirectory : TStruct
+    {
+        public int Characteristics;
+        public int TimeDateStamp;
+        public short MajorVersion;
+        public short MinorVersion;
+        public ImageDebugType Type;
+        public int SizeOfData;
+        public int AddressOfRawData;
+        public int PointerToRawData;
+    };
+
+    public enum ImageDebugType
+    {
+        Unknown = 0,
+        Coff = 1,
+        Codeview = 2,
+        Fpo = 3,
+        Misc = 4,
+        Bbt = 10,
+    };
 }

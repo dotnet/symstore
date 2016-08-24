@@ -5,9 +5,24 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
 
 namespace FileFormats.PE
 {
+    public class PEPdbRecord
+    {
+        public static string Path { get; private set; } 
+        public static Guid Signature { get; private set; }
+        public static int Age { get; private set; }
+
+        public PEPdbRecord(string path, Guid sig, int age)
+        {
+            Path = path;
+            Signature = sig;
+            Age = age;
+        }
+    }
+
     /// <summary>
     /// A very basic PE reader that can extract a few useful pieces of information
     /// </summary>
@@ -23,10 +38,15 @@ namespace FileFormats.PE
         private readonly Lazy<PEOptionalHeaderMagic> _peHeaderOptionalHeaderMagic;
         private readonly Lazy<Reader> _peFileReader;
         private readonly Lazy<PEOptionalHeaderWindows> _peOptionalHeader;
+        private readonly Lazy<List<PEImageDataDirectory>> _peImageDataDirectory;
+        private readonly Lazy<PEPdbRecord> _pdb;
 
         private const ushort ExpectedDosHeaderMagic = 0x5A4D;     // MZ
         private const int PESignatureOffsetLocation = 0x3C;
         private const uint ExpectedPESignature = 0x00004550;    // PE00
+        private const int DebugDataDirectoryOffset = 6;
+        private const int ComDataDirectoryOffset = 14;
+        private const int ImageDataDirectoryCount = 15;
 
         public PEFile(IAddressSpace fileAddressSpace)
         {
@@ -39,6 +59,8 @@ namespace FileFormats.PE
             _peHeaderOptionalHeaderMagic = new Lazy<PEOptionalHeaderMagic>(ReadPEOptionalHeaderMagic);
             _peFileReader = new Lazy<Reader>(CreatePEFileReader);
             _peOptionalHeader = new Lazy<PEOptionalHeaderWindows>(ReadPEOptionalHeaderWindows);
+            _peImageDataDirectory = new Lazy<List<PEImageDataDirectory>>(ReadImageDataDirectory);
+            _pdb = new Lazy<PEPdbRecord>(ReadPdbInfo);
         }
 
         public ushort DosHeaderMagic { get { return _dosHeaderMagic.Value; } }
@@ -50,6 +72,8 @@ namespace FileFormats.PE
         public Reader FileReader { get { return _peFileReader.Value; } }
         public PEOptionalHeaderWindows OptionalHeader { get { return _peOptionalHeader.Value; } }
         public uint SizeOfImage { get { return OptionalHeader.SizeOfImage; } }
+        public ReadOnlyCollection<PEImageDataDirectory> ImageDataDirectory { get { return _peImageDataDirectory.Value.AsReadOnly(); } }
+        public PEPdbRecord Pdb { get { return _pdb.Value; } }
 
         private uint ReadPEHeaderOffset()
         {
@@ -81,6 +105,30 @@ namespace FileFormats.PE
             ulong offset = FileReader.SizeOf<CoffFileHeader>() + PEHeaderOffset + 0x4;
             return FileReader.Read<PEOptionalHeaderWindows>(offset);
         }
+
+        private List<PEImageDataDirectory> ReadImageDataDirectory()
+        {
+            ulong offset = PEHeaderOffset + FileReader.SizeOf<CoffFileHeader>() + 0x4 + FileReader.SizeOf<PEOptionalHeaderWindows>();
+
+            PEImageDataDirectory[] result = _peHeaderReader.ReadArray<PEImageDataDirectory>(offset, ImageDataDirectoryCount);
+            return new List<PEImageDataDirectory>(result);
+        }
+
+        private PEPdbRecord ReadPdbInfo()
+        {
+            PEImageDataDirectory imageDebugDirectory = ImageDataDirectory[DebugDataDirectoryOffset];
+
+            uint size = FileReader.SizeOf<ImageDebugDirectory>();
+            uint count = size / imageDebugDirectory.Size;
+
+            ImageDebugDirectory[] debugDirectories = VirtualAddressReader.ReadArray<ImageDebugDirectory>(imageDebugDirectory.VirtualAddress, count);
+
+
+            return null;
+            // 0x00090c48
+            // 1c
+        }
+
 
         #region Validation Rules
         public ValidationRule HasValidDosSignature
