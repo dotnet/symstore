@@ -16,6 +16,7 @@ namespace FileFormats.PE
             .AddPrimitives(false)
             .AddEnumTypes()
             .AddSizeT(is64Bit ? 8 : 4)
+            .AddNullTerminatedString()
             .AddTStructTypes(is64Bit ? new string[] { "PE32+" } : new string[] { "PE32" });
         }
     }
@@ -137,7 +138,8 @@ namespace FileFormats.PE
     {
         public const int PDB70CvSignature = 0x53445352; // RSDS in ascii
         public int CvSignature;
-        public Guid Signature;
+        [ArraySize(16)]
+        public byte[] Signature;
         public int Age;
     }
 }

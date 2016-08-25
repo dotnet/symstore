@@ -12,9 +12,9 @@ namespace FileFormats.PE
 {
     public class PEPdbRecord
     {
-        public static string Path { get; private set; } 
-        public static Guid Signature { get; private set; }
-        public static int Age { get; private set; }
+        public string Path { get; private set; } 
+        public Guid Signature { get; private set; }
+        public int Age { get; private set; }
 
         public PEPdbRecord(string path, Guid sig, int age)
         {
@@ -34,7 +34,6 @@ namespace FileFormats.PE
         private readonly Reader _peHeaderReader;
         private readonly Lazy<ushort> _dosHeaderMagic;
         private readonly Lazy<CoffFileHeader> _coffHeader;
-        private readonly Lazy<uint> _peHeaderOffset;
         private readonly Lazy<uint> _peSignature;
         private readonly Lazy<PEOptionalHeaderMagic> _peHeaderOptionalHeaderMagic;
         private readonly Lazy<Reader> _peFileReader;
@@ -56,7 +55,7 @@ namespace FileFormats.PE
             _fileAddressSpace = fileAddressSpace;
             _peHeaderReader = new Reader(_fileAddressSpace);
             _dosHeaderMagic = new Lazy<ushort>(() => _peHeaderReader.Read<ushort>(0));
-            _peHeaderOffset = new Lazy<uint>(ReadPEHeaderOffset);
+            PEHeaderOffset = ReadPEHeaderOffset();
             _peSignature = new Lazy<uint>(() => _peHeaderReader.Read<uint>(PEHeaderOffset));
             _coffHeader = new Lazy<CoffFileHeader>(ReadCoffFileHeader);
             _peHeaderOptionalHeaderMagic = new Lazy<PEOptionalHeaderMagic>(ReadPEOptionalHeaderMagic);
@@ -69,7 +68,7 @@ namespace FileFormats.PE
         }
 
         public ushort DosHeaderMagic { get { return _dosHeaderMagic.Value; } }
-        public uint PEHeaderOffset { get { return _peHeaderOffset.Value; } }
+        public uint PEHeaderOffset { get; private set; }
         public uint PESignature { get { return _peSignature.Value; } }
         public CoffFileHeader CoffFileHeader { get { return _coffHeader.Value; } }
         public uint Timestamp { get { return CoffFileHeader.TimeDateStamp; } }
@@ -92,7 +91,7 @@ namespace FileFormats.PE
         {
             get
             {
-                return FileReader.SizeOf<CoffFileHeader>() + PEHeaderOffset + 0x4;
+                return _peHeaderReader.SizeOf<CoffFileHeader>() + PEHeaderOffset + 0x4;
             }
         }
 
@@ -141,12 +140,10 @@ namespace FileFormats.PE
         private PEPdbRecord ReadPdbInfo()
         {
             PEImageDataDirectory imageDebugDirectory = ImageDataDirectory[DebugDataDirectoryOffset];
-
-            uint size = FileReader.SizeOf<ImageDebugDirectory>();
-            uint count = size / imageDebugDirectory.Size;
+            
+            uint count = imageDebugDirectory.Size / FileReader.SizeOf<ImageDebugDirectory>();
 
             ImageDebugDirectory[] debugDirectories = VirtualAddressReader.ReadArray<ImageDebugDirectory>(imageDebugDirectory.VirtualAddress, count);
-
             IEnumerable<ImageDebugDirectory> codeViewDirectories = debugDirectories.Where(d => d.Type == ImageDebugType.Codeview);
 
             foreach (ImageDebugDirectory directory in codeViewDirectories)
@@ -155,9 +152,9 @@ namespace FileFormats.PE
                 CV_INFO_PDB70 pdb = VirtualAddressReader.Read<CV_INFO_PDB70>(ref position);
                 if (pdb.CvSignature != CV_INFO_PDB70.PDB70CvSignature)
                     continue;
-
+                
                 string filename = VirtualAddressReader.Read<string>(position);
-                return new PEPdbRecord(filename, pdb.Signature, pdb.Age);
+                return new PEPdbRecord(filename, new Guid(pdb.Signature), pdb.Age);
             }
 
             return null;
@@ -165,7 +162,7 @@ namespace FileFormats.PE
 
         private Reader CreateVirtualAddressReader()
         {
-            return _peFileReader.Value.WithAddressSpace(new PEPhysicalAddressSpace(_fileAddressSpace, 0, Segments));
+            return _peFileReader.Value.WithAddressSpace(new PEAddressSpace(_fileAddressSpace, 0, Segments));
         }
 
 
@@ -191,31 +188,45 @@ namespace FileFormats.PE
     }
 
 
-    public class PEPhysicalAddressSpace : PiecewiseAddressSpace
+    public class PEAddressSpace : IAddressSpace
     {
-        public PEPhysicalAddressSpace(IAddressSpace addressSpace, ulong baseAddress, IEnumerable<PESectionHeader> segments)
-            : base(segments.Select(segment => ToRange(addressSpace, baseAddress, segment)).ToArray())
-        {
+        private Lazy<ulong> _length;
+        private ReadOnlyCollection<PESectionHeader> _segments;
+        private ulong _baseAddress;
+        private IAddressSpace _addressSpace;
 
+        public ulong Length
+        {
+            get
+            {
+                return _length.Value;
+            }
         }
 
-        private static PiecewiseAddressSpaceRange ToRange(IAddressSpace virtualAddressSpace, ulong baseAddress, PESectionHeader segment)
+        public PEAddressSpace(IAddressSpace addressSpace, ulong baseAddress, ReadOnlyCollection<PESectionHeader> segments)
         {
-            long value = (long)(segment.PointerToRawData - (segment.VirtualAddress + baseAddress));
+            _length = new Lazy<ulong>(GetLength);
+            _segments = segments;
+            _baseAddress = baseAddress;
+            _addressSpace = addressSpace;
+        }
 
-            /*
-            ulong actualSegmentLoadAddress = segment.LoadCommand.VMAddress - preferredVMBaseAddress + baseLoadAddress;
-            return new PiecewiseAddressSpaceRange()
-            {
-                AddressSpace = new RelativeAddressSpace(virtualAddressSpace, actualSegmentLoadAddress, segment.LoadCommand.FileSize,
-                                                            (long)(segment.LoadCommand.FileOffset - actualSegmentLoadAddress)),
-                */
-            return new PiecewiseAddressSpaceRange()
-            {
-                AddressSpace = new RelativeAddressSpace(virtualAddressSpace, baseAddress, segment.VirtualSize, (long)(segment.PointerToRawData - (segment.VirtualAddress + baseAddress))),
-                Start = segment.PointerToRawData,
-                Length = segment.SizeOfRawData
-            };
+
+
+        public uint Read(ulong position, byte[] buffer, uint bufferOffset, uint count)
+        {
+            PESectionHeader segment = _segments.Where(header => header.VirtualAddress <= position && position <= header.VirtualAddress + header.VirtualSize).FirstOrDefault();
+            if (segment == null)
+                return 0;
+
+            ulong offset = _baseAddress + position - segment.VirtualAddress + segment.PointerToRawData;
+            uint result = _addressSpace.Read(offset, buffer, bufferOffset, count);
+            return result;
+        }
+
+        private ulong GetLength()
+        {
+            return _segments.Max(seg => seg.VirtualAddress + seg.VirtualSize);
         }
     }
 }
