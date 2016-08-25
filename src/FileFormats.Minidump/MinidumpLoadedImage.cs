@@ -48,9 +48,9 @@ namespace FileFormats.Minidump
         /// </summary>
         public PEFile Image { get { return _peFile.Value; } }
 
-        public uint Major { get { return _module.VersionInfo.FileVersionMS >> 4; } }
+        public uint Major { get { return _module.VersionInfo.FileVersionMS >> 16; } }
         public uint Minor { get { return _module.VersionInfo.FileVersionMS & 0xffff; } }
-        public uint Revision { get { return _module.VersionInfo.FileVersionLS >> 4; } }
+        public uint Revision { get { return _module.VersionInfo.FileVersionLS >> 16; } }
         public uint Patch { get { return _module.VersionInfo.FileVersionLS & 0xffff; } }
 
         internal MinidumpLoadedImage(Minidump minidump, MinidumpModule module)
