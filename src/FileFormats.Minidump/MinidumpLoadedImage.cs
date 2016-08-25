@@ -6,30 +6,36 @@ namespace FileFormats.Minidump
 {
     public class MinidumpLoadedImage
     {
+        private readonly MinidumpModule _module;
         private readonly Lazy<PEFile> _peFile;
         private readonly Lazy<string> _moduleName;
 
         /// <summary>
+        /// The minidump containing this loaded image.
+        /// </summary>
+        public Minidump Minidump { get; private set; }
+
+        /// <summary>
         /// The base address in the minidump's virtual address space that this image is mapped.
         /// </summary>
-        public ulong BaseAddress { get; private set; }
+        public ulong BaseAddress { get { return _module.Baseofimage; } }
 
         /// <summary>
         /// The checksum of this image.
         /// </summary>
-        public uint CheckSum { get; private set; }
+        public uint CheckSum { get { return _module.CheckSum; } }
 
         /// <summary>
         /// The TimeDateStame of this image, as baked into the PE header.  This value is used
         /// for symbol sever requests to obtain a PE image.
         /// </summary>
-        public uint TimeDateStamp { get; private set; }
+        public uint TimeDateStamp { get { return _module.TimeDateStamp; } }
 
         /// <summary>
         /// The compile time size of this PE image as it is baked into the PE header.  This
         /// value is used for simple server requests to obtain a PE image.
         /// </summary>
-        public uint ImageSize { get; private set; }
+        public uint ImageSize { get { return _module.SizeOfImage; } }
 
 
         /// <summary>
@@ -42,15 +48,27 @@ namespace FileFormats.Minidump
         /// </summary>
         public PEFile Image { get { return _peFile.Value; } }
 
-        internal MinidumpLoadedImage(MinidumpModule module, Reader virtualAddressReader, Reader reader)
-        {
-            BaseAddress = module.Baseofimage;
-            ImageSize = module.SizeOfImage;
-            CheckSum = module.CheckSum;
-            TimeDateStamp = module.TimeDateStamp;
+        public uint Major { get { return _module.VersionInfo.FileVersionMS >> 4; } }
+        public uint Minor { get { return _module.VersionInfo.FileVersionMS & 0xffff; } }
+        public uint Revision { get { return _module.VersionInfo.FileVersionLS >> 4; } }
+        public uint Patch { get { return _module.VersionInfo.FileVersionLS & 0xffff; } }
 
-            _peFile = new Lazy<PEFile>(() => new PEFile(new RelativeAddressSpace(virtualAddressReader.DataSource, BaseAddress, virtualAddressReader.Length), true));
-            _moduleName = new Lazy<string>(() => reader.ReadCountedString(module.ModuleNameRva, Encoding.Unicode));
+        internal MinidumpLoadedImage(Minidump minidump, MinidumpModule module)
+        {
+            Minidump = minidump;
+            _module = module;
+            _peFile = new Lazy<PEFile>(CreatePEFile);
+            _moduleName = new Lazy<string>(GetModuleName);
+        }
+
+        private PEFile CreatePEFile()
+        {
+            return new PEFile(new RelativeAddressSpace(Minidump.VirtualAddressReader.DataSource, BaseAddress, Minidump.VirtualAddressReader.Length), true);
+        }
+
+        private string GetModuleName()
+        {
+            return Minidump.DataSourceReader.ReadCountedString(_module.ModuleNameRva, Encoding.Unicode);
         }
     }
 }

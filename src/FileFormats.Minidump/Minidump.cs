@@ -69,6 +69,11 @@ namespace FileFormats.Minidump
         }
 
         /// <summary>
+        /// Returns the architecture of the target process.
+        /// </summary>
+        public ProcessorArchitecture Architecture { get { return _systemInfo.ProcessorArchitecture; } }
+
+        /// <summary>
         /// A raw data reader for the underlying minidump file itself.
         /// </summary>
         public Reader DataSourceReader { get { return _dataSourceReader; } }
@@ -111,7 +116,7 @@ namespace FileFormats.Minidump
                 throw new BadInputFormatException("Minidump does not contain a ModuleStreamList in its directory.");
             
             MinidumpModule[] modules = _dataSourceReader.ReadCountedArray<MinidumpModule>(_position + _directory[_moduleListStream].Rva);
-            return new List<MinidumpLoadedImage>(modules.Select(module => new MinidumpLoadedImage(module, VirtualAddressReader, DataSourceReader)));
+            return new List<MinidumpLoadedImage>(modules.Select(module => new MinidumpLoadedImage(this, module)));
         }
 
         private List<MinidumpSegment> CreateSegmentList()
