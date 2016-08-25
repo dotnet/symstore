@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FileFormats.PE
 {
@@ -15,6 +12,7 @@ namespace FileFormats.PE
             .AddPrimitives(false)
             .AddEnumTypes()
             .AddSizeT(is64Bit ? 8 : 4)
+            .AddNullTerminatedString()
             .AddTStructTypes(is64Bit ? new string[] { "PE32+" } : new string[] { "PE32" });
         }
     }
@@ -87,5 +85,57 @@ namespace FileFormats.PE
         public SizeT SizeOfHeapCommit;
         public uint LoaderFlags;
         public uint NumberOfRvaAndSizes;
+    }
+
+    public class PEImageDataDirectory : TStruct
+    {
+        public uint VirtualAddress;
+        public uint Size;
+    }
+
+    public class ImageDebugDirectory : TStruct
+    {
+        public uint Characteristics;
+        public uint TimeDateStamp;
+        public short MajorVersion;
+        public short MinorVersion;
+        public ImageDebugType Type;
+        public uint SizeOfData;
+        public uint AddressOfRawData;
+        public uint PointerToRawData;
+    };
+
+    public enum ImageDebugType
+    {
+        Unknown = 0,
+        Coff = 1,
+        Codeview = 2,
+        Fpo = 3,
+        Misc = 4,
+        Bbt = 10,
+    };
+
+    public class PESectionHeader : TStruct
+    {
+        [ArraySize(8)]
+        public byte[] Name;
+        public uint VirtualSize;
+        public uint VirtualAddress;
+        public uint SizeOfRawData;
+        public uint PointerToRawData;
+        public uint PointerToRelocations;
+        public uint PointerToLinenumbers;
+        public ushort NumberOfRelocations;
+        public ushort NumberOfLinenumbers;
+        public uint Characteristics;
+    }
+
+    internal class CvInfoPdb70 : TStruct
+    {
+        public const int PDB70CvSignature = 0x53445352; // RSDS in ascii
+        public int CvSignature;
+        [ArraySize(16)]
+        public byte[] Signature;
+        public int Age;
     }
 }

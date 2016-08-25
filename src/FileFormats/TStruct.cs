@@ -40,6 +40,17 @@ namespace FileFormats
     {
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
+    public class PackAttribute : Attribute
+    {
+        public uint Pack { get; private set; }
+
+        public PackAttribute(uint pack)
+        {
+            Pack = pack;
+        }
+    }
+
     /// <summary>
     /// TLayouts expose one of these for each field that's mapped to the input
     /// </summary>
@@ -147,14 +158,18 @@ namespace FileFormats
             {
                 enabledDefines = Array.Empty<string>();
             }
-            FieldInfo[] reflectionFields = tStructType.GetTypeInfo().GetFields(
-                BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            TypeInfo typeInfo = tStructType.GetTypeInfo();
+
+            PackAttribute pack = typeInfo.GetCustomAttributes().Where(attr => attr is PackAttribute).Cast<PackAttribute>().SingleOrDefault();
+
+            FieldInfo[] reflectionFields = typeInfo.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             reflectionFields = reflectionFields.OrderBy(f => f.MetadataToken).ToArray();
             reflectionFields = reflectionFields.Where(f => !f.DeclaringType.Equals(typeof(TStruct))).ToArray();
             reflectionFields = reflectionFields.Where(f => IsFieldIncludedInDefines(f, enabledDefines)).ToArray();
             TField[] tFields = new TField[reflectionFields.Length];
 
-            uint alignCeiling = 8;
+            uint alignCeiling = pack?.Pack ?? 8;
             uint biggestAlignmentSoFar = 1;
             uint curOffset = 0;
 
