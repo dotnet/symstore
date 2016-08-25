@@ -49,7 +49,7 @@ namespace FileFormats.Minidump
             CheckSum = module.CheckSum;
             TimeDateStamp = module.TimeDateStamp;
 
-            _peFile = new Lazy<PEFile>(() => new PEFile(new RelativeAddressSpace(virtualAddressReader.DataSource, BaseAddress, virtualAddressReader.Length)));
+            _peFile = new Lazy<PEFile>(() => new PEFile(new RelativeAddressSpace(virtualAddressReader.DataSource, BaseAddress, virtualAddressReader.Length), true));
             _moduleName = new Lazy<string>(() => reader.ReadCountedString(module.ModuleNameRva, Encoding.Unicode));
         }
     }

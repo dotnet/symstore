@@ -5,6 +5,7 @@ using TestHelpers;
 using Xunit;
 using System.Collections.ObjectModel;
 using System;
+using FileFormats.PE;
 
 namespace FileFormats.Minidump
 {
@@ -13,6 +14,31 @@ namespace FileFormats.Minidump
         const string x86Dump = "TestBinaries/minidump_x86.dmp.gz";
         const string x64Dump = "TestBinaries/minidump_x64.dmp.gz";
 
+        readonly Guid x64ClrGuid = new Guid("e18d6461-eb4f-49a6-b418-e9af91007a21");
+        readonly Guid x86ClrGuid = new Guid("df1e3528-29be-4d0e-9457-4c8ccfdc278a");
+        const int ClrAge = 2;
+        const string ClrPdb = "clr.pdb";
+
+        [Fact]
+        public void CheckPdbInfo()
+        {
+            using (Stream stream = GetCrashDump(x86Dump))
+                CheckPdbInfo(GetMinidumpFromStream(stream), x86ClrGuid);
+
+            using (Stream stream = GetCrashDump(x64Dump))
+                CheckPdbInfo(GetMinidumpFromStream(stream), x64ClrGuid);
+        }
+
+        private void CheckPdbInfo(Minidump minidump, Guid guid)
+        {
+            PEFile image = minidump.LoadedImages.Where(i => i.ModuleName.EndsWith(@"\clr.dll")).Single().Image;
+            PEPdbRecord pdb = image.Pdb;
+
+            Assert.NotNull(pdb);
+            Assert.Equal(ClrPdb, pdb.Path);
+            Assert.Equal(ClrAge, pdb.Age);
+            Assert.Equal(guid, pdb.Signature);
+        }
 
         [Fact]
         public void CheckModuleNames()
