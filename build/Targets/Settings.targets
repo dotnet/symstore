@@ -4,4 +4,12 @@
   <Import Project="Version.props" />
   <Import Project="Dependencies.props" />
   <Import Project="..\Toolset\DefaultSettings.targets" />
+
+  <PropertyGroup>
+    <!-- 
+    Suppress generating TFA so that projects targeting Portable Profile7 can reference the dll
+    (see https://github.com/dotnet/roslyn/issues/11067).
+    -->
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>
 </Project>
