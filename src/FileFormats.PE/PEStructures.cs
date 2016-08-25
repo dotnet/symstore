@@ -130,7 +130,7 @@ namespace FileFormats.PE
         public uint Characteristics;
     }
 
-    internal class CV_INFO_PDB70 : TStruct
+    internal class CvInfoPdb70 : TStruct
     {
         public const int PDB70CvSignature = 0x53445352; // RSDS in ascii
         public int CvSignature;

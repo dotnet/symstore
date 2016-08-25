@@ -17,7 +17,7 @@ namespace FileFormats.PE
     {
         // PE file
         private readonly IAddressSpace _fileAddressSpace;
-        private readonly bool _isDataSourceVirtualAddressSpace;
+        private readonly bool _isDataSourceRVASpace;
         private readonly Reader _peHeaderReader;
         private readonly Lazy<ushort> _dosHeaderMagic;
         private readonly Lazy<CoffFileHeader> _coffHeader;
@@ -37,9 +37,9 @@ namespace FileFormats.PE
         private const int ComDataDirectoryOffset = 14;
         private const int ImageDataDirectoryCount = 15;
 
-        public PEFile(IAddressSpace fileAddressSpace, bool isDataSourceVirtualAddressSpace=false)
+        public PEFile(IAddressSpace fileAddressSpace, bool isDataSourceRVASpace=false)
         {
-            _isDataSourceVirtualAddressSpace = isDataSourceVirtualAddressSpace;
+            _isDataSourceRVASpace = isDataSourceRVASpace;
             _fileAddressSpace = fileAddressSpace;
             _peHeaderReader = new Reader(_fileAddressSpace);
             _dosHeaderMagic = new Lazy<ushort>(() => _peHeaderReader.Read<ushort>(0));
@@ -66,7 +66,7 @@ namespace FileFormats.PE
         public uint SizeOfImage { get { return OptionalHeader.SizeOfImage; } }
         public ReadOnlyCollection<PEImageDataDirectory> ImageDataDirectory { get { return _peImageDataDirectory.Value.AsReadOnly(); } }
         public PEPdbRecord Pdb { get { return _pdb.Value; } }
-        public Reader VirtualAddressReader { get { return _virtualAddressReader.Value; } }
+        public Reader RelativeVirtualAddressReader { get { return _virtualAddressReader.Value; } }
         public ReadOnlyCollection<PESectionHeader> Segments { get { return _segments.Value.AsReadOnly(); } }
 
         private uint ReadPEHeaderOffset()
@@ -120,7 +120,7 @@ namespace FileFormats.PE
 
         private List<PESectionHeader> ReadPESectionHeaders()
         {
-            ulong offset = PEHeaderOffset + _peHeaderReader.SizeOf<CoffFileHeader>() + 0x4 + CoffFileHeader.SizeOfOptionalHeader;
+            ulong offset = PEOptionalHeaderOffset + CoffFileHeader.SizeOfOptionalHeader;
             List<PESectionHeader> result = new List<PESectionHeader>(_peHeaderReader.ReadArray<PESectionHeader>(offset, CoffFileHeader.NumberOfSections));
             return result;
         }
@@ -131,17 +131,17 @@ namespace FileFormats.PE
             
             uint count = imageDebugDirectory.Size / FileReader.SizeOf<ImageDebugDirectory>();
 
-            ImageDebugDirectory[] debugDirectories = VirtualAddressReader.ReadArray<ImageDebugDirectory>(imageDebugDirectory.VirtualAddress, count);
+            ImageDebugDirectory[] debugDirectories = RelativeVirtualAddressReader.ReadArray<ImageDebugDirectory>(imageDebugDirectory.VirtualAddress, count);
             IEnumerable<ImageDebugDirectory> codeViewDirectories = debugDirectories.Where(d => d.Type == ImageDebugType.Codeview);
 
             foreach (ImageDebugDirectory directory in codeViewDirectories)
             {
                 ulong position = directory.AddressOfRawData;
-                CV_INFO_PDB70 pdb = VirtualAddressReader.Read<CV_INFO_PDB70>(ref position);
-                if (pdb.CvSignature != CV_INFO_PDB70.PDB70CvSignature)
+                CvInfoPdb70 pdb = RelativeVirtualAddressReader.Read<CvInfoPdb70>(ref position);
+                if (pdb.CvSignature != CvInfoPdb70.PDB70CvSignature)
                     continue;
                 
-                string filename = VirtualAddressReader.Read<string>(position);
+                string filename = RelativeVirtualAddressReader.Read<string>(position);
                 return new PEPdbRecord(filename, new Guid(pdb.Signature), pdb.Age);
             }
 
@@ -150,7 +150,7 @@ namespace FileFormats.PE
 
         private Reader CreateVirtualAddressReader()
         {
-            if (!_isDataSourceVirtualAddressSpace)
+            if (!_isDataSourceRVASpace)
                 return _peFileReader.Value.WithAddressSpace(new PEAddressSpace(_fileAddressSpace, 0, Segments));
             else
                 return _peFileReader.Value;
