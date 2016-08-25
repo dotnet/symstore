@@ -31,6 +31,7 @@ namespace FileFormats.PE
     {
         // PE file
         private readonly IAddressSpace _fileAddressSpace;
+        private readonly bool _isDataSourceVirtualAddressSpace;
         private readonly Reader _peHeaderReader;
         private readonly Lazy<ushort> _dosHeaderMagic;
         private readonly Lazy<CoffFileHeader> _coffHeader;
@@ -50,8 +51,9 @@ namespace FileFormats.PE
         private const int ComDataDirectoryOffset = 14;
         private const int ImageDataDirectoryCount = 15;
 
-        public PEFile(IAddressSpace fileAddressSpace)
+        public PEFile(IAddressSpace fileAddressSpace, bool isDataSourceVirtualAddressSpace=false)
         {
+            _isDataSourceVirtualAddressSpace = isDataSourceVirtualAddressSpace;
             _fileAddressSpace = fileAddressSpace;
             _peHeaderReader = new Reader(_fileAddressSpace);
             _dosHeaderMagic = new Lazy<ushort>(() => _peHeaderReader.Read<ushort>(0));
@@ -132,8 +134,8 @@ namespace FileFormats.PE
 
         private List<PESectionHeader> ReadPESectionHeaders()
         {
-            ulong offset = PEOptionalHeaderOffset + CoffFileHeader.SizeOfOptionalHeader;
-            List<PESectionHeader> result = new List<PESectionHeader>(FileReader.ReadArray<PESectionHeader>(offset, CoffFileHeader.NumberOfSections));
+            ulong offset = PEHeaderOffset + _peHeaderReader.SizeOf<CoffFileHeader>() + 0x4 + CoffFileHeader.SizeOfOptionalHeader;
+            List<PESectionHeader> result = new List<PESectionHeader>(_peHeaderReader.ReadArray<PESectionHeader>(offset, CoffFileHeader.NumberOfSections));
             return result;
         }
 
@@ -162,7 +164,10 @@ namespace FileFormats.PE
 
         private Reader CreateVirtualAddressReader()
         {
-            return _peFileReader.Value.WithAddressSpace(new PEAddressSpace(_fileAddressSpace, 0, Segments));
+            if (!_isDataSourceVirtualAddressSpace)
+                return _peFileReader.Value.WithAddressSpace(new PEAddressSpace(_fileAddressSpace, 0, Segments));
+            else
+                return _peFileReader.Value;
         }
 
 
