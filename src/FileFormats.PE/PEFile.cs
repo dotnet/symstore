@@ -10,20 +10,6 @@ using System.Linq;
 
 namespace FileFormats.PE
 {
-    public class PEPdbRecord
-    {
-        public string Path { get; private set; } 
-        public Guid Signature { get; private set; }
-        public int Age { get; private set; }
-
-        public PEPdbRecord(string path, Guid sig, int age)
-        {
-            Path = path;
-            Signature = sig;
-            Age = age;
-        }
-    }
-
     /// <summary>
     /// A very basic PE reader that can extract a few useful pieces of information
     /// </summary>
