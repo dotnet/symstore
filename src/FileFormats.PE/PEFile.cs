@@ -33,8 +33,6 @@ namespace FileFormats.PE
         private const ushort ExpectedDosHeaderMagic = 0x5A4D;     // MZ
         private const int PESignatureOffsetLocation = 0x3C;
         private const uint ExpectedPESignature = 0x00004550;    // PE00
-        private const int DebugDataDirectoryOffset = 6;
-        private const int ComDataDirectoryOffset = 14;
         private const int ImageDataDirectoryCount = 15;
 
         public PEFile(IAddressSpace fileAddressSpace, bool isDataSourceRVASpace=false)
@@ -68,6 +66,13 @@ namespace FileFormats.PE
         public PEPdbRecord Pdb { get { return _pdb.Value; } }
         public Reader RelativeVirtualAddressReader { get { return _virtualAddressReader.Value; } }
         public ReadOnlyCollection<PESectionHeader> Segments { get { return _segments.Value.AsReadOnly(); } }
+
+        public bool IsILImage { get { return ComDataDirectory.VirtualAddress != 0; } }
+
+        /// <summary>
+        /// The COM data directory.  In practice this is the metadata of an IL image.
+        /// </summary>
+        public PEImageDataDirectory ComDataDirectory { get { return ImageDataDirectory[(int)PEDirectories.ComDescriptor]; } }
 
         private uint ReadPEHeaderOffset()
         {
@@ -127,7 +132,7 @@ namespace FileFormats.PE
 
         private PEPdbRecord ReadPdbInfo()
         {
-            PEImageDataDirectory imageDebugDirectory = ImageDataDirectory[DebugDataDirectoryOffset];
+            PEImageDataDirectory imageDebugDirectory = ImageDataDirectory[(int)PEDirectories.Debug];
             
             uint count = imageDebugDirectory.Size / FileReader.SizeOf<ImageDebugDirectory>();
 

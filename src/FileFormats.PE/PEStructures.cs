@@ -138,4 +138,23 @@ namespace FileFormats.PE
         public byte[] Signature;
         public int Age;
     }
+
+    public enum PEDirectories
+    {
+        Export = 0,
+        Import = 1,
+        Resource = 2,
+        Exception = 3,
+        Certificates = 4,
+        BaseRelocation = 5,
+        Debug = 6,
+        Architecture = 7,
+        GlobalPointers = 8,
+        ThreadStorage = 9,
+        LoadConfiguration = 10,
+        BoundImport = 11,
+        ImportAddress = 12,
+        DelayImport = 13,
+        ComDescriptor = 14
+    }
 }

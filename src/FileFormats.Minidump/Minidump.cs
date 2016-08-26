@@ -23,6 +23,19 @@ namespace FileFormats.Minidump
         private Lazy<Reader> _virtualAddressReader;
 
         /// <summary>
+        /// Returns true if the given address space is a minidump.
+        /// </summary>
+        /// <param name="addressSpace">The address space to check.</param>
+        /// <param name="position">The position of the minidump.</param>
+        /// <returns>True if the address space is a minidump, false otherwise.</returns>
+        public static bool IsValidMinidump(IAddressSpace addressSpace, ulong position = 0)
+        {
+            Reader headerReader = new Reader(addressSpace);
+            MinidumpHeader header = headerReader.Read<MinidumpHeader>(position);
+            return header.IsSignatureValid.Check();
+        }
+
+        /// <summary>
         /// Constructor.  This constructor will throw exceptions if the file is not a minidump or contains corrupted data
         /// which interferes with parsing it.
         /// </summary>
@@ -69,6 +82,11 @@ namespace FileFormats.Minidump
         }
 
         /// <summary>
+        /// Returns the architecture of the target process.
+        /// </summary>
+        public ProcessorArchitecture Architecture { get { return _systemInfo.ProcessorArchitecture; } }
+
+        /// <summary>
         /// A raw data reader for the underlying minidump file itself.
         /// </summary>
         public Reader DataSourceReader { get { return _dataSourceReader; } }
@@ -111,7 +129,7 @@ namespace FileFormats.Minidump
                 throw new BadInputFormatException("Minidump does not contain a ModuleStreamList in its directory.");
             
             MinidumpModule[] modules = _dataSourceReader.ReadCountedArray<MinidumpModule>(_position + _directory[_moduleListStream].Rva);
-            return new List<MinidumpLoadedImage>(modules.Select(module => new MinidumpLoadedImage(module, VirtualAddressReader, DataSourceReader)));
+            return new List<MinidumpLoadedImage>(modules.Select(module => new MinidumpLoadedImage(this, module)));
         }
 
         private List<MinidumpSegment> CreateSegmentList()

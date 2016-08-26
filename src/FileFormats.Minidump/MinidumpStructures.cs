@@ -92,7 +92,7 @@ namespace FileFormats.Minidump
         public uint CSDVersionRva;
     }
 
-    internal enum ProcessorArchitecture : ushort
+    public enum ProcessorArchitecture : ushort
     {
         Intel = 0,
         Mips = 1,
