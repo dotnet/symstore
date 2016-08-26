@@ -17,6 +17,7 @@ namespace FileFormats.Tests
             Assert.Equal((uint)0x08070605, reader.Read<uint>(4));
         }
 
+#pragma warning disable 0649
         private class SimpleStruct : TStruct
         {
             public int X;
