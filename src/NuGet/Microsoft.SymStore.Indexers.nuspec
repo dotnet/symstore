@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.SymStore.Indexers</id>
+    <summary>Tooling to pull symstore indexes from various file formats</summary>
+    <description>
+        Contains tools to gather symstore indexing information from ELF, MachO, PE, and PDB files
+    </description>
+    <dependencies>
+      <group targetFramework="netstandard1.5">
+        <dependency id="NETStandard.Library" version="1.6.0" />
+      </group>
+    </dependencies>
+    <language>en-US</language>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkId=394369</licenseUrl>
+    <projectUrl>https://github.com/dotnet/symstore</projectUrl>
+    <releaseNotes>Tooling to pull symstore indexes from various file formats</releaseNotes>
+    <tags>Symbol Storage debugging</tags>
+    <serviceable>true</serviceable>
+  </metadata>
+  <files>
+    <file src="$BinDir$FileFormats\FileFormats.dll" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats\FileFormats.xml" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats\FileFormats.pdb" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.ELF\FileFormats.ELF.dll" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.ELF\FileFormats.ELF.xml" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.ELF\FileFormats.ELF.pdb" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.MachO\FileFormats.MachO.dll" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.MachO\FileFormats.MachO.xml" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.MachO\FileFormats.MachO.pdb" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.PDB\FileFormats.PDB.dll" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.PDB\FileFormats.PDB.xml" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.PDB\FileFormats.PDB.pdb" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.PE\FileFormats.PE.dll" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.PE\FileFormats.PE.xml" target="lib\netstandard1.5" />
+    <file src="$BinDir$FileFormats.PE\FileFormats.PE.pdb" target="lib\netstandard1.5" />
+  </files>
+</package>
