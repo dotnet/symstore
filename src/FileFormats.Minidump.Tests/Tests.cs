@@ -19,6 +19,30 @@ namespace FileFormats.Minidump
         const int ClrAge = 2;
         const string ClrPdb = "clr.pdb";
 
+
+        [Fact]
+        public void CheckIsMinidump()
+        {
+            using (Stream stream = GetCrashDump(x86Dump))
+            {
+                Assert.True(Minidump.IsValidMinidump(new StreamAddressSpace(stream)));
+                Assert.False(Minidump.IsValidMinidump(new StreamAddressSpace(stream), 1));
+            }
+
+            using (Stream stream = GetCrashDump(x64Dump))
+            {
+                Assert.True(Minidump.IsValidMinidump(new StreamAddressSpace(stream)));
+                Assert.False(Minidump.IsValidMinidump(new StreamAddressSpace(stream), 1));
+            }
+
+            // These are GZiped files, they should not be minidumps.
+            using (FileStream stream = File.OpenRead(x86Dump))
+                Assert.False(Minidump.IsValidMinidump(new StreamAddressSpace(stream)));
+
+            using (FileStream stream = File.OpenRead(x64Dump))
+                Assert.False(Minidump.IsValidMinidump(new StreamAddressSpace(stream)));
+        }
+
         [Fact]
         public void CheckPdbInfo()
         {

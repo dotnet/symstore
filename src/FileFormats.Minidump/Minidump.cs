@@ -23,6 +23,19 @@ namespace FileFormats.Minidump
         private Lazy<Reader> _virtualAddressReader;
 
         /// <summary>
+        /// Returns true if the given address space is a minidump.
+        /// </summary>
+        /// <param name="addressSpace">The address space to check.</param>
+        /// <param name="position">The position of the minidump.</param>
+        /// <returns>True if the address space is a minidump, false otherwise.</returns>
+        public static bool IsValidMinidump(IAddressSpace addressSpace, ulong position = 0)
+        {
+            Reader headerReader = new Reader(addressSpace);
+            MinidumpHeader header = headerReader.Read<MinidumpHeader>(position);
+            return header.IsSignatureValid.Check();
+        }
+
+        /// <summary>
         /// Constructor.  This constructor will throw exceptions if the file is not a minidump or contains corrupted data
         /// which interferes with parsing it.
         /// </summary>
