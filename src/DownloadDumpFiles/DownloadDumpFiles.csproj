@@ -4,18 +4,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
-    <PackageReference Include="xunit" Version="$(XUnitVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\FileFormats.ELF\FileFormats.ELF.csproj" />
     <ProjectReference Include="..\FileFormats.MachO\FileFormats.MachO.csproj" />
+    <ProjectReference Include="..\FileFormats.PDB\FileFormats.PDB.csproj" />
+    <ProjectReference Include="..\FileFormats.PE\FileFormats.PE.csproj" />
     <ProjectReference Include="..\FileFormats\FileFormats.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 
   <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1721. -->

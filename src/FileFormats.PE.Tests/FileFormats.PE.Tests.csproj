@@ -1,43 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Label="Settings">
-    <Import Project="..\..\build\Targets\Settings.targets" />
-  </ImportGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>{DBFB6381-155B-4C1F-BC26-AA8ACF24D216}</ProjectGuid>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
-    <RootNamespace>FileFormats.PE.Tests</RootNamespace>
-    <AssemblyName>FileFormats.PE.Tests</AssemblyName>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
-    <NuGetTargetMoniker>.NETStandard,Version=v1.5</NuGetTargetMoniker>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <NoWarn>1591;0649</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
+
   <ItemGroup>
-    <ProjectReference Include="..\FileFormats.PE\FileFormats.PE.csproj">
-      <Project>{455E157D-E0F0-4C1F-9073-CBC8B0BC1537}</Project>
-      <Name>FileFormats</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FileFormats\FileFormats.csproj">
-      <Project>{256F3AFA-B659-44B0-BC6F-3C9912E9DD4F}</Project>
-      <Name>FileFormats</Name>
-    </ProjectReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
+    <PackageReference Include="xunit" Version="$(XUnitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="*.cs" />
+    <ProjectReference Include="..\FileFormats.PE\FileFormats.PE.csproj" />
+    <ProjectReference Include="..\FileFormats\FileFormats.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="project.json" />
+    <Content Include="TestBinaries\*" CopyToOutputDirectory="Always" />
   </ItemGroup>
-  <ImportGroup Label="Targets">
-    <Import Project="..\..\build\Targets\Imports.targets" />
-  </ImportGroup>
+  
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+  <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1721. -->
+  <Import Project="..\Directory.Build.targets" Condition="'$(TargetFramework)' == ''" />
 </Project>

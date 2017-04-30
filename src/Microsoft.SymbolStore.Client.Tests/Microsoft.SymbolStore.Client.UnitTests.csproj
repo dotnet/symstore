@@ -1,43 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup>
-    <Import Project="..\..\build\Targets\Settings.targets" />
-  </ImportGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>{25F19EBE-1E2A-44D3-827D-248D753A5BA1}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.SymbolStore.UnitTests</RootNamespace>
-    <AssemblyName>Microsoft.SymbolStore.Client.UnitTests</AssemblyName>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
-    <NuGetTargetMoniker>.NETStandard,Version=v1.3</NuGetTargetMoniker>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'" />
+
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.SymbolStore.Client\Microsoft.SymbolStore.Client.csproj">
-      <Project>{D041D275-EB2A-4A56-BB78-BCB0C4E6326D}</Project>
-      <Name>Microsoft.SymbolStore.Client</Name>
-    </ProjectReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
+    <PackageReference Include="xunit" Version="$(XUnitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Tests.cs" />
+    <ProjectReference Include="..\Microsoft.SymbolStore.Client\Microsoft.SymbolStore.Client.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="project.json" />
-    <None Include="Microsoft.SymbolStore.Client.UnitTests.xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ImportGroup>
-    <Import Project="..\..\build\Targets\Imports.targets" />
-    <Import Project="..\..\build\Toolset\XunitProjectRunAction.targets" />
-  </ImportGroup>
+
+  <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1721. -->
+  <Import Project="..\Directory.Build.targets" Condition="'$(TargetFramework)' == ''" />
 </Project>
