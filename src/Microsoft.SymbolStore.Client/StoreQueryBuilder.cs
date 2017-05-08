@@ -6,8 +6,7 @@ namespace Microsoft.SymbolStore
 {
     internal static class StoreQueryBuilder
     {
-        public static readonly string PortablePdbPrefix = "ppdb-sig-";
-        public static readonly string WindowsPdbPrefix = "";
+        public static readonly string PdbPrefix = "";
 
         public static readonly string ElfImagePrefix = "elf-buildid-";
         public static readonly string ElfSymbolPrefix = "elf-buildid-sym-";
@@ -17,14 +16,14 @@ namespace Microsoft.SymbolStore
 
         public static readonly string SourcePrefix = "sha1";
 
-        public static string GetPortablePdbQueryString(Guid guid, uint stamp, string fileName)
+        public static string GetPortablePdbQueryString(Guid guid, string fileName)
         {
-            return fileName + "/" + PortablePdbPrefix + guid.ToString("N") + stamp.ToString("x8") + "/" + fileName;
+            return fileName + "/" + PdbPrefix + guid.ToString("N") + "ffffffff" + "/" + fileName;
         }
 
         public static string GetWindowsPdbQueryString(Guid guid, int age, string fileName)
         {
-            return fileName + "/" + WindowsPdbPrefix + guid.ToString("N") + age.ToString() + "/" + fileName;
+            return fileName + "/" + PdbPrefix + guid.ToString("N") + age.ToString() + "/" + fileName;
         }
     }
 }

@@ -43,9 +43,9 @@ Example:
 **Lookup key**: foo.pdb/497b72f6390a44fc878e5a2d63b6cc4b1/foo.pdb
 
 
-###Portable-Pdb-Signature
+### Portable-Pdb-Signature
 
-This applies to Microsoft .Net portable PDB format files, commonly using the suffix .pdb. The key is computed by extracting the Signature (guid) from debug metadata header. The final key is formatted: <filename\>/ppdb-sig-<guid\>/<filename\>.
+This applies to Microsoft .Net portable PDB format files, commonly using the suffix .pdb. The Portable PDB format uses the same key format as Windows PDBs, except that 0xffffffff (UInt32.MaxValue) is used for the age. In other words, the key is computed by extracting the Signature (guid) from debug metadata header and combining it with 'ffffffff'. The final key is formatted: <filename\>/<guid\>ffffffff/<filename\>.
  
 Example:
 	
@@ -53,7 +53,7 @@ Example:
 
 **Signature field:** { 0x497B72F6, 0x390A, 0x44FC { 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B } }
 
-**Lookup key:** foo.pdb/ppdb-sig-497b72f6390a44fc878e5a2d63b6cc4b/foo.pdb
+**Lookup key:** foo.pdb/497b72f6390a44fc878e5a2d63b6cc4bffffffff/foo.pdb
 
 
 ### ELF-buildid
@@ -69,7 +69,7 @@ Example:
 **Lookup key:** foo.so/elf-buildid-497b72f6390a44fc878e/foo.so
 
 
-###ELF-buildid-sym
+### ELF-buildid-sym
 
 This applies to any ELF format files that have not been stripped of debugging information, commonly ending in ‘.so.dbg’ or ‘.dbg’. The key is computed by reading the byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The final key is formatted:
 <filename\>/elf-buildid-sym-<note\_byte\_sequence\>/<filename\>.
@@ -95,7 +95,7 @@ Example:
 **Lookup key:** foo.dylib/mach-uuid-497b72f6390a44fc878e5a2d63b6cc4b/foo.dylib
 
 
-###Mach-uuid-sym
+### Mach-uuid-sym
 
 This applies to any MachO format files that have not been stripped of debugging information, commonly ending in '.dylib.dwarf'. The key is computed by reading the uuid byte sequence of the MachO LC_UUID load command. The final key is formatted <filename\>/mach-uuid-sym-<uuid\_bytes\>/<filename\>
 
