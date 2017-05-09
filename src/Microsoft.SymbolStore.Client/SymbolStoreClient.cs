@@ -46,7 +46,7 @@ namespace Microsoft.SymbolStore
             StoreUri = storeUri;
         }
 
-        public async Task<Stream> GetSymbolFileForPortableExecutable(int version, Guid guid, uint stamp, int age, string fileName, bool portableOnly)
+        public async Task<Stream> GetSymbolFileForPortableExecutable(int version, Guid guid, int age, string fileName, bool portableOnly)
         {
             if (fileName == null)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.SymbolStore
             string query;
             if (hasPortablePdb || portableOnly)
             {
-                query = StoreQueryBuilder.GetPortablePdbQueryString(guid, stamp, fileName);
+                query = StoreQueryBuilder.GetPortablePdbQueryString(guid, fileName);
             }
             else
             {

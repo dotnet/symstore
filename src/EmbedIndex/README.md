@@ -4,7 +4,7 @@ This is a proof of concept implementation of creating a nuget package which cont
   
 ## Running the example ##
 
-###Create a hello world nuget package that we can use as input ###
+### Create a hello world nuget package that we can use as input ###
 
 Follow the directions to make a HelloWorld sample here: https://www.microsoft.com/net/core. After the sample runs use 'nuget pack' to create a nuget package
 
