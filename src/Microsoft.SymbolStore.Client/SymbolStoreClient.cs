@@ -14,7 +14,7 @@ namespace Microsoft.SymbolStore
     // 
     //                      Windows PDB aware client (Visual Studio)  X-plat client (VS Code)
     // Version==0	        Windows-specific protocol                 Portable protocol  // built with Windows PDB (Portable PDB might also exist)
-    // Version==0x504D0100	Portable protocol                         Portable protocol  // built with Portable PDB (no Windows PDB exists)
+    // Version==0x0100504d	Portable protocol                         Portable protocol  // built with Portable PDB (no Windows PDB exists)
     // 
     // Windows-specific Protocol(backwards compatible)
     // Send request to the server for a value corresponding to key "{.pdb file name}/{PDB GUID}{Age}/{.pdb file name}".
@@ -55,7 +55,10 @@ namespace Microsoft.SymbolStore
 
             // TODO: more arg validation
 
-            bool hasPortablePdb = (version >= 0x504D0100 && version <= 0x504DFFFF);
+            // See https://github.com/dotnet/corefx/blob/master/src/System.Reflection.Metadata/specs/PE-COFF.md#codeview-debug-directory-entry-type-2 for specification of version
+            ushort minorVersion = (ushort)version;
+            ushort majorVersion = (ushort)(version >> 16);
+            bool hasPortablePdb = minorVersion == 0x504d && majorVersion >= 0x100;
             if (hasPortablePdb && age != 1)
             {
                 throw new BadImageFormatException();
