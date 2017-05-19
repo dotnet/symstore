@@ -64,6 +64,7 @@ namespace EmbedIndex
                 using (ZipArchive archive = new ZipArchive(packageStream, ZipArchiveMode.Update))
                 {
                     List<Tuple<string, string>> indexEntries = ComputeIndexEntries(archive, indexers);
+                    indexEntries.AddRange(ComputeCatalogEntries(archive, indexers));
 
                     ZipArchiveEntry symbolIndexEntry = archive.GetEntry("symbol_index.json");
                     if (symbolIndexEntry != null)
@@ -161,6 +162,35 @@ namespace EmbedIndex
                 }
             }
             return keys;
+        }
+
+        private static IEnumerable<Tuple<string, string>> ComputeCatalogEntries(ZipArchive archive, IEnumerable<IFileFormatIndexer> indexers)
+        {
+            foreach (ZipArchiveEntry catalogEntry in archive.Entries)
+            {
+                if (!catalogEntry.Name.ToLowerInvariant().EndsWith(".cat"))
+                {
+                    continue;
+                }
+                string signedFile = catalogEntry.FullName.Substring(0, catalogEntry.FullName.Length - 4);
+                ZipArchiveEntry signedFileEntry = archive.Entries.SingleOrDefault(e => e.FullName == signedFile);
+                if (signedFileEntry == null)
+                {
+                    continue;
+                }
+                foreach (IFileFormatIndexer indexer in indexers)
+                {
+                    using (Stream signedFileStream = signedFileEntry.Open())
+                    {
+                        string key = indexer.ComputeIndexKey(signedFile, signedFileStream);
+                        if (key != null)
+                        {
+                            key = key.Substring(0, key.LastIndexOf("/") + 1) + "signature.cat";
+                            yield return Tuple.Create(catalogEntry.FullName, key);
+                        }
+                    }
+                }
+            }
         }
     }
 }
