@@ -185,8 +185,8 @@ namespace EmbedIndex
                         string key = indexer.ComputeIndexKey(signedFile, signedFileStream);
                         if (key != null)
                         {
-                            key = key.Substring(0, key.LastIndexOf("/") + 1) + "signature.cat";
-                            yield return Tuple.Create(catalogEntry.FullName, key);
+                            key = key.Substring(0, key.LastIndexOf("/") + 1) + catalogEntry.Name.ToLowerInvariant();
+                            yield return Tuple.Create(key, catalogEntry.FullName);
                         }
                     }
                 }
