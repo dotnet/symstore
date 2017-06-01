@@ -171,15 +171,22 @@ namespace EmbedIndex
 
         private static IEnumerable<Tuple<string, string>> ComputeCatalogEntries(ZipArchive archive, IEnumerable<IFileFormatIndexer> indexers)
         {
-            // create catalog_index_id.txt with SHA-256 of catalog
-            // store in root
+            // check to make sure we have the files we need to do catalog indexing
             ZipArchiveEntry catalogEntry = archive.GetEntry(SymbolCatalogFileName);
-            
+            ZipArchiveEntry catalogedFilesEntry = archive.GetEntry(CatalogedSymbolListFileName);
+
             if (catalogEntry == null)
             {
                 yield break;
             }
 
+            if (catalogedFilesEntry == null)
+            {
+                yield break;
+            }
+
+            // create catalog_index_id.txt with SHA-256 of catalog
+            // store in root
             string catalogHash;
             using (Stream catalogStream = catalogEntry.Open())
             {
@@ -199,13 +206,6 @@ namespace EmbedIndex
             }
 
             // get list of cataloged symbol files
-            ZipArchiveEntry catalogedFilesEntry = archive.GetEntry(CatalogedSymbolListFileName);
-
-            if (catalogedFilesEntry == null)
-            {
-                yield break;
-            }
-
             string[] catalogedFiles;
             using (Stream catalogedFilesStream = catalogedFilesEntry.Open())
             {
@@ -232,9 +232,8 @@ namespace EmbedIndex
                         {
                             key = key.Substring(0, key.LastIndexOf("/") + 1) + CatalogIndexFileName.ToLowerInvariant();
                             Tuple<string, string> ret = Tuple.Create(key, CatalogIndexFileName);
-                            if (!seen.Contains(ret))
+                            if (seen.Add(ret))
                             {
-                                seen.Add(ret);
                                 yield return ret;
                             }
                         }
@@ -243,7 +242,9 @@ namespace EmbedIndex
             }
 
             // add entry for the catalog file itself
-            yield return Tuple.Create($"{SymbolCatalogFileName}/catalog-{catalogHash}/{SymbolCatalogFileName}".ToLowerInvariant(), SymbolCatalogFileName);
+            yield return Tuple.Create(
+                $"{SymbolCatalogFileName}/catalog-{catalogHash}/{SymbolCatalogFileName}".ToLowerInvariant(),
+                SymbolCatalogFileName);
         }
     }
 }
