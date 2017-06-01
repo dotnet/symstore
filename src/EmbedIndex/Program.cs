@@ -174,6 +174,12 @@ namespace EmbedIndex
             // create catalog_index_id.txt with SHA-256 of catalog
             // store in root
             ZipArchiveEntry catalogEntry = archive.GetEntry(SymbolCatalogFileName);
+            
+            if (catalogEntry == null)
+            {
+                yield break;
+            }
+
             string catalogHash;
             using (Stream catalogStream = catalogEntry.Open())
             {
@@ -194,6 +200,12 @@ namespace EmbedIndex
 
             // get list of cataloged symbol files
             ZipArchiveEntry catalogedFilesEntry = archive.GetEntry(CatalogedSymbolListFileName);
+
+            if (catalogedFilesEntry == null)
+            {
+                yield break;
+            }
+
             string[] catalogedFiles;
             using (Stream catalogedFilesStream = catalogedFilesEntry.Open())
             {
