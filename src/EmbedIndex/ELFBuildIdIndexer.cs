@@ -41,7 +41,7 @@ namespace EmbedIndex
                 //trusting the file extension
                 bool isStripped = extension != ".dbg";
                 key.Append(isStripped ? "" : "sym-");
-                key.Append(string.Concat(elf.BuildID.Select(b => b.ToString("x2"))).ToLowerInvariant());
+                key.Append(elf.BuildID.ToHexString());
                 key.Append("/");
                 key.Append(filename);
                 return key.ToString();

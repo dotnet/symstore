@@ -36,7 +36,7 @@ namespace EmbedIndex
                 // assuming it is based on the extension
                 bool isStripped = extension == ".dylib";
                 key.Append(isStripped ? "" : "sym-");
-                key.Append(string.Concat(machO.Uuid.Select(b => b.ToString("x2"))).ToLowerInvariant());
+                key.Append(machO.Uuid.ToHexString());
                 key.Append("/");
                 key.Append(filename);
                 return key.ToString();

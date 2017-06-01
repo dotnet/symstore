@@ -30,8 +30,8 @@ namespace EmbedIndex
                 StringBuilder key = new StringBuilder();
                 key.Append(filename);
                 key.Append("/");
-                key.Append(reader.Timestamp.ToString("x").ToLowerInvariant());
-                key.Append(reader.SizeOfImage.ToString("x").ToLowerInvariant());
+                key.Append(reader.Timestamp.ToString("x"));
+                key.Append(reader.SizeOfImage.ToString("x"));
                 key.Append("/");
                 key.Append(filename);
                 return key.ToString();
