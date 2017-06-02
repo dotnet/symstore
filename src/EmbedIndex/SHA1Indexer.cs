@@ -26,10 +26,7 @@ namespace EmbedIndex
             index.Append(filename);
             index.Append("/");
             index.Append("sha1-");
-            foreach (byte b in hash)
-            {
-                index.Append(b.ToString("x2"));
-            }
+            index.Append(hash.ToHexString());
             index.Append("/");
             index.Append(filename);
             return index.ToString();

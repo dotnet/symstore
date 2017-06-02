@@ -32,7 +32,7 @@ namespace EmbedIndex
                 key.Append(filename);
                 key.Append("/");
                 key.Append(pdb.Signature.ToString().Replace("-", "").ToLowerInvariant());
-                key.Append(pdb.Age.ToString("x").ToLowerInvariant());
+                key.Append(pdb.Age.ToString("x"));
                 key.Append("/");
                 key.Append(filename);
                 return key.ToString();

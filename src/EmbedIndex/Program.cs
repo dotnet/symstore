@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace EmbedIndex
 {
@@ -12,18 +13,18 @@ namespace EmbedIndex
     {
         public static void Main(string[] args)
         {
-            if(args.Length != 2)
+            if (args.Length != 2)
             {
                 PrintUsage();
                 return;
             }
 
-            if(Directory.Exists(args[0]))
+            if (Directory.Exists(args[0]))
             {
                 string inputDir = args[0];
                 string outputDir = args[1];
                 Directory.CreateDirectory(outputDir);
-                foreach(string nugetPath in Directory.EnumerateFiles(inputDir, "*.nupkg", SearchOption.AllDirectories))
+                foreach (string nugetPath in Directory.EnumerateFiles(inputDir, "*.nupkg", SearchOption.AllDirectories))
                 {
                     Console.WriteLine(nugetPath);
                     string indexedNugetPath = Path.Combine(outputDir, Path.GetFileName(nugetPath));
@@ -127,7 +128,7 @@ namespace EmbedIndex
                 writer.WriteLine("    {");
                 writer.WriteLine("        \"clientKey\" : \"{0}\",", entry.Item1);
                 writer.WriteLine("        \"blobPath\" : \"{0}\"", entry.Item2);
-                
+
                 if (i != indexEntries.Count - 1)
                 {
                     writer.WriteLine("    },");
@@ -164,33 +165,86 @@ namespace EmbedIndex
             return keys;
         }
 
+        private const string SymbolCatalogFileName = "signatures.cat";
+        private const string CatalogedSymbolListFileName = "cataloged.txt";
+        private const string CatalogIndexFileName = "catalog_index_id.txt";
+
         private static IEnumerable<Tuple<string, string>> ComputeCatalogEntries(ZipArchive archive, IEnumerable<IFileFormatIndexer> indexers)
         {
-            foreach (ZipArchiveEntry catalogEntry in archive.Entries)
+            // check to make sure we have the files we need to do catalog indexing
+            ZipArchiveEntry catalogEntry = archive.GetEntry(SymbolCatalogFileName);
+            ZipArchiveEntry catalogedFilesEntry = archive.GetEntry(CatalogedSymbolListFileName);
+
+            if (catalogEntry == null)
             {
-                if (!catalogEntry.Name.ToLowerInvariant().EndsWith(".cat"))
+                yield break;
+            }
+
+            if (catalogedFilesEntry == null)
+            {
+                yield break;
+            }
+
+            // create catalog_index_id.txt with SHA-256 of catalog
+            // store in root
+            string catalogHash;
+            using (Stream catalogStream = catalogEntry.Open())
+            {
+                using (HashAlgorithm sha = SHA256.Create())
                 {
-                    continue;
-                }
-                string signedFile = catalogEntry.FullName.Substring(0, catalogEntry.FullName.Length - 4);
-                ZipArchiveEntry signedFileEntry = archive.Entries.SingleOrDefault(e => e.FullName == signedFile);
-                if (signedFileEntry == null)
-                {
-                    continue;
-                }
-                foreach (IFileFormatIndexer indexer in indexers)
-                {
-                    using (Stream signedFileStream = signedFileEntry.Open())
+                    catalogHash = sha.ComputeHash(catalogStream).ToHexString();
+                    ZipArchiveEntry catalogIndexEntry = archive.CreateEntry(CatalogIndexFileName);
+                    using (Stream indexStream = catalogIndexEntry.Open())
                     {
-                        string key = indexer.ComputeIndexKey(signedFile, signedFileStream);
-                        if (key != null)
+                        using (TextWriter writer = new StreamWriter(indexStream))
                         {
-                            key = key.Substring(0, key.LastIndexOf("/") + 1) + catalogEntry.Name.ToLowerInvariant();
-                            yield return Tuple.Create(key, catalogEntry.FullName);
+                            writer.WriteLine(catalogHash);
+                            writer.Flush();
                         }
                     }
                 }
             }
+
+            // get list of cataloged symbol files
+            string[] catalogedFiles;
+            using (Stream catalogedFilesStream = catalogedFilesEntry.Open())
+            {
+                using (StreamReader reader = new StreamReader(catalogedFilesStream))
+                {
+                    string content = reader.ReadToEnd();
+                    catalogedFiles = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+            catalogedFilesEntry.Delete();
+
+            // for each regular symbol index entry covered by a symbol catalog,
+            // add an entry for the catalog file
+            HashSet<Tuple<string, string>> seen = new HashSet<Tuple<string, string>>();
+            foreach (string catalogedFile in catalogedFiles)
+            {
+                ZipArchiveEntry fileEntry = archive.GetEntry(catalogedFile);
+                foreach (IFileFormatIndexer indexer in indexers)
+                {
+                    using (Stream signedFileStream = fileEntry.Open())
+                    {
+                        string key = indexer.ComputeIndexKey(fileEntry.FullName, signedFileStream);
+                        if (key != null)
+                        {
+                            key = key.Substring(0, key.LastIndexOf("/") + 1) + CatalogIndexFileName.ToLowerInvariant();
+                            Tuple<string, string> ret = Tuple.Create(key, CatalogIndexFileName);
+                            if (seen.Add(ret))
+                            {
+                                yield return ret;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // add entry for the catalog file itself
+            yield return Tuple.Create(
+                $"{SymbolCatalogFileName}/catalog-{catalogHash}/{SymbolCatalogFileName}".ToLowerInvariant(),
+                SymbolCatalogFileName);
         }
     }
 }
