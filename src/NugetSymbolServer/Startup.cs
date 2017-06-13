@@ -34,9 +34,7 @@ namespace NugetSymbolServer
                 .AddJsonFile("logging.json", optional: true)
                 .AddJsonFile($"logging.{hostingEnvironment.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables()
-                .Build()
-                .ReloadOnChanged(ApplicationEnvironment.ApplicationBasePath, "logging.json")
-                .ReloadOnChanged(ApplicationEnvironment.ApplicationBasePath, $"logging.{hostingEnvironment.EnvironmentName}.json");
+                .Build();
         }
 
         public IConfiguration Configuration { get; private set; } 

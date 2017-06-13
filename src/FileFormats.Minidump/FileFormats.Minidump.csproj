@@ -4,6 +4,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FileFormats.PE\FileFormats.PE.csproj" />
     <ProjectReference Include="..\FileFormats\FileFormats.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

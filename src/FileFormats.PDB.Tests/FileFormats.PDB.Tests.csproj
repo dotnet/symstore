@@ -1,43 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Label="Settings">
-    <Import Project="..\..\build\Targets\Settings.targets" />
-  </ImportGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>{8B48F5B6-40E2-4728-A73D-F2D542A2A2FD}</ProjectGuid>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
-    <RootNamespace>FileFormats.PE.Tests</RootNamespace>
-    <AssemblyName>FileFormats.PE.Tests</AssemblyName>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
-    <NuGetTargetMoniker>.NETStandard,Version=v1.5</NuGetTargetMoniker>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <NoWarn>1591;0649</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
+
   <ItemGroup>
-    <ProjectReference Include="..\FileFormats.PDB\FileFormats.PDB.csproj">
-      <Project>{5B0BA4E9-FD55-4507-BCCB-B03AAE4CF179}</Project>
-      <Name>FileFormats</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FileFormats\FileFormats.csproj">
-      <Project>{256F3AFA-B659-44B0-BC6F-3C9912E9DD4F}</Project>
-      <Name>FileFormats</Name>
-    </ProjectReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
+    <PackageReference Include="xunit" Version="$(XUnitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="*.cs" />
+    <ProjectReference Include="..\FileFormats.PDB\FileFormats.PDB.csproj" />
+    <ProjectReference Include="..\FileFormats\FileFormats.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="project.json" />
+    <Content Include="TestBinaries\*" CopyToOutputDirectory="Always" />
   </ItemGroup>
-  <ImportGroup Label="Targets">
-    <Import Project="..\..\build\Targets\Imports.targets" />
-  </ImportGroup>
+  
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
 </Project>
