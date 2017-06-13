@@ -19,10 +19,6 @@
     <XUnitVersion>2.2.0</XUnitVersion>
     <XUnitRunnerVisualStudioVersion>2.2.0</XUnitRunnerVisualStudioVersion>
 
-    <!-- desktop msbuild driver -->
-    <VSWhereVersion>1.0.47</VSWhereVersion>
-    <XUnitRunnerConsoleVersion>2.2.0</XUnitRunnerConsoleVersion>
-    
     <!-- Libs -->
     <MicrosoftDiaSymReaderVersion>1.1.0</MicrosoftDiaSymReaderVersion>
     <MicrosoftDiaSymReaderNativeVersion>1.5.0</MicrosoftDiaSymReaderNativeVersion>

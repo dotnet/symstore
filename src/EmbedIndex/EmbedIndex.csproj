@@ -10,7 +10,4 @@
     <ProjectReference Include="..\FileFormats.PE\FileFormats.PE.csproj" />
     <ProjectReference Include="..\FileFormats\FileFormats.csproj" />
   </ItemGroup>
-
-  <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1721. -->
-  <Import Project="..\Directory.Build.targets" Condition="'$(TargetFramework)' == ''" />
 </Project>

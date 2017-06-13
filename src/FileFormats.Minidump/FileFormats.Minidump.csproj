@@ -11,7 +11,4 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
-  <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1721. -->
-  <Import Project="..\Directory.Build.targets" Condition="'$(TargetFramework)' == ''" />
 </Project>

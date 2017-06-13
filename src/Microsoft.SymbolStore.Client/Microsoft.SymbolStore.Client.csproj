@@ -6,7 +6,4 @@
   <ItemGroup>
     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
   </ItemGroup>
-
-  <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1721. -->
-  <Import Project="..\Directory.Build.targets" Condition="'$(TargetFramework)' == ''" />
 </Project>
