@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.SymStore.Indexers</id>
+    <summary>Tooling to pull symstore indexes from various file formats</summary>
+    <description>
+        Contains tools to gather symstore indexing information from ELF, MachO, PE, and PDB files
+    </description>
+    <language>en-US</language>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkId=394369</licenseUrl>
+    <projectUrl>https://github.com/dotnet/symstore</projectUrl>
+    <releaseNotes>Tooling to pull symstore indexes from various file formats</releaseNotes>
+    <tags>Symbol Storage debugging</tags>
+    <serviceable>true</serviceable>
+  </metadata>
+  <files>
+    <file src="FileIndexers.dll" target="lib\net46" /> 
+  </files>
+</package>
