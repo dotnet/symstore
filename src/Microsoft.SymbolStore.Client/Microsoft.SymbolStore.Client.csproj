@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <Description>Implements symbol store access protocol</Description>
+    <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
+    <PackageTags>Symbol Server Portable PDB debugging</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
