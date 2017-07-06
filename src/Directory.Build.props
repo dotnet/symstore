@@ -6,7 +6,6 @@
   <Import Project="$(RepoToolsetDir)Settings.props" />
 
   <PropertyGroup>
-    <IncludeSymbols>true</IncludeSymbols>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
   </PropertyGroup>
 
