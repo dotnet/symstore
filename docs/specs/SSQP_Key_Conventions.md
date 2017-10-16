@@ -14,98 +14,112 @@ Unless otherwise specified:
 
 ## Key formats
 
+
 ### PE-timestamp-filesize
-This key references Windows Portable Executable format files which commonly have .dll or .exe suffixes. The key is computed by extracting the Timestamp (4 byte integer) and SizeOfImage (4 byte integer) fields from the COFF header in PE image. The key is formatted <filename\>/<Timestamp\><SizeOfImage\>/<filename\>
+This key references Windows Portable Executable format files which commonly have .dll or .exe suffixes. The key is computed by extracting the Timestamp (4 byte integer) and SizeOfImage (4 byte integer) fields from the COFF header in PE image. The key is formatted:
+
+`<filename>/<Timestamp><SizeOfImage>/<filename>`
 
 Example:
 	
-**Filename:** Foo.exe
+**File name:** `Foo.exe`
 
-**COFF header Timestamp field:** 0x542d5742
+**COFF header Timestamp field:** `0x542d5742`
 
-**COFF header SizeOfImage field:** 0x32000
+**COFF header SizeOfImage field:** `0x32000`
 
-**Lookup key:** foo.exe/542d574200032000/foo.exe
+**Lookup key:** `foo.exe/542d574200032000/foo.exe`
 
 
 ### PDB-Signature-Age
 
-This applies to Microsoft C++ Symbol Format, commonly called PDB and using files with the .pdb file extension. The key is computed by extracting the Signature (guid) and Age (4 byte integer) values from the guid stream within MSF container. The final key is formatted <filename\>/<Signature\><Age\>/<filename\>.
+This applies to Microsoft C++ Symbol Format, commonly called PDB and using files with the .pdb file extension. The key is computed by extracting the Signature (guid) and Age (4 byte integer) values from the guid stream within MSF container. The final key is formatted:
+
+`<filename>/<Signature><Age>/<filename>`
 
 Example:
 
-**Filename:** Foo.pdb
+**File name:** `Foo.pdb`
 
-**Signature field:** { 0x497B72F6, 0x390A, 0x44FC, { 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B } }
+**Signature field:** `{ 0x497B72F6, 0x390A, 0x44FC, { 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B } }`
 
-**Age field:** 0x1
+**Age field:** `0x1`
 
-**Lookup key**: foo.pdb/497b72f6390a44fc878e5a2d63b6cc4b1/foo.pdb
+**Lookup key**: `foo.pdb/497b72f6390a44fc878e5a2d63b6cc4b1/foo.pdb`
 
 
 ### Portable-Pdb-Signature
 
-This applies to Microsoft .Net portable PDB format files, commonly using the suffix .pdb. The Portable PDB format uses the same key format as Windows PDBs, except that 0xffffffff (UInt32.MaxValue) is used for the age. In other words, the key is computed by extracting the Signature (guid) from debug metadata header and combining it with 'ffffffff'. The final key is formatted: <filename\>/<guid\>ffffffff/<filename\>.
+This applies to Microsoft .Net portable PDB format files, commonly using the suffix .pdb. The Portable PDB format uses the same key format as Windows PDBs, except that 0xffffffff (UInt32.MaxValue) is used for the age. In other words, the key is computed by extracting the Signature (guid) from debug metadata header and combining it with 'ffffffff'. The final key is formatted: 
+
+`<filename>/<guid>ffffffff/<filename>`
  
 Example:
 	
-**Filename:** Foo.pdb
+**File name:** `Foo.pdb`
 
-**Signature field:** { 0x497B72F6, 0x390A, 0x44FC { 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B } }
+**Signature field:** `{ 0x497B72F6, 0x390A, 0x44FC { 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B } }`
 
-**Lookup key:** foo.pdb/497b72f6390a44fc878e5a2d63b6cc4bffffffff/foo.pdb
+**Lookup key:** `foo.pdb/497b72f6390a44fc878e5a2d63b6cc4bffffffff/foo.pdb`
 
 
 ### ELF-buildid
 
-This applies to any ELF format files that have been stripped of debugging information, commonly using the .so suffix or no suffix. The key is computed by reading the byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The final key is formatted: <filename\>/elf-buildid-<note_byte_sequence\>/<filename\>.
+This applies to any ELF format files that have been stripped of debugging information, commonly using the .so suffix or no suffix. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The final key is formatted:
+
+`elf-buildid/<note_byte_sequence>/<file_name>`
 
 Example:
-	
-**Filename:** Foo.so
 
-**Build note bytes:** 0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E
+**File name:** `foo.so`
 
-**Lookup key:** foo.so/elf-buildid-497b72f6390a44fc878e/foo.so
+**Build note bytes:** `0x18, 0x0a, 0x37, 0x3d, 0x6a, 0xfb, 0xab, 0xf0, 0xeb, 0x1f, 0x09, 0xbe, 0x1b, 0xc4, 0x5b, 0xd7, 0x96, 0xa7, 0x10, 0x85`
+
+**Lookup key:** `elf-buildid/180a373d6afbabf0eb1f09be1bc45bd796a71085/foo.so`
 
 
 ### ELF-buildid-sym
 
-This applies to any ELF format files that have not been stripped of debugging information, commonly ending in ‘.so.dbg’ or ‘.dbg’. The key is computed by reading the byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The final key is formatted:
-<filename\>/elf-buildid-sym-<note\_byte\_sequence\>/<filename\>.
+This applies to any ELF format files that have not been stripped of debugging information, commonly ending in ‘.so.dbg’ or ‘.dbg’. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The file name is not used in the index because there are cases where all we have is the build id. The final key is formatted:
+
+`elf-buildid-sym/<note_byte_sequence>/_.debug`
 
 Example:
 
-**Filename:** Foo.so.dbg
+**File name:** `foo.so.dbg`
 
-**Build note bytes:** 0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E
+**Build note bytes:** `0x18, 0x0a, 0x37, 0x3d, 0x6a, 0xfb, 0xab, 0xf0, 0xeb, 0x1f, 0x09, 0xbe, 0x1b, 0xc4, 0x5b, 0xd7, 0x96, 0xa7, 0x10, 0x85`
 
-**Lookup key:** foo.so.dbg/elf-buildid-sym-497b72f6390a44fc878e/foo.so.dbg
+**Lookup key:** `elf-buildid-sym/180a373d6afbabf0eb1f09be1bc45bd796a71085/_.debug`
 
 
 ### Mach-uuid
-This applies to any MachO format files that have been stripped of debugging information, commonly ending in 'dylib'. The key is computed by reading the uuid byte sequence of the MachO LC_UUID load command. The final key is formatted <filename\>/mach-uuid-<uuid\_bytes\>/<filename\>
+This applies to any MachO format files that have been stripped of debugging information, commonly ending in 'dylib'. The key is computed by reading the uuid byte sequence of the MachO LC_UUID load command. The final key is formatted:
+
+`mach-uuid/<uuid_bytes>/<file_name>`
 
 Example:
 
-**Filename:** Foo.dylb
+**File name:** `foo.dylib`
 
-**Uuid bytes:** 0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B
+**Uuid bytes:** `0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B`
 
-**Lookup key:** foo.dylib/mach-uuid-497b72f6390a44fc878e5a2d63b6cc4b/foo.dylib
+**Lookup key:** `mach-uuid/497b72f6390a44fc878e5a2d63b6cc4b/foo.dylib`
 
 
 ### Mach-uuid-sym
 
-This applies to any MachO format files that have not been stripped of debugging information, commonly ending in '.dylib.dwarf'. The key is computed by reading the uuid byte sequence of the MachO LC_UUID load command. The final key is formatted <filename\>/mach-uuid-sym-<uuid\_bytes\>/<filename\>
+This applies to any MachO format files that have not been stripped of debugging information, commonly ending in '.dylib.dwarf'. The key is computed by reading the uuid byte sequence of the MachO LC_UUID load command. The final key is formatted:
+
+`mach-uuid-sym/<uuid_bytes>/_.dwarf`
 
 Example:
 
-**Filename:** Foo.dylb
+**File name:** `foo.dylib.dwarf`
 
-**Uuid bytes:** 0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B
+**Uuid bytes:** `0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B`
 
-**Lookup key:** foo.dylib/mach-uuid-sym-497b72f6390a44fc878e5a2d63b6cc4b/foo.dylib
+**Lookup key:** `mach-uuid-sym/497b72f6390a44fc878e5a2d63b6cc4b/_.dwarf`
 
 
 ### SHA1
@@ -114,8 +128,8 @@ This applies to any file, but is commonly used on sources. The key is computed b
 
 Example:
 
-**Filename:** Foo.cs
+**File name:** `Foo.cs`
 
-**Sha1 hash bytes:** 0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B, 0x0C, 0x2D, 0x99, 0x84
+**Sha1 hash bytes:** `0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B, 0x0C, 0x2D, 0x99, 0x84`
 
-**Lookup key:** foo.cs/sha1-497b72f6390a44fc878e5a2d63b6cc4b0c2d9984/foo.cs
+**Lookup key:** `foo.cs/sha1-497b72f6390a44fc878e5a2d63b6cc4b0c2d9984/foo.cs`
