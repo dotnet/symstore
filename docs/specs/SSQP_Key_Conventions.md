@@ -67,7 +67,7 @@ Example:
 
 This applies to any ELF format files that have been stripped of debugging information, commonly using the .so suffix or no suffix. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The final key is formatted:
 
-`elf-buildid/<note_byte_sequence>/<file_name>`
+`<file_name>/elf-buildid-<note_byte_sequence>/<file_name>`
 
 Example:
 
@@ -75,14 +75,14 @@ Example:
 
 **Build note bytes:** `0x18, 0x0a, 0x37, 0x3d, 0x6a, 0xfb, 0xab, 0xf0, 0xeb, 0x1f, 0x09, 0xbe, 0x1b, 0xc4, 0x5b, 0xd7, 0x96, 0xa7, 0x10, 0x85`
 
-**Lookup key:** `elf-buildid/180a373d6afbabf0eb1f09be1bc45bd796a71085/foo.so`
+**Lookup key:** `foo.so/elf-buildid-180a373d6afbabf0eb1f09be1bc45bd796a71085/foo.so`
 
 
 ### ELF-buildid-sym
 
 This applies to any ELF format files that have not been stripped of debugging information, commonly ending in ‘.so.dbg’ or ‘.dbg’. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The file name is not used in the index because there are cases where all we have is the build id. The final key is formatted:
 
-`elf-buildid-sym/<note_byte_sequence>/_.debug`
+`_.debug/elf-buildid-sym-<note_byte_sequence>/_.debug`
 
 Example:
 
@@ -90,13 +90,13 @@ Example:
 
 **Build note bytes:** `0x18, 0x0a, 0x37, 0x3d, 0x6a, 0xfb, 0xab, 0xf0, 0xeb, 0x1f, 0x09, 0xbe, 0x1b, 0xc4, 0x5b, 0xd7, 0x96, 0xa7, 0x10, 0x85`
 
-**Lookup key:** `elf-buildid-sym/180a373d6afbabf0eb1f09be1bc45bd796a71085/_.debug`
+**Lookup key:** `_.debug/elf-buildid-sym-180a373d6afbabf0eb1f09be1bc45bd796a71085/_.debug`
 
 
 ### Mach-uuid
 This applies to any MachO format files that have been stripped of debugging information, commonly ending in 'dylib'. The key is computed by reading the uuid byte sequence of the MachO LC_UUID load command. The final key is formatted:
 
-`mach-uuid/<uuid_bytes>/<file_name>`
+`<file_name>/mach-uuid-<uuid_bytes>/<file_name>`
 
 Example:
 
@@ -104,14 +104,14 @@ Example:
 
 **Uuid bytes:** `0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B`
 
-**Lookup key:** `mach-uuid/497b72f6390a44fc878e5a2d63b6cc4b/foo.dylib`
+**Lookup key:** `foo.dylib/mach-uuid-497b72f6390a44fc878e5a2d63b6cc4b/foo.dylib`
 
 
 ### Mach-uuid-sym
 
 This applies to any MachO format files that have not been stripped of debugging information, commonly ending in '.dylib.dwarf'. The key is computed by reading the uuid byte sequence of the MachO LC_UUID load command. The final key is formatted:
 
-`mach-uuid-sym/<uuid_bytes>/_.dwarf`
+`_.dwarf/mach-uuid-sym-<uuid_bytes>/_.dwarf`
 
 Example:
 
@@ -119,7 +119,7 @@ Example:
 
 **Uuid bytes:** `0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B`
 
-**Lookup key:** `mach-uuid-sym/497b72f6390a44fc878e5a2d63b6cc4b/_.dwarf`
+**Lookup key:** `_.dwarf/mach-uuid-sym-497b72f6390a44fc878e5a2d63b6cc4b/_.dwarf`
 
 
 ### SHA1
