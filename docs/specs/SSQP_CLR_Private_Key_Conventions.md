@@ -29,9 +29,9 @@ Example:
 
 ### ELF-buildid-coreclr
 
-This applies to any file named libmscordaccore.so or libsos.so that should be used to debug a given libcoreclr.so. The key is computed similarly to ELF-buildid except the note bytes is retrieved from the libcoreclr.so file and prefixed with 'elf-buildid-coreclr':
+This applies to any file named libmscordaccore.so or libsos.so that should be used to debug a given libcoreclr.so. The key is computed similarly to ELF-buildid except the note bytes is retrieved from the libcoreclr.so file and prefixed with 'elf-buildid-coreclr-':
 
-`elf-buildid-coreclr/<note_byte_sequence>/<file_name>`
+`<file_name>/elf-buildid-coreclr-<note_byte_sequence>/<file_name>`
 
 Example:
 
@@ -41,16 +41,16 @@ Example:
 
 **Lookup keys:** 
 
-    elf-buildid-coreclr/180a373d6afbabf0eb1f09be1bc45bd796a71085/libmscoredaccore.so
-    elf-buildid-coreclr/180a373d6afbabf0eb1f09be1bc45bd796a71085/libsos.so 
-    elf-buildid-coreclr/180a373d6afbabf0eb1f09be1bc45bd796a71085/SOS-NETCore.dll
+    libmscordaccore.so/elf-buildid-coreclr-180a373d6afbabf0eb1f09be1bc45bd796a71085/libmscordaccore.so
+    libsos.so/elf-buildid-coreclr-180a373d6afbabf0eb1f09be1bc45bd796a71085/libsos.so 
+    sos-netcore.dll/elf-buildid-coreclr-180a373d6afbabf0eb1f09be1bc45bd796a71085/sos-netcore.dll
 
 
 ### Mach-uuid-coreclr
 
-This applies to any file named libmscordaccore.dylib or libsos.dylib that should be used to debug a given libcoreclr.dylib. The key is computed similarly to Mach-uuid except the uuid is retrieved from the libcoreclr.dylib file and prefixed with 'mach-uuid-coreclr':
+This applies to any file named libmscordaccore.dylib or libsos.dylib that should be used to debug a given libcoreclr.dylib. The key is computed similarly to Mach-uuid except the uuid is retrieved from the libcoreclr.dylib file and prefixed with 'mach-uuid-coreclr-':
 
-`mach-uuid-coreclr/<uuid_bytes>/<file_name>`
+`<file_name>/mach-uuid-coreclr-<uuid_bytes>/<file_name>`
 
 Example:
 
@@ -60,7 +60,7 @@ Example:
 
 **Lookup keys:**
 
-    mach-uuid-coreclr/497b72f6390a44fc878e5a2d63b6cc4b/libmscordaccore.dylib
-    mach-uuid-coreclr/497b72f6390a44fc878e5a2d63b6cc4b/libsos.dylib
-    mach-uuid-coreclr/497b72f6390a44fc878e5a2d63b6cc4b/SOS.NETCore.dll
+    libmscordaccore.dylib/mach-uuid-coreclr-497b72f6390a44fc878e5a2d63b6cc4b/libmscordaccore.dylib
+    libsos.dylib/mach-uuid-coreclr-497b72f6390a44fc878e5a2d63b6cc4b/libsos.dylib
+    sos.netcore.dll/mach-uuid-coreclr-497b72f6390a44fc878e5a2d63b6cc4b/sos.netcore.dll
 
