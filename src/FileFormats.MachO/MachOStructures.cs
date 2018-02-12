@@ -201,7 +201,7 @@ namespace FileFormats.MachO
         {
             get
             {
-                return new ValidationRule("Mach UUID LoadComand has invalid command id",
+                return new ValidationRule("Mach UUID LoadCommand has invalid command id",
                                            () => Command == LoadCommandType.Uuid);
             }
         }
@@ -229,7 +229,7 @@ namespace FileFormats.MachO
         {
             get
             {
-                return new ValidationRule("Mach Symtab LoadComand has invalid command id",
+                return new ValidationRule("Mach Symtab LoadCommand has invalid command id",
                                            () => Command == LoadCommandType.Symtab);
             }
         }
