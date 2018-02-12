@@ -45,7 +45,7 @@ namespace FileFormats.ELF
     /// <remarks>
     /// Although normally this is described as being part of the ELFHeader, its
     /// useful to parse this independently. The endianess and bitness 
-    /// decribed in the identity bytes are needed to calculate the size of and
+    /// described in the identity bytes are needed to calculate the size of and
     /// offset of fields in the remainder of the header
     /// </remarks>
     public class ELFHeaderIdent : TStruct
