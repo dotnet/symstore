@@ -52,10 +52,10 @@ namespace FileFormats.PDB
             return streams;
         }
 
-        private PDBPagedAddressSpace CreatePagedAddressSpace(IAddressSpace IndicesData, ulong offset, uint length)
+        private PDBPagedAddressSpace CreatePagedAddressSpace(IAddressSpace indicesData, ulong offset, uint length)
         {
-            uint[] Indices = new Reader(IndicesData).ReadArray<uint>(offset, ToPageCount(length));
-            return new PDBPagedAddressSpace(_pdbFileReader.DataSource, Indices, Header.PageSize, length);
+            uint[] indices = new Reader(indicesData).ReadArray<uint>(offset, ToPageCount(length));
+            return new PDBPagedAddressSpace(_pdbFileReader.DataSource, indices, Header.PageSize, length);
         }
 
         private uint ToPageCount(uint size)
