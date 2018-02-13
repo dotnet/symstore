@@ -186,7 +186,7 @@ namespace FileFormats
             ILayout targetLayout = layoutManager.GetLayout(targetType);
             ILayout storageLayout = layoutManager.GetLayout(storageType);
 
-            // Unforetunately the storageLayout.Read returns a boxed object that can't be 
+            // Unfortunately the storageLayout.Read returns a boxed object that can't be 
             // casted to a ulong without first being unboxed. These three Pointer layout 
             // types are identical other than unboxing to a different type. Generics 
             // doesn't work, there is no constraint that ensures the type parameter defines
