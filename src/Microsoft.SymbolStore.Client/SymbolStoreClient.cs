@@ -91,7 +91,7 @@ namespace Microsoft.SymbolStore
             {
                 using (var client = new HttpClient())
                 {
-                    // TODO: erorr handling
+                    // TODO: error handling
                     return await client.GetStreamAsync(requestUri).ConfigureAwait(false);
                 }
             }
