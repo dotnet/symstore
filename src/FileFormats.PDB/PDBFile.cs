@@ -73,7 +73,7 @@ namespace FileFormats.PDB
     /// to a page index and a page offset. A = index*page_size + offset.
     /// 
     /// This paged address space maps each virtual address to a physical address by
-    /// remaping each virtual page to potentially different physical page. If V is
+    /// remapping each virtual page to potentially different physical page. If V is
     /// the virtual page index then pageIndices[V] is the physical page index.
     /// 
     /// For example if pageSize is 0x100 and pageIndices is { 0x7, 0x9 } then
