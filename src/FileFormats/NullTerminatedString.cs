@@ -24,7 +24,7 @@ namespace FileFormats
         /// <param name="encoding">The encoding used to parse the string characters. Currently on ASCII or UTF8 is supported</param>
         public NullTerminatedStringLayout(Encoding encoding)
         {
-            // Make sure we are scaning something where a single 0 byte means end of string.
+            // Make sure we are scanning something where a single 0 byte means end of string.
             // Although UTF8 does have code points that encode with more than one byte, 
             // byte 0 is never used except to encode code point 0. 
             if (encoding != Encoding.UTF8 && encoding != Encoding.ASCII)

@@ -24,7 +24,7 @@
         /// <summary>
         /// Returns whether the given address is contained in this region of virtual memory.
         /// </summary>
-        /// <param name="address">A virtual address in the orginal process's address space.</param>
+        /// <param name="address">A virtual address in the original process's address space.</param>
         /// <returns>True if this segment contains the address, false otherwise.</returns>
         public bool Contains(ulong address)
         {

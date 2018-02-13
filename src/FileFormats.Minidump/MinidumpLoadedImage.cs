@@ -26,7 +26,7 @@ namespace FileFormats.Minidump
         public uint CheckSum { get { return _module.CheckSum; } }
 
         /// <summary>
-        /// The TimeDateStame of this image, as baked into the PE header.  This value is used
+        /// The TimeDateStamp of this image, as baked into the PE header.  This value is used
         /// for symbol sever requests to obtain a PE image.
         /// </summary>
         public uint TimeDateStamp { get { return _module.TimeDateStamp; } }
@@ -39,7 +39,7 @@ namespace FileFormats.Minidump
 
 
         /// <summary>
-        /// The full name of this module (including path it was orignally loaded from on disk).
+        /// The full name of this module (including path it was originally loaded from on disk).
         /// </summary>
         public string ModuleName { get { return _moduleName.Value; } }
 

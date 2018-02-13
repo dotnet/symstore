@@ -186,12 +186,12 @@ namespace FileFormats
             ILayout targetLayout = layoutManager.GetLayout(targetType);
             ILayout storageLayout = layoutManager.GetLayout(storageType);
 
-            // Unforetunately the storageLayout.Read returns a boxed object that can't be 
+            // Unfortunately the storageLayout.Read returns a boxed object that can't be 
             // casted to a ulong without first being unboxed. These three Pointer layout 
             // types are identical other than unboxing to a different type. Generics 
             // doesn't work, there is no constraint that ensures the type parameter defines
             // a casting operator to ulong. Specifying a Func<object,ulong> parameter
-            // would work, but I opted to write each class seperately so that we don't
+            // would work, but I opted to write each class separately so that we don't
             // pay the cost of an extra delegate invocation for each pointer read. It
             // may be premature optimization, but the complexity of it should be relatively
             // constrained within this file at least.

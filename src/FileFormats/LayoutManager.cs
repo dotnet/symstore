@@ -38,7 +38,7 @@ namespace FileFormats
             }
             if (arrayType.GetArrayRank() != 1)
             {
-                throw new ArgumentException("Multidemensional arrays are not supported");
+                throw new ArgumentException("Multidimensional arrays are not supported");
             }
 
             ILayout layout;
