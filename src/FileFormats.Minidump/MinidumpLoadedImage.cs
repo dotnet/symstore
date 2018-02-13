@@ -39,7 +39,7 @@ namespace FileFormats.Minidump
 
 
         /// <summary>
-        /// The full name of this module (including path it was orignally loaded from on disk).
+        /// The full name of this module (including path it was originally loaded from on disk).
         /// </summary>
         public string ModuleName { get { return _moduleName.Value; } }
 
