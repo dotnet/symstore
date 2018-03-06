@@ -1,4 +1,4 @@
-# Microsoft.SymbolStore.Client
+# Microsoft.SymbolStore
 
 Implements API for retrieval of symbols and other debug artifacts from symbol store.
 

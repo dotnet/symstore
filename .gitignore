@@ -16,6 +16,8 @@ x64/
 [Bb]in/
 [Oo]bj/
 .dotnet/
+.tools/
+**/packages/*
 
 # Per-user project properties
 launchSettings.json

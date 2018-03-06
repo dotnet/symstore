@@ -3,28 +3,24 @@
   <PropertyGroup>
     <!-- This repo version -->
     <VersionBase>1.0.0</VersionBase>
-    <PreReleaseVersionLabel>beta1</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>beta</PreReleaseVersionLabel>
   
     <!-- Toolset -->
-    <DotNetCliVersion>1.0.1</DotNetCliVersion>
-    <RoslynToolsMicrosoftRepoToolsetVersion>1.0.0-alpha20</RoslynToolsMicrosoftRepoToolsetVersion>
-    <RoslynToolsMicrosoftXUnitLoggerVersion>1.0.0-alpha1</RoslynToolsMicrosoftXUnitLoggerVersion>
-    <RoslynToolsMicrosoftSignToolVersion>0.3.2-beta</RoslynToolsMicrosoftSignToolVersion>
-    <MicroBuildCoreVersion>0.2.0</MicroBuildCoreVersion>
-    <MicroBuildPluginsSwixBuildVersion>1.0.147</MicroBuildPluginsSwixBuildVersion>
-    <MicrosoftNetCompilersVersion>2.0.1</MicrosoftNetCompilersVersion>
+    <RoslynToolsRepoToolsetVersion>1.0.0-beta-62601-02</RoslynToolsRepoToolsetVersion>
+    <DotNetCliVersion>2.1.300-preview2-008212</DotNetCliVersion>
 
     <!-- Tests -->
-    <MicrosoftNETTestSdkVersion>15.0.0</MicrosoftNETTestSdkVersion>
-    <XUnitVersion>2.2.0</XUnitVersion>
-    <XUnitRunnerVisualStudioVersion>2.2.0</XUnitRunnerVisualStudioVersion>
+    <MicrosoftNETTestSdkVersion>15.5.0-preview-20170727-01</MicrosoftNETTestSdkVersion>
+    <XUnitVersion>2.3.1</XUnitVersion>
+    <XUnitRunnerVisualStudioVersion>2.3.1</XUnitRunnerVisualStudioVersion>
+    <UsingToolXliff>false</UsingToolXliff>
+  </PropertyGroup>
 
-    <!-- Libs -->
-    <MicrosoftDiaSymReaderVersion>1.1.0</MicrosoftDiaSymReaderVersion>
-    <MicrosoftDiaSymReaderNativeVersion>1.5.0</MicrosoftDiaSymReaderNativeVersion>
-    <MicrosoftDiaSymReaderPortablePdbVersion>1.2.0</MicrosoftDiaSymReaderPortablePdbVersion>
-
-    <!-- CoreFX -->
-    <SystemReflectionMetadataVersion>1.4.2</SystemReflectionMetadataVersion>
+  <PropertyGroup>
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json;
+      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
+    </RestoreSources>
   </PropertyGroup>
 </Project>

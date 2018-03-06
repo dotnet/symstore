@@ -1,13 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <IsTool>true</IsTool>
+    <Description>Simple nuget package symbol server</Description>
+    <PackageTags>Symbol Server</PackageTags>
+    <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
+    <NoWarn>;1591;1701</NoWarn>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="config.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <PackagePath>tools\</PackagePath>
+    </Content>
+    <Content Update="Properties\launchSettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <PackagePath>tools\</PackagePath>
+    </Content>
   </ItemGroup>
 </Project>
