@@ -7,15 +7,14 @@
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     
     <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\'))</RepoRoot>
-    <SignToolDataPath>$(RepoRoot)build\SignToolData.json</SignToolDataPath>
-    <VersionsPropsPath>$(RepoRoot)build\Versions.props</VersionsPropsPath>
-    <RepoToolsetDir>$(NuGetPackageRoot)RoslynTools.Microsoft.RepoToolset\$(RoslynToolsMicrosoftRepoToolsetVersion)\tools\</RepoToolsetDir>
+    <RepoToolsetDir>$(NuGetPackageRoot)RoslynTools.RepoToolset\$(RoslynToolsRepoToolsetVersion)\tools\</RepoToolsetDir>
 
-    <RepositoryUrl>https://github.com/dotnet/symstore</RepositoryUrl>
+    <RepositoryUrl>https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_git/DotNet-SymStore</RepositoryUrl>
+    <RepositoryRawUrl>https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_git/DotNet-SymStore</RepositoryRawUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
-
-    <!-- SourceLink: Generate source link when building in microbuild. -->
-    <SourceLinkCreate Condition="'$(BUILD_BUILDNUMBER)' != ''">true</SourceLinkCreate>
-    <SourceLinkRepo>$(RepoRoot)</SourceLinkRepo>
+    <PackageLicenseUrl>http://go.microsoft.com/fwlink/?LinkId=529443</PackageLicenseUrl>
+    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <IsPublishable>false</IsPublishable>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 </Project>

@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>;1591;1701</NoWarn>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <ProjectReference Include="..\FileFormats\FileFormats.csproj" />
+    <ProjectReference Include="..\Microsoft.FileFormats\Microsoft.FileFormats.csproj" />
   </ItemGroup>
 </Project>

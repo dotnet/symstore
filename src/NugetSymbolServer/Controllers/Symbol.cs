@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using NugetSymbolServer.Service.Models;
 using System.Threading.Tasks;
 
-namespace ConsoleApplication 
+namespace NugetSymbolServer
 { 
     public class SymbolController : Controller 
     {

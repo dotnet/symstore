@@ -116,7 +116,7 @@ namespace NugetSymbolServer.Service.Models
             }
         }
 
-        class JsonSymbolIndexEntry
+        public class JsonSymbolIndexEntry
         {
             [JsonProperty(PropertyName="clientKey")]
             public string ClientKey;
@@ -141,7 +141,5 @@ namespace NugetSymbolServer.Service.Models
             }
             return entries;
         }
-
-        
     }
 }
