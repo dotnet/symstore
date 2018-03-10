@@ -2,7 +2,7 @@
 
 This is currently very preliminary and not finished or supported.
 
-This tool can download all the files needed for debugging (symbols, modules, SOS and DAC for the coreclr module given) for any given core dump, minidump or any supported platform's file formats like ELF, MachO, Windows PE and PDBs and portable PDBs.
+This tool can download all the files needed for debugging (symbols, modules, SOS and DAC for the coreclr module given) for any given core dump, minidump or any supported platform's file formats like ELF, MachO, Windows DLLs, PDBs and portable PDBs.
       
     Usage: dotnet symbols [options] <FILES>
     
