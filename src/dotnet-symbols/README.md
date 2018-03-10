@@ -1,26 +1,26 @@
-# Symbols Downloader Utility #
+# Dotnet cli Symbols Downloader Utility #
+
+This is currently very preliminary and not finished or supported.
 
 This tool can download all the files needed for debugging (symbols, modules, SOS and DAC for the coreclr module given) for any given core dump, minidump or any supported platform's file formats like ELF, MachO, Windows PE and PDBs and portable PDBs.
       
-    dotnet-symbols [options] <files>
-
-    -ms|--microsoft-symbol-server                       Add 'http://msdl.microsoft.com/download/symbols' symbol server path
-    -mi|--ms-internal-server                            Add 'http://symweb.corp.microsoft.com' symbol server path
-    -s |--server-path <symbol server path>              Add a http server path
-    -as|--authenticated-server-path <pat> <server path> Add a http PAT authenticated server path
-    -c |--cache-directory <file cache directory>        Add a cache directory
-    -o |--output-directory <output directory>           Set the output directory
-    -oi|--output-by-inputfile                           Write symbol file next to input file
-    -p |--packages                                      Input files are nuget packages
-    -r |--add-source-extension <ext>                    Add source file extension
-    -e |--add-valid-extension <ext>                     Add file extension to be indexed in package
-    -y |--symbols-only                                  Get only the symbol files
-    -w |--force-windows-pdbs                            Force downloading of the Windows PDBs
-    -d |--diag                                          Enable diagnostic output
-    -vd|--verbose-diag                                  Enable diagnostic and verbose diagnostic output
-    -h |--help                                          This help message
-
-The --packages option allows nuget packages to be accepted as input files. To verify that the input files or nuget package has been uploaded to the specified symbol server (-ms, -mi, -s, -as or -ss) don't provide an output path (-o).
+    Usage: dotnet symbols [options] <FILES>
+    
+    Arguments:
+      <FILES>   List of files. Can contain wildcards.
+    
+    Options:
+      -ms, --microsoft-symbol-serverAdd 'http://msdl.microsoft.com/download/symbols' symbol server path (default).
+      -mi, --ms-internal-server Add 'http://symweb.corp.microsoft.com' symbol server path.
+      -s, --server-path <symbol server path>Add a http server path.
+      -as, --authenticated-server-path <pat> <server path>  Add a http PAT authenticated server path.
+      -c, --cache-directory <file cache directory>  Add a cache directory.
+      -o, --output-directory <output directory> Set the output directory. Otherwise, write next to the input file (default).
+      -r, --recurse-subdirectories  Process input files in all subdirectories.
+      -y, --symbols-onlyDownload only the symbol files.
+      -w, --force-windows-pdbs  Force downloading of the Windows PDBs.
+      -d, --diagEnable diagnostic output.
+      -h, --helpShow help information.
 
 ## Examples ##
 
