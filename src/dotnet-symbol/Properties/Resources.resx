@@ -118,24 +118,46 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DownloadFromUri" xml:space="preserve">
-    <value>"Downloading from {0}"</value>
+    <value>Downloading from {0}</value>
   </data>
   <data name="FileAlreadyExists" xml:space="preserve">
-    <value>"{0} already exists, file not written"</value>
+    <value>{0} already exists, file not written</value>
   </data>
   <data name="InvalidCommandLineOption" xml:space="preserve">
-    <value>"Invalid option {0}"</value>
+    <value>Invalid option {0}</value>
   </data>
   <data name="InvalidServerPath" xml:space="preserve">
-    <value>"Invalid server path '{0}'"</value>
+    <value>Invalid server path '{0}'</value>
   </data>
   <data name="NoInputFiles" xml:space="preserve">
-    <value>"Input files not found"</value>
+    <value>Input files not found</value>
+  </data>
+  <data name="UsageOptions" xml:space="preserve">
+    <value>U
+Usage: dotnet symbols [options] &lt;FILES&gt;
+
+Arguments:
+  &lt;FILES&gt;   List of files. Can contain wildcards.
+
+Options:
+  --microsoft-symbol-server                         Add 'http://msdl.microsoft.com/download/symbols' symbol server path (default).
+  --internal-server                                 Add 'http://symweb.corp.microsoft.com' internal symbol server path.
+  --server-path &lt;symbol server path&gt;                Add a http server path.
+  --authenticated-server-path &lt;pat&gt; &lt;server path&gt;   Add a http PAT authenticated server path.
+  --cache-directory &lt;file cache directory&gt;          Add a cache directory.
+  --recurse-subdirectories                          Process input files in all subdirectories.
+  --symbols                                         Download the symbol files (.pdb, .dbg, .dwarf).
+  --modules                                         Download the module files (.dll, .so, .dylib).
+  --debugging                                       Download the special debugging modules (DAC, DBI, SOS).
+  --windows-pdbs                                    Force the downloading of the Windows PDBs when Portable PDBs are also available.
+  -o, --output &lt;output directory&gt;                   Set the output directory. Otherwise, write next to the input file (default).
+  -d, --diagnostics                                 Enable diagnostic output.
+  -h, --help                                        Show help information.</value>
   </data>
   <data name="WritingFile" xml:space="preserve">
-    <value>"Writing: {0}"</value>
+    <value>Writing: {0}</value>
   </data>
   <data name="WritingFilesToOutput" xml:space="preserve">
-    <value>"Writing files to {0}"</value>
+    <value>Writing files to {0}</value>
   </data>
 </root>

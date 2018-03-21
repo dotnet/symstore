@@ -47,7 +47,16 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 }
                 if ((flags & KeyTypeFlags.SymbolKey) != 0)
                 {
-                    foreach (PEPdbRecord pdb in _peFile.Pdbs)
+                    IEnumerable<PEPdbRecord> pdbs = new PEPdbRecord[0]; 
+                    try
+                    {
+                        pdbs = _peFile.Pdbs.ToArray();
+                    }
+                    catch (InvalidVirtualAddressException ex)
+                    {
+                        Tracer.Error("Reading PDB records for {0}: {1}", _path, ex.Message);
+                    }
+                    foreach (PEPdbRecord pdb in pdbs)
                     {
                         if (((flags & KeyTypeFlags.ForceWindowsPdbs) == 0) && pdb.IsPortablePDB)
                         {

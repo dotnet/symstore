@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHelpers", "src\TestHelp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NugetSymbolServer", "src\NugetSymbolServer\NugetSymbolServer.csproj", "{340A449E-DDE0-4C25-B4BE-EEC93F420070}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-symbols", "src\dotnet-symbols\dotnet-symbols.csproj", "{76790A04-BF78-4505-8091-EFFC4BB77032}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-symbol", "src\dotnet-symbol\dotnet-symbol.csproj", "{76790A04-BF78-4505-8091-EFFC4BB77032}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymClient", "src\SymClient\SymClient.csproj", "{7E4706CE-D645-4D27-A0A6-C3964011B77C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,14 @@ Global
 		{76790A04-BF78-4505-8091-EFFC4BB77032}.Release|Any CPU.Build.0 = Release|Any CPU
 		{76790A04-BF78-4505-8091-EFFC4BB77032}.Release|x64.ActiveCfg = Release|Any CPU
 		{76790A04-BF78-4505-8091-EFFC4BB77032}.Release|x64.Build.0 = Release|Any CPU
+		{7E4706CE-D645-4D27-A0A6-C3964011B77C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E4706CE-D645-4D27-A0A6-C3964011B77C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E4706CE-D645-4D27-A0A6-C3964011B77C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7E4706CE-D645-4D27-A0A6-C3964011B77C}.Debug|x64.Build.0 = Debug|Any CPU
+		{7E4706CE-D645-4D27-A0A6-C3964011B77C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E4706CE-D645-4D27-A0A6-C3964011B77C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E4706CE-D645-4D27-A0A6-C3964011B77C}.Release|x64.ActiveCfg = Release|Any CPU
+		{7E4706CE-D645-4D27-A0A6-C3964011B77C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

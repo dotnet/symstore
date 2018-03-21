@@ -25,6 +25,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
             return GetGenerators().Any((generator) => generator.IsValid());
         }
 
+        public override bool IsDump()
+        {
+            return GetGenerators().Any((generator) => generator.IsDump());
+        }
+
         public override IEnumerable<SymbolStoreKey> GetKeys(KeyTypeFlags flags)
         {
             foreach (KeyGenerator generator in GetGenerators())

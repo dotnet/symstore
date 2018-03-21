@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace dotnet.symbols.Properties {
+namespace dotnet.symbol.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace dotnet.symbols.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("dotnet.symbols.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("dotnet.symbol.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,7 +61,7 @@ namespace dotnet.symbols.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Downloading from {0}&quot;.
+        ///   Looks up a localized string similar to Downloading from {0}.
         /// </summary>
         internal static string DownloadFromUri {
             get {
@@ -70,7 +70,7 @@ namespace dotnet.symbols.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;{0} already exists, file not written&quot;.
+        ///   Looks up a localized string similar to {0} already exists, file not written.
         /// </summary>
         internal static string FileAlreadyExists {
             get {
@@ -79,7 +79,7 @@ namespace dotnet.symbols.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Invalid option {0}&quot;.
+        ///   Looks up a localized string similar to Invalid option {0}.
         /// </summary>
         internal static string InvalidCommandLineOption {
             get {
@@ -88,7 +88,7 @@ namespace dotnet.symbols.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Invalid server path &apos;{0}&apos;&quot;.
+        ///   Looks up a localized string similar to Invalid server path &apos;{0}&apos;.
         /// </summary>
         internal static string InvalidServerPath {
             get {
@@ -97,7 +97,7 @@ namespace dotnet.symbols.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Input files not found&quot;.
+        ///   Looks up a localized string similar to Input files not found.
         /// </summary>
         internal static string NoInputFiles {
             get {
@@ -106,7 +106,26 @@ namespace dotnet.symbols.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Writing: {0}&quot;.
+        ///   Looks up a localized string similar to U
+        ///Usage: dotnet symbols [options] &lt;FILES&gt;
+        ///
+        ///Arguments:
+        ///  &lt;FILES&gt;   List of files. Can contain wildcards.
+        ///
+        ///Options:
+        ///  --microsoft-symbol-server                         Add &apos;http://msdl.microsoft.com/download/symbols&apos; symbol server path (default).
+        ///  --internal-server                                 Add &apos;http://symweb.corp.microsoft.com&apos; internal symbol server path.
+        ///  --server-path &lt;symbol server path&gt;                Add a http server path.
+        ///  --authenticated-server-path &lt;pat&gt; &lt;server path&gt;   Add a htt [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string UsageOptions {
+            get {
+                return ResourceManager.GetString("UsageOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing: {0}.
         /// </summary>
         internal static string WritingFile {
             get {
@@ -115,7 +134,7 @@ namespace dotnet.symbols.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Writing files to {0}&quot;.
+        ///   Looks up a localized string similar to Writing files to {0}.
         /// </summary>
         internal static string WritingFilesToOutput {
             get {

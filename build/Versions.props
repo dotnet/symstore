@@ -7,20 +7,12 @@
   
     <!-- Toolset -->
     <RoslynToolsRepoToolsetVersion>1.0.0-beta-62601-02</RoslynToolsRepoToolsetVersion>
-    <DotNetCliVersion>2.1.300-preview2-008212</DotNetCliVersion>
+    <DotNetCliVersion>2.1.300-preview1-008174</DotNetCliVersion>
 
     <!-- Tests -->
     <MicrosoftNETTestSdkVersion>15.5.0-preview-20170727-01</MicrosoftNETTestSdkVersion>
     <XUnitVersion>2.3.1</XUnitVersion>
     <XUnitRunnerVisualStudioVersion>2.3.1</XUnitRunnerVisualStudioVersion>
     <UsingToolXliff>false</UsingToolXliff>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <RestoreSources>
-      $(RestoreSources);
-      https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json;
-      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
-    </RestoreSources>
   </PropertyGroup>
 </Project>

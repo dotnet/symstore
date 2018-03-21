@@ -2,7 +2,7 @@
 
 using System;
 
-namespace dotnet.symbols
+namespace SymClient
 {
     /// <summary>
     /// Simple trace/logging support.

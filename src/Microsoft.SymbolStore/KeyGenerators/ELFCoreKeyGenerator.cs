@@ -25,6 +25,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
             return _core.IsValid();
         }
 
+        public override bool IsDump()
+        {
+            return true;
+        }
+
         public override IEnumerable<SymbolStoreKey> GetKeys(KeyTypeFlags flags)
         {
             if (IsValid())

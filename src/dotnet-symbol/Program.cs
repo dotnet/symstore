@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using dotnet.symbols.Properties;
+using dotnet.symbol.Properties;
 using Microsoft.SymbolStore;
 using Microsoft.SymbolStore.KeyGenerators;
 using Microsoft.SymbolStore.SymbolStores;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace dotnet.symbols
+namespace dotnet.symbol
 {
     public class Program
     {
@@ -22,20 +22,26 @@ namespace dotnet.symbols
             public bool InternalSymwebServer;
         }
 
+        private readonly List<string> InputFilePaths = new List<string>();
+        private readonly List<string> CacheDirectories = new List<string>();
+        private readonly List<ServerInfo> SymbolServers = new List<ServerInfo>();
+        private string OutputDirectory;
+        private bool Subdirectories;
+        private bool Symbols;
+        private bool Debugging;
+        private bool Modules;
+        private bool ForceWindowsPdbs;
+        private ITracer Tracer;
+
         public static void Main(string[] args)
         {
             if (args.Length == 0)
             {
                 goto usage;
             }
-            var inputFilePaths = new List<string>();
-            var symbolServers = new List<ServerInfo>();
-            var cacheDirectories = new List<string>();
+            var program = new Program();
             var tracer = new Tracer();
-            string outputDirectory = null;
-            bool subdirectories = false;
-            bool symbolsOnly = false;
-            bool forceWindowsPdbs = false;
+            program.Tracer = tracer;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -43,19 +49,16 @@ namespace dotnet.symbols
                 Uri uri;
                 switch (args[i])
                 {
-                    case "-ms":
                     case "--microsoft-symbol-server":
                         Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out uri);
-                        symbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null});
+                        program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null});
                         break;
 
-                    case "-mi":
-                    case "--ms-internal-server":
+                    case "--internal-server":
                         Uri.TryCreate("http://symweb.corp.microsoft.com/", UriKind.Absolute, out uri);
-                        symbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null, InternalSymwebServer = true});
+                        program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null, InternalSymwebServer = true});
                         break;
 
-                    case "-as":
                     case "--authenticated-server-path":
                         if (++i < args.Length)
                             personalAccessToken = args[i];
@@ -69,7 +72,6 @@ namespace dotnet.symbols
                         }
                         goto case "--server-path";
 
-                    case "-s":
                     case "--server-path":
                         if (++i < args.Length)
                         {
@@ -81,47 +83,51 @@ namespace dotnet.symbols
                                 goto usage;
                             }
                             Uri.TryCreate(serverPath, UriKind.Absolute, out uri);
-                            symbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = personalAccessToken});
+                            program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = personalAccessToken});
                         }
                         else
                             goto usage;
                         break;
 
                     case "-o":
-                    case "--output-directory":
+                    case "--output":
                         if (++i < args.Length)
-                            outputDirectory = args[i];
+                            program.OutputDirectory = args[i];
                         else
                             goto usage;
                         break;
 
-                    case "-c":
                     case "--cache-directory":
                         if (++i < args.Length)
-                            cacheDirectories.Add(args[i]);
+                            program.CacheDirectories.Add(args[i]);
                         else
                             goto usage;
+                        break;
+
+                    case "--recurse-subdirectories":
+                        program.Subdirectories = true;
+                        break;
+
+                    case "--modules":
+                        program.Modules = true;
+                        break;
+
+                    case "--symbols":
+                        program.Symbols = true;
+                        break;
+
+                    case "--debugging":
+                        program.Debugging = true;
+                        break;
+
+                    case "--windows-pdbs":
+                        program.ForceWindowsPdbs = true;
                         break;
 
                     case "-d":
-                    case "--diag":
+                    case "--diagnostics":
                         tracer.Enabled = true;
                         tracer.EnabledVerbose = true;
-                        break;
-
-                    case "-y":
-                    case "--symbols-only":
-                        symbolsOnly = true;
-                        break;
-
-                    case "-r":
-                    case "--recurse-subdirectories":
-                        subdirectories = true;
-                        break;
-                    
-                    case "-w":
-                    case "--force-windows-pdbs":
-                        forceWindowsPdbs = true;
                         break;
 
                     case "-h":
@@ -136,29 +142,28 @@ namespace dotnet.symbols
                             tracer.Error(Resources.InvalidCommandLineOption, inputFile);
                             goto usage;
                         }
-                        inputFilePaths.Add(inputFile);
+                        program.InputFilePaths.Add(inputFile);
                         break;
                 }
             }
             // Default to public Microsoft symbol server
-            if (symbolServers.Count == 0)
+            if (program.SymbolServers.Count == 0)
             {
                 Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
-                symbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null});
+                program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null});
             }
-            foreach (ServerInfo server in symbolServers)
+            foreach (ServerInfo server in program.SymbolServers)
             {
                 tracer.WriteLine(Resources.DownloadFromUri, server.Uri);
             }
-            if (outputDirectory != null)
+            if (program.OutputDirectory != null)
             {
-                Directory.CreateDirectory(outputDirectory);
-                tracer.WriteLine(Resources.WritingFilesToOutput, outputDirectory);
+                Directory.CreateDirectory(program.OutputDirectory);
+                tracer.WriteLine(Resources.WritingFilesToOutput, program.OutputDirectory);
             }
-            Program program = new Program(tracer, subdirectories, inputFilePaths, cacheDirectories, symbolServers, outputDirectory);
             try
             {
-                program.DownloadFiles(symbolsOnly, forceWindowsPdbs).GetAwaiter().GetResult();
+                program.DownloadFiles().GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -172,61 +177,14 @@ namespace dotnet.symbols
 
         private static void PrintUsage()
         {
-            Console.WriteLine(@"
-Usage: dotnet symbols [options] <FILES>
-
-Arguments:
-  <FILES>   List of files. Can contain wildcards.
-
-Options:
-  -ms, --microsoft-symbol-server                        Add 'http://msdl.microsoft.com/download/symbols' symbol server path (default).
-  -mi, --ms-internal-server                             Add 'http://symweb.corp.microsoft.com' symbol server path.
-  -s, --server-path <symbol server path>                Add a http server path.
-  -as, --authenticated-server-path <pat> <server path>  Add a http PAT authenticated server path.
-  -c, --cache-directory <file cache directory>          Add a cache directory.
-  -o, --output-directory <output directory>             Set the output directory. Otherwise, write next to the input file (default).
-  -r, --recurse-subdirectories                          Process input files in all subdirectories.
-  -y, --symbols-only                                    Download only the symbol files.
-  -w, --force-windows-pdbs                              Force downloading of the Windows PDBs.
-  -d, --diag                                            Enable diagnostic output.
-  -h, --help                                            Show help information.");
+            Console.WriteLine(Resources.UsageOptions);
         }
 
-        private readonly IEnumerable<string> _inputFilePaths;
-        private readonly IEnumerable<string> _cacheDirectories;
-        private readonly IEnumerable<ServerInfo> _symbolServers;
-        private readonly string _outputDirectory;
-        private readonly bool _subdirectories;
-        private readonly ITracer _tracer;
-
-        Program(ITracer tracer, bool subdirectories, IEnumerable<string> inputFilePaths, IEnumerable<string> cacheDirectories, IEnumerable<ServerInfo> symbolServers, string outputDirectory)
-        {
-            _tracer = tracer;
-            _subdirectories = subdirectories;
-            _inputFilePaths = inputFilePaths;
-            _cacheDirectories = cacheDirectories;
-            _symbolServers = symbolServers;
-            _outputDirectory = outputDirectory;
-        }
-
-        internal async Task DownloadFiles(bool symbolsOnly, bool forceWindowsPdbs)
+        internal async Task DownloadFiles()
         {
             using (SymbolStore symbolStore = BuildSymbolStore())
             {
-                KeyTypeFlags flags;
-                if (symbolsOnly)
-                {
-                    flags = KeyTypeFlags.SymbolKey;
-                }
-                else
-                {
-                    flags = KeyTypeFlags.IdentityKey | KeyTypeFlags.SymbolKey | KeyTypeFlags.ClrKeys;
-                }
-                if (forceWindowsPdbs)
-                {
-                    flags |= KeyTypeFlags.ForceWindowsPdbs;
-                }
-                foreach (SymbolStoreKeyWrapper wrapper in GetKeys(flags).Distinct())
+                foreach (SymbolStoreKeyWrapper wrapper in GetKeys().Distinct())
                 {
                     SymbolStoreKey key = wrapper.Key;
                     if (symbolStore != null)
@@ -247,20 +205,21 @@ Options:
         {
             SymbolStore store = null;
 
-            foreach (ServerInfo server in _symbolServers.Reverse())
+            foreach (ServerInfo server in ((IEnumerable<ServerInfo>)SymbolServers).Reverse())
             {
                 if (server.InternalSymwebServer)
                 {
-                    store = new SymwebHttpSymbolStore(_tracer, store, server.Uri, server.PersonalAccessToken);
+                    store = new SymwebHttpSymbolStore(Tracer, store, server.Uri, server.PersonalAccessToken);
                 }
-                else {
-                    store = new HttpSymbolStore(_tracer, store, server.Uri, server.PersonalAccessToken);
+                else
+                {
+                    store = new HttpSymbolStore(Tracer, store, server.Uri, server.PersonalAccessToken);
                 }
             }
 
-            foreach (string cache in _cacheDirectories.Reverse())
+            foreach (string cache in ((IEnumerable<string>)CacheDirectories).Reverse())
             {
-                store = new CacheSymbolStore(_tracer, store, cache);
+                store = new CacheSymbolStore(Tracer, store, cache);
             }
 
             return store;
@@ -296,14 +255,14 @@ Options:
             }
         }
 
-        private IEnumerable<SymbolStoreKeyWrapper> GetKeys(KeyTypeFlags flags)
+        private IEnumerable<SymbolStoreKeyWrapper> GetKeys()
         {
-            var inputFiles = _inputFilePaths.SelectMany((string file) => 
+            var inputFiles = InputFilePaths.SelectMany((string file) =>
             {
                 string directory = Path.GetDirectoryName(file);
                 string pattern = Path.GetFileName(file);
                 return Directory.EnumerateFiles(string.IsNullOrWhiteSpace(directory) ? "." : directory, pattern,
-                    _subdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                    Subdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
             });
 
             if (!inputFiles.Any())
@@ -315,6 +274,36 @@ Options:
             {
                 foreach (KeyGenerator generator in GetKeyGenerators(inputFile))
                 {
+                    KeyTypeFlags flags = KeyTypeFlags.None;
+                    if (Symbols)
+                    {
+                        flags |= KeyTypeFlags.SymbolKey;
+                    }
+                    if (Modules)
+                    {
+                        flags |= KeyTypeFlags.IdentityKey;
+                    }
+                    if (Debugging)
+                    {
+                        flags |= KeyTypeFlags.ClrKeys;
+                    }
+                    if (flags == KeyTypeFlags.None)
+                    {
+                        if (generator.IsDump())
+                        {
+                            // The default for dumps is to download everything
+                            flags = KeyTypeFlags.IdentityKey | KeyTypeFlags.SymbolKey | KeyTypeFlags.ClrKeys;
+                        }
+                        else
+                        {
+                            // Otherwise the default is just the symbol files
+                            flags = KeyTypeFlags.SymbolKey;
+                        }
+                    }
+                    if (ForceWindowsPdbs)
+                    {
+                        flags |= KeyTypeFlags.ForceWindowsPdbs;
+                    }
                     foreach(var wrapper in generator.GetKeys(flags).Select((key) => new SymbolStoreKeyWrapper(key, inputFile)))
                     {
                         yield return wrapper;
@@ -329,15 +318,15 @@ Options:
             {
                 SymbolStoreFile file = new SymbolStoreFile(inputStream, inputFile);
                 string extension = Path.GetExtension(inputFile);
-                yield return new FileKeyGenerator(_tracer, file);
+                yield return new FileKeyGenerator(Tracer, file);
             }
         }
 
         private async Task WriteFile(SymbolStoreFile file, SymbolStoreKeyWrapper wrapper)
         {
-            if (_outputDirectory != null) 
+            if (OutputDirectory != null) 
             {
-                await WriteFileToDirectory(file.Stream, wrapper.Key.FullPathName, _outputDirectory);
+                await WriteFileToDirectory(file.Stream, wrapper.Key.FullPathName, OutputDirectory);
             }
             else
             {
@@ -349,12 +338,13 @@ Options:
         {
             stream.Position = 0;
             string destination = Path.Combine(destinationDirectory, Path.GetFileName(fileName));
-            if (File.Exists(destination)) {
-                _tracer.Warning(Resources.FileAlreadyExists, destination);
+            if (File.Exists(destination))
+            {
+                Tracer.Warning(Resources.FileAlreadyExists, destination);
             }
             else
             {
-                _tracer.WriteLine(Resources.WritingFile, destination);
+                Tracer.WriteLine(Resources.WritingFile, destination);
                 using (Stream destinationStream = File.OpenWrite(destination))
                 {
                     await stream.CopyToAsync(destinationStream);
