@@ -50,9 +50,9 @@ Example:
 
 ### Portable-Pdb-Signature
 
-This applies to Microsoft .Net portable PDB format files, commonly using the suffix .pdb. The Portable PDB format uses the same key format as Windows PDBs, except that 0xffffffff (UInt32.MaxValue) is used for the age. In other words, the key is computed by extracting the Signature (guid) from debug metadata header and combining it with 'ffffffff'. The final key is formatted: 
+This applies to Microsoft .Net portable PDB format files, commonly using the suffix .pdb. The Portable PDB format uses the same key format as Windows PDBs, except that 0xFFFFFFFF (UInt32.MaxValue) is used for the age. In other words, the key is computed by extracting the Signature (guid) from debug metadata header and combining it with 'FFFFFFFF'. The final key is formatted: 
 
-`<filename>/<guid>ffffffff/<filename>`
+`<filename>/<guid>FFFFFFFF/<filename>`
  
 Example:
 	
@@ -60,7 +60,7 @@ Example:
 
 **Signature field:** `{ 0x497B72F6, 0x390A, 0x44FC { 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B } }`
 
-**Lookup key:** `foo.pdb/497b72f6390a44fc878e5a2d63b6cc4bffffffff/foo.pdb`
+**Lookup key:** `foo.pdb/497b72f6390a44fc878e5a2d63b6cc4bFFFFFFFF/foo.pdb`
 
 
 ### ELF-buildid
