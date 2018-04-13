@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <NoWarn>;1591;1701</NoWarn>
+    <IsTool>true</IsTool>
+    <Description>Symbol download utility</Description>
+    <PackageTags>Symbol</PackageTags>
+    <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <_PackageFiles Include="$(OutputPath)\*.dll">
+      <BuildAction>None</BuildAction>
+      <PackagePath>tools\</PackagePath>
+    </_PackageFiles>
+    <_PackageFiles Include="$(OutputPath)\SymClient.runtimeconfig.json">
+      <BuildAction>None</BuildAction>
+      <PackagePath>tools\</PackagePath>
+    </_PackageFiles>
+    <_PackageFiles Include="$(OutputPath)\*.pdb">
+      <BuildAction>None</BuildAction>
+      <PackagePath>tools\</PackagePath>
+    </_PackageFiles>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.SymbolStore\Microsoft.SymbolStore.csproj" />
+  </ItemGroup>
+</Project>

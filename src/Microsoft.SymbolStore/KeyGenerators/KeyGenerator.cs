@@ -13,6 +13,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
     public enum KeyTypeFlags
     {
         /// <summary>
+        /// No keys.
+        /// </summary>
+        None = 0x00,
+
+        /// <summary>
         /// Generate the key of the binary or file itself.
         /// </summary>
         IdentityKey = 0x01,
@@ -59,6 +64,14 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// Returns true if the key generator can get keys for this file or binary.
         /// </summary>
         public abstract bool IsValid();
+
+        /// <summary>
+        /// Returns true if file is a mini or core dump.
+        /// </summary>
+        public virtual bool IsDump()
+        {
+            return false;
+        }
 
         /// <summary>
         /// Returns the symbol store keys for this file or binary.

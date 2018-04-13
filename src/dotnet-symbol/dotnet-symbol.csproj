@@ -3,16 +3,22 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>;1591;1701</NoWarn>
+    <IsPublishable>true</IsPublishable>
+    <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>dotnet-symbols</ToolCommandName>
+    <!-- The package version needs to be hard coded as a stable version so "dotnet install -g dotnet-symbols" works -->
+    <PackageVersion>1.0.0</PackageVersion>
+    <ToolCommandName>dotnet-symbol</ToolCommandName>
     <Description>Symbols download utility</Description>
     <PackageTags>Symbols</PackageTags>
     <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
-    <RootNamespace>dotnet.symbols</RootNamespace>
+    <RootNamespace>dotnet.symbol</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.SymbolStore\Microsoft.SymbolStore.csproj" />
+    <ProjectReference Include="..\Microsoft.SymbolStore\Microsoft.SymbolStore.csproj">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
   
   <ItemGroup>

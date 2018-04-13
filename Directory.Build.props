@@ -5,12 +5,9 @@
 
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
-    
     <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\'))</RepoRoot>
     <RepoToolsetDir>$(NuGetPackageRoot)RoslynTools.RepoToolset\$(RoslynToolsRepoToolsetVersion)\tools\</RepoToolsetDir>
-
-    <RepositoryUrl>https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_git/DotNet-SymStore</RepositoryUrl>
-    <RepositoryRawUrl>https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_git/DotNet-SymStore</RepositoryRawUrl>
+    <RepositoryUrl>https://github.com/dotnet/symstore</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <PackageLicenseUrl>http://go.microsoft.com/fwlink/?LinkId=529443</PackageLicenseUrl>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
