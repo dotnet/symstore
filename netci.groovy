@@ -29,28 +29,31 @@ static addXUnitDotNETResults(def job, def configName) {
   Utilities.addXUnitDotNETResults(job, resultFilePattern, skipIfNoTestFiles)
 }
 
-static addBuildSteps(def job, def projectName, def opsysName, def configName, def isPR) {
-  def buildJobName = getJobName(opsysName, configName)
+static addBuildSteps(def job, def projectName, def os, def configName, def isPR) {
+  def buildJobName = getJobName(os, configName)
   def buildFullJobName = Utilities.getFullJobName(projectName, buildJobName, isPR)
 
   job.with {
     steps {
-      batchFile(""".\\CIBuild.cmd -configuration ${configName} -prepareMachine""")
+      if (os == "Windows_NT") {
+        batchFile(""".\\eng\\common\\CIBuild.cmd -configuration ${configName} -prepareMachine""")
+      } else {
+        shell("./eng/common/cibuild.sh --configuration ${configName} --prepareMachine")
+      }
     }
   }
 }
 
 [true, false].each { isPR ->
-  ['windows'].each { opsysName ->
-    ['debug', 'release'].each { configName ->
+  ['Windows_NT'].each { os ->
+    ['Debug', 'Release'].each { configName ->
       def projectName = GithubProject
 
       def branchName = GithubBranchName
 
       def filesToArchive = "**/artifacts/${configName}/**"
-      def filesToExclude = "**/artifacts/${configName}/obj/**"
 
-      def jobName = getJobName(opsysName, configName)
+      def jobName = getJobName(os, configName)
       def fullJobName = Utilities.getFullJobName(projectName, jobName, isPR)
       def myJob = job(fullJobName)
 
@@ -62,12 +65,16 @@ static addBuildSteps(def job, def projectName, def opsysName, def configName, de
         Utilities.addGithubPushTrigger(myJob)
       }
       
-      addArchival(myJob, filesToArchive, filesToExclude)
+      addArchival(myJob, filesToArchive, "")
       addXUnitDotNETResults(myJob, configName)
 
-      Utilities.setMachineAffinity(myJob, 'Windows_NT', 'latest-dev15-3')
+      if (os == 'Windows_NT') {
+        Utilities.setMachineAffinity(myJob, os, 'latest-dev15-3')  
+      } else {
+        Utilities.setMachineAffinity(myJob, os, 'latest-or-auto')
+      }
 
-      addBuildSteps(myJob, projectName, opsysName, configName, isPR)
+      addBuildSteps(myJob, projectName, os, configName, isPR)
     }
   }
 }
