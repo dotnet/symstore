@@ -6,10 +6,11 @@ Pre-release builds are available on MyGet gallery: https://dotnet.myget.org/Gall
 
 [//]: # (Begin current test results)
 
-### Windows - Unit Tests
-||Debug x86|Debug x64|Release x86|Release x64|Core CLR
-|:--:|:--:|:--:|:--:|:--:|:--:|
-|**master**|[![Build Status](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_debug_unit32/badge/icon)](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_debug_unit32/)|[![Build Status](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_debug_unit64/badge/icon)](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_debug_unit64/)|[![Build Status](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_release_unit32/badge/icon)](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_release_unit32/)|[![Build Status](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_release_unit64/badge/icon)](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_release_unit64/)|[![Build Status](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_release_core/badge/icon)](http://ci.dot.net/job/dotnet_symstore/job/master/job/windows_release_core/)
+
+|    | x64 Debug|x64 Release|
+|:--:|:--:|:--:|
+|**Windows**|[![Build Status](https://ci.dot.net/job/dotnet_symstore/job/master/job/Windows_NT_Debug/badge/icon)](https://ci.dot.net/job/dotnet_symstore/job/master/job/Windows_NT_Debug/)|[![Build Status](https://ci.dot.net/job/dotnet_symstore/job/master/job/Windows_NT_Release/badge/icon)](https://ci.dot.net/job/dotnet_symstore/job/master/job/Windows_NT_Release/)|
+|**Ubuntu 16.04**|[![Build Status](https://ci.dot.net/job/dotnet_symstore/job/master/job/Ubuntu16.04_Debug/badge/icon)](https://ci.dot.net/job/dotnet_symstore/job/master/job/Ubuntu16.04_Debug/)|[![Build Status](https://ci.dot.net/job/dotnet_symstore/job/master/job/Ubuntu16.04_Release/badge/icon)](https://ci.dot.net/job/dotnet_symstore/job/master/job/Ubuntu16.04_Release/)|
 
 [//]: # (End current test results)
 
