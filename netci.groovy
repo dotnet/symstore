@@ -45,7 +45,7 @@ static addBuildSteps(def job, def projectName, def os, def configName, def isPR)
 }
 
 [true, false].each { isPR ->
-  ['Windows_NT'].each { os ->
+  ['Ubuntu16.04', 'Windows_NT'].each { os ->
     ['Debug', 'Release'].each { configName ->
       def projectName = GithubProject
 
