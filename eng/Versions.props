@@ -5,9 +5,9 @@
     <VersionBase>1.0.0</VersionBase>
     <PreReleaseVersionLabel>beta</PreReleaseVersionLabel>
   
-    <!-- Toolset -->
-    <RoslynToolsRepoToolsetVersion>1.0.0-beta-62601-02</RoslynToolsRepoToolsetVersion>
-    <DotNetCliVersion>2.1.300-preview1-008174</DotNetCliVersion>
+    <!-- CoreFX -->
+    <SystemCollectionsImmutableVersion>1.4.0</SystemCollectionsImmutableVersion>
+    <SystemReflectionMetadataVersion>1.5.0</SystemReflectionMetadataVersion>
 
     <!-- Tests -->
     <MicrosoftNETTestSdkVersion>15.5.0-preview-20170727-01</MicrosoftNETTestSdkVersion>
