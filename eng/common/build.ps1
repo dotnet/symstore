@@ -61,24 +61,67 @@ function Create-Directory([string[]] $path) {
   }
 }
 
-function InstallDotNetCli {
-  $installScript = "$DotNetRoot\dotnet-install.ps1"
+function InitializeDotNetCli {
+  # Don't resolve runtime, shared framework, or SDK from other locations to ensure build determinism
+  $env:DOTNET_MULTILEVEL_LOOKUP=0
+  
+  # Disable first run since we do not need all ASP.NET packages restored.
+  $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+
+  # Source Build uses DotNetCoreSdkDir variable
+  if ($env:DotNetCoreSdkDir -ne $null) {
+    $env:DOTNET_INSTALL_DIR = $env:DotNetCoreSdkDir    
+  }
+
+  # Use dotnet installation specified in DOTNET_INSTALL_DIR if it contains the required SDK version, 
+  # otherwise install the dotnet CLI and SDK to repo local .dotnet directory to avoid potential permission issues.
+  if (($env:DOTNET_INSTALL_DIR -ne $null) -and (Test-Path(Join-Path $env:DOTNET_INSTALL_DIR "sdk\$($GlobalJson.sdk.version)"))) {
+    $dotnetRoot = $env:DOTNET_INSTALL_DIR
+  } else {
+    $dotnetRoot = Join-Path $RepoRoot ".dotnet"
+    $env:DOTNET_INSTALL_DIR = $dotnetRoot
+    
+    if ($restore) {
+      InstallDotNetCli $dotnetRoot
+    }
+  }
+
+  $global:BuildDriver = Join-Path $dotnetRoot "dotnet.exe"    
+  $global:BuildArgs = "msbuild"
+}
+
+function InstallDotNetCli([string] $dotnetRoot) {
+  $installScript = "$dotnetRoot\dotnet-install.ps1"
   if (!(Test-Path $installScript)) { 
-    Create-Directory $DotNetRoot
+    Create-Directory $dotnetRoot
     Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile $installScript
   }
   
-  & $installScript -Version $GlobalJson.sdk.version -InstallDir $DotNetRoot
+  & $installScript -Version $GlobalJson.sdk.version -InstallDir $dotnetRoot
   if ($lastExitCode -ne 0) {
-    throw "Failed to install dotnet cli (exit code '$lastExitCode')."
+    Write-Host "Failed to install dotnet cli (exit code '$lastExitCode')." -ForegroundColor Red
+    exit $lastExitCode
   }
 }
 
-function LocateVisualStudio {
-  if ($InVSEnvironment) {
-    return Join-Path $env:VS150COMNTOOLS "..\.."
+function InitializeVisualStudioBuild {
+  $inVSEnvironment = !($env:VS150COMNTOOLS -eq $null) -and (Test-Path $env:VS150COMNTOOLS)
+
+  if ($inVSEnvironment) {
+    $vsInstallDir = Join-Path $env:VS150COMNTOOLS "..\.."
+  } else {    
+    $vsInstallDir = LocateVisualStudio
+  
+    $env:VS150COMNTOOLS = Join-Path $vsInstallDir "Common7\Tools\"
+    $env:VSSDK150Install = Join-Path $vsInstallDir "VSSDK\"
+    $env:VSSDKInstall = Join-Path $vsInstallDir "VSSDK\"
   }
 
+  $global:BuildDriver = Join-Path $vsInstallDir "MSBuild\15.0\Bin\msbuild.exe"
+  $global:BuildArgs = "/nodeReuse:$(!$ci)"
+}
+
+function LocateVisualStudio {
   $vswhereVersion = $GlobalJson.vswhere.version
   $toolsRoot = Join-Path $RepoRoot ".tools"
   $vsWhereDir = Join-Path $toolsRoot "vswhere\$vswhereVersion"
@@ -92,23 +135,51 @@ function LocateVisualStudio {
 
   $vsInstallDir = & $vsWhereExe -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild -requires Microsoft.VisualStudio.Component.VSSDK -requires Microsoft.Net.Component.4.6.TargetingPack -requires Microsoft.VisualStudio.Component.Roslyn.Compiler -requires Microsoft.VisualStudio.Component.VSSDK
 
-  if (!(Test-Path $vsInstallDir)) {
-    throw "Failed to locate Visual Studio (exit code '$lastExitCode')."
+  if ($lastExitCode -ne 0) {
+    Write-Host "Failed to locate Visual Studio (exit code '$lastExitCode')." -ForegroundColor Red
+    exit $lastExitCode
   }
 
   return $vsInstallDir
 }
 
-function InstallToolset {
-  if (!(Test-Path $ToolsetBuildProj)) {
-   $proj = Join-Path $TempDir "_restore.proj"   
-   '<Project Sdk="RoslynTools.RepoToolset"><Target Name="NoOp"/></Project>' | Set-Content $proj
-    & $BuildDriver $BuildArgs $proj /t:NoOp /m /nologo /clp:None /warnaserror /v:$verbosity /p:NuGetPackageRoot=$NuGetPackageRoot /p:__ExcludeSdkImports=true
+function InitializeToolset {
+  $toolsetVersion = $GlobalJson.'msbuild-sdks'.'RoslynTools.RepoToolset'
+  $toolsetLocationFile = Join-Path $ToolsetDir "$toolsetVersion.txt"
+
+  if (Test-Path $toolsetLocationFile) {
+    $path = Get-Content $toolsetLocationFile
+    if (Test-Path $path) {
+      $global:ToolsetBuildProj = $path
+      return
+    }
   }
+    
+  if (-not $restore) {
+    Write-Host  "Toolset version $toolsetVersion has not been restored."
+    exit 1
+  }
+
+  $proj = Join-Path $ToolsetDir "restore.proj"  
+
+  '<Project Sdk="RoslynTools.RepoToolset"/>' | Set-Content $proj
+  & $BuildDriver $BuildArgs $proj /t:__WriteToolsetLocation /m /nologo /clp:None /warnaserror /bl:$ToolsetRestoreLog /v:$verbosity /p:__ToolsetLocationOutputFile=$toolsetLocationFile
+    
+  if ($lastExitCode -ne 0) {
+    Write-Host "Failed to restore toolset (exit code '$lastExitCode')." -Color Red
+    Write-Host "Build log: $ToolsetRestoreLog" -ForegroundColor DarkGray
+    exit $lastExitCode
+  }
+
+ $global:ToolsetBuildProj = Get-Content $toolsetLocationFile
 }
 
 function Build {
-  & $BuildDriver $BuildArgs $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity /bl:$Log /p:Configuration=$configuration /p:Projects=$solution /p:RepoRoot=$RepoRoot /p:Restore=$restore /p:DeployDeps=$deployDeps /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:IntegrationTest=$integrationTest /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci /p:NuGetPackageRoot=$NuGetPackageRoot $properties
+  & $BuildDriver $BuildArgs $ToolsetBuildProj /m /nologo /clp:Summary /warnaserror /v:$verbosity /bl:$Log /p:Configuration=$configuration /p:Projects=$solution /p:RepoRoot=$RepoRoot /p:Restore=$restore /p:DeployDeps=$deployDeps /p:Build=$build /p:Rebuild=$rebuild /p:Deploy=$deploy /p:Test=$test /p:IntegrationTest=$integrationTest /p:Sign=$sign /p:Pack=$pack /p:CIBuild=$ci $properties
+  if ($lastExitCode -ne 0) {
+    Write-Host "Build log: $Log" -ForegroundColor DarkGray
+    exit $lastExitCode
+  }
 }
 
 function Stop-Processes() {
@@ -118,19 +189,13 @@ function Stop-Processes() {
   Get-Process -Name "vbcscompiler" -ErrorAction SilentlyContinue | Stop-Process
 }
 
-function Clear-NuGetCache() {
-  # clean nuget packages -- necessary to avoid mismatching versions of swix microbuild build plugin and VSSDK on Jenkins
-  $nugetRoot = (Join-Path $env:USERPROFILE ".nuget\packages")
-  if (Test-Path $nugetRoot) {
-    Remove-Item $nugetRoot -Recurse -Force
-  }
-}
-
 try {
   $RepoRoot = Join-Path $PSScriptRoot "..\.."
   $ArtifactsDir = Join-Path $RepoRoot "artifacts"
+  $ToolsetDir = Join-Path $ArtifactsDir "toolset"
   $LogDir = Join-Path (Join-Path $ArtifactsDir $configuration) "log"
   $Log = Join-Path $LogDir "Build.binlog"
+  $ToolsetRestoreLog = Join-Path $LogDir "ToolsetRestore.binlog"
   $TempDir = Join-Path (Join-Path $ArtifactsDir $configuration) "tmp"
   $GlobalJson = Get-Content(Join-Path $RepoRoot "global.json") | ConvertFrom-Json
   
@@ -138,63 +203,39 @@ try {
     $solution = Join-Path $RepoRoot "*.sln"
   }
 
-  if ($env:NUGET_PACKAGES -ne $null) {
-    $NuGetPackageRoot = $env:NUGET_PACKAGES.TrimEnd("\") + "\"
-  } else {
-    $NuGetPackageRoot = Join-Path $env:UserProfile ".nuget\packages\"
+  if ($env:NUGET_PACKAGES -eq $null) {
+    # Use local cache on CI to ensure deterministic build,
+    # use global cache in dev builds to avoid cost of downloading packages.
+    $env:NUGET_PACKAGES = if ($ci) { Join-Path $RepoRoot ".packages" } 
+                          else { Join-Path $env:UserProfile ".nuget\packages" }
   }
 
-  $ToolsetVersion = $GlobalJson.'msbuild-sdks'.'RoslynTools.RepoToolset'
-  $ToolsetBuildProj = Join-Path $NuGetPackageRoot "roslyntools.repotoolset\$ToolsetVersion\tools\Build.proj"
-  
-  # Presence of vswhere.version indicated the repo needs to build using VS msbuild
-  if ((Get-Member -InputObject $GlobalJson -Name "vswhere") -ne $null) {
-    $DotNetRoot = $null
-    $InVSEnvironment = !($env:VS150COMNTOOLS -eq $null) -and (Test-Path $env:VS150COMNTOOLS)
-    $vsInstallDir = LocateVisualStudio
-
-    $BuildDriver = Join-Path $vsInstallDir "MSBuild\15.0\Bin\msbuild.exe"
-    $BuildArgs = "/nodeReuse:$(!$ci)"
-
-    if (!$InVSEnvironment) {
-      $env:VS150COMNTOOLS = Join-Path $vsInstallDir "Common7\Tools\"
-      $env:VSSDK150Install = Join-Path $vsInstallDir "VSSDK\"
-      $env:VSSDKInstall = Join-Path $vsInstallDir "VSSDK\"
-    }
-  } elseif ((Get-Member -InputObject $GlobalJson -Name "sdk") -ne $null) {
-    $DotNetRoot = Join-Path $RepoRoot ".dotnet"
-    $BuildDriver = Join-Path $DotNetRoot "dotnet.exe"    
-    $BuildArgs = "msbuild"
-  } else {
-    throw "/global.json must either specify 'sdk.version' or 'vswhere.version'."
-  }
-
-  Create-Directory $TempDir
+  Create-Directory $ToolsetDir
   Create-Directory $LogDir
   
   if ($ci) {
+    Create-Directory $TempDir
     $env:TEMP = $TempDir
     $env:TMP = $TempDir
+  }
+    
+  # Presence of vswhere.version indicates the repo needs to build using VS msbuild
+  if ((Get-Member -InputObject $GlobalJson -Name "vswhere") -ne $null) {    
+    InitializeVisualStudioBuild
+  } elseif ((Get-Member -InputObject $GlobalJson -Name "sdk") -ne $null) {  
+    InitializeDotNetCli
+  } else {
+    Write-Host "/global.json must either specify 'sdk.version' or 'vswhere.version'." -ForegroundColor Red
+    exit 1
+  }
 
+  if ($ci) {
     Write-Host "Using $BuildDriver"
   }
 
-
-  # Preparation of a CI machine
-  if ($prepareMachine) {
-    Clear-NuGetCache
-  }
-
-  if ($restore) {
-    if ($DotNetRoot -ne $null) {
-      InstallDotNetCli
-    }
-
-    InstallToolset
-  }
+  InitializeToolset
 
   Build
-  exit $lastExitCode
 }
 catch {
   Write-Host $_
