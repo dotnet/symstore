@@ -1,6 +1,6 @@
 # Dotnet cli Symbol Downloader Utility #
 
-This is currently very preliminary and not finished or supported.
+This is currently very preliminary.
 
 This tool can download all the files needed for debugging (symbols, modules, SOS and DAC for the coreclr module given) for any given core dump, minidump or any supported platform's file formats like ELF, MachO, Windows DLLs, PDBs and portable PDBs.
       
@@ -16,11 +16,19 @@ This tool can download all the files needed for debugging (symbols, modules, SOS
       --authenticated-server-path <pat> <server path>   Add a http PAT authenticated server path.
       --cache-directory <file cache directory>          Add a cache directory.
       --recurse-subdirectories                          Process input files in all subdirectories.
-      --symbols-only                                    Download only the symbol files.
-      --windows-pdbs                                    Force downloading of the Windows PDBs.
+      --symbols                                         Download the symbol files (.pdb, .dbg, .dwarf).
+      --modules                                         Download the module files (.dll, .so, .dylib).
+      --debugging                                       Download the special debugging modules (DAC, DBI, SOS).
+      --windows-pdbs                                    Force the downloading of the Windows PDBs when Portable PDBs are also available.
       -o, --output <output directory>                   Set the output directory. Otherwise, write next to the input file (default).
       -d, --diagnostics                                 Enable diagnostic output.
       -h, --help                                        Show help information.
+
+## Install ##
+
+This is a dotnet global tool "extension" supported only in .NET Core 2.1. It is can be installed with the following command. The `<path-to-package>` is the packages built by this repo.
+
+    dotnet tool install --global --source-feed <path-to-package> dotnet-symbol
 
 ## Examples ##
 
