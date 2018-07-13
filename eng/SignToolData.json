@@ -8,7 +8,7 @@
         "bin/Microsoft.FileFormats/net45/Microsoft.FileFormats.dll",
         "bin/Microsoft.FileFormats/netstandard1.5/Microsoft.FileFormats.dll",
         "bin/Microsoft.SymbolStore/net45/Microsoft.SymbolStore.dll",
-        "bin/Microsoft.SymbolStore/netstandard2.0/Microsoft.SymbolStore.dll",
+        "bin/Microsoft.SymbolStore/netstandard2.0/Microsoft.SymbolStore.dll"
       ]
     },
     {
@@ -22,7 +22,7 @@
       "certificate": "NuGet",
       "strongName": null,
       "values": [
-        "packages/*.nupkg"
+        "packages/Shipping/*.nupkg"
       ]
     }
   ],
@@ -40,6 +40,6 @@
     "System.IO.FileSystem.dll",
     "System.IO.FileSystem.Primitives.dll",
     "System.Reflection.Metadata.dll",
-    "System.Runtime.InteropServices.RuntimeInformation.dll",
+    "System.Runtime.InteropServices.RuntimeInformation.dll"
   ]
 }
