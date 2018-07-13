@@ -17,6 +17,7 @@
     <PackageTags>Symbols</PackageTags>
     <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
     <RootNamespace>dotnet.symbol</RootNamespace>
+    <PackagedShimOutputRootDirectory>$(OutputPath)</PackagedShimOutputRootDirectory>
   </PropertyGroup>
   
   <ItemGroup>
