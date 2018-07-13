@@ -5,6 +5,8 @@
       "strongName": "MsSharedLib72",
       "values": [
         "bin/dotnet-symbol/netcoreapp2.1/dotnet-symbol.dll",
+        "bin/dotnet-symbol/shims/netcoreapp2.1/win-x64/dotnet-symbol.exe",
+        "bin/dotnet-symbol/shims/netcoreapp2.1/win-x86/dotnet-symbol.exe",
         "bin/Microsoft.FileFormats/net45/Microsoft.FileFormats.dll",
         "bin/Microsoft.FileFormats/netstandard1.5/Microsoft.FileFormats.dll",
         "bin/Microsoft.SymbolStore/net45/Microsoft.SymbolStore.dll",
@@ -20,7 +22,6 @@
     }
   ],
   "exclude": [
-    "dotnet-symbol.exe",
     "Microsoft.CSharp.dll",
     "Microsoft.NETCore.Platforms",
     "System.Collections.Immutable.dll",
