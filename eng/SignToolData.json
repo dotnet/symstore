@@ -12,7 +12,7 @@
       ]
     },
     {
-      "certificate": "400",
+      "certificate": "MicrosoftSHA2",
       "values": [
         "bin/dotnet-symbol/shims/netcoreapp2.1/win-x64/dotnet-symbol.exe",
         "bin/dotnet-symbol/shims/netcoreapp2.1/win-x86/dotnet-symbol.exe",
