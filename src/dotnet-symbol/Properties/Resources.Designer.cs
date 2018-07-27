@@ -106,8 +106,7 @@ namespace dotnet.symbol.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to U
-        ///Usage: dotnet symbols [options] &lt;FILES&gt;
+        ///   Looks up a localized string similar to Usage: dotnet symbols [options] &lt;FILES&gt;
         ///
         ///Arguments:
         ///  &lt;FILES&gt;   List of files. Can contain wildcards.
@@ -116,7 +115,7 @@ namespace dotnet.symbol.Properties {
         ///  --microsoft-symbol-server                         Add &apos;http://msdl.microsoft.com/download/symbols&apos; symbol server path (default).
         ///  --internal-server                                 Add &apos;http://symweb.corp.microsoft.com&apos; internal symbol server path.
         ///  --server-path &lt;symbol server path&gt;                Add a http server path.
-        ///  --authenticated-server-path &lt;pat&gt; &lt;server path&gt;   Add a htt [rest of string was truncated]&quot;;.
+        ///  --authenticated-server-path &lt;pat&gt; &lt;server path&gt;   Add a http P [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string UsageOptions {
             get {
