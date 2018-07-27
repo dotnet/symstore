@@ -177,6 +177,7 @@ namespace dotnet.symbol
 
         private static void PrintUsage()
         {
+            Console.WriteLine();
             Console.WriteLine(Resources.UsageOptions);
         }
 

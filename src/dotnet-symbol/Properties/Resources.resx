@@ -133,8 +133,7 @@
     <value>Input files not found</value>
   </data>
   <data name="UsageOptions" xml:space="preserve">
-    <value>U
-Usage: dotnet symbols [options] &lt;FILES&gt;
+    <value>Usage: dotnet symbols [options] &lt;FILES&gt;
 
 Arguments:
   &lt;FILES&gt;   List of files. Can contain wildcards.
