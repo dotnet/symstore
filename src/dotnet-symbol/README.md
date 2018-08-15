@@ -24,9 +24,9 @@ This tool can download all the files needed for debugging (symbols, modules, SOS
 
 ## Install ##
 
-This is a dotnet global tool "extension" supported only in [.NET Core 2.1](https://www.microsoft.com/net/download/). The latest version of the downloader can be installed with the following command.
+This is a dotnet global tool "extension" supported only in [.NET Core 2.1](https://www.microsoft.com/net/download/). The latest version of the downloader can be installed with the following command. Make sure you are not in any project directory with a NuGet.Config that doesn't include nuget.org as a source. See the Notes section about any errors. 
 
-    dotnet tool install --global dotnet-symbol
+    dotnet tool install -g dotnet-symbol
 
 ## Examples ##
 
@@ -54,6 +54,19 @@ To verify a symbol package on a local VSTS symbol server:
 
 Core dumps generated with gdb (generate-core-file command) or gcore (utility that comes with gdb) do not currently work with this utility (issue [#47](https://github.com/dotnet/symstore/issues/47)).
 
-The best way to generate core dumps on Linux (not supported on Windows or OSX) is to use the [createdump](https://github.com/dotnet/coreclr/blob/master/Documentation/botr/xplat-minidump-generation.md) facility that is part of .NET Core 2.0 and greater. It can be setup to automatically generate a "minidump" like ELF core dump when your .NET Core app crashes. The normal Linux system core generation also works just fine but they are usually a lot larger than necessary.
+The best way to generate core dumps on Linux (not supported on Windows or OSX) is to use the [createdump](https://github.com/dotnet/coreclr/blob/master/Documentation/botr/xplat-minidump-generation.md#configurationpolicy) facility that is part of .NET Core 2.0 and greater. It can be setup to automatically generate a "minidump" like ELF core dump when your .NET Core app crashes. The normal Linux system core generation also works just fine but they are usually a lot larger than necessary.
 
+If you receive the below error when installing the extension, you are in a project or directory that contains a NuGet.Config that doesn't contain nuget.org. 
 
+    error NU1101: Unable to find package dotnet-symbol. No packages exist with this id in source(s): ...
+    The tool package could not be restored.
+    Tool 'dotnet-symbol' failed to install. This failure may have been caused by:
+    
+    * You are attempting to install a preview release and did not use the --version option to specify the version.
+    * A package by this name was found, but it was not a .NET Core tool.
+    * The required NuGet feed cannot be accessed, perhaps because of an Internet connection problem.
+    * You mistyped the name of the tool.
+
+You can either run the install command from your $HOME or %HOME% directory or override this behavior with the `--add-source` option:
+
+`dotnet tool install -g --add-source https://api.nuget.org/v3/index.json dotnet-symbol` 
