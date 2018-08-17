@@ -44,7 +44,7 @@ namespace Microsoft.SymbolStore.SymbolStores
             // Normal unauthenticated client
             _client = new HttpClient();
 
-            // If PAT, create authenicated client
+            // If PAT, create authenticated client
             if (!string.IsNullOrEmpty(personalAccessToken))
             {
                 var handler = new HttpClientHandler() {
