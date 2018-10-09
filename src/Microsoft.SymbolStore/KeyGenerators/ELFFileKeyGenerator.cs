@@ -127,7 +127,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
             }
             catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
             {
-                Tracer.Warning("ELF .gnu_debuglink section in {0}: {1}", _path, ex.Message);
+                Tracer.Verbose("ELF .gnu_debuglink section in {0}: {1}", _path, ex.Message);
             }
             return null;
         }

@@ -39,7 +39,7 @@ namespace Microsoft.SymbolStore.SymbolStores
                 using (Stream destinationStream = File.OpenWrite(cacheFile))
                 {
                     await file.Stream.CopyToAsync(destinationStream);
-                    Tracer.Information("Cached: {0}", cacheFile);
+                    Tracer.Verbose("Cached: {0}", cacheFile);
                 }
             }
         }
