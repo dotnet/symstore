@@ -42,7 +42,7 @@ namespace Microsoft.SymbolStore.SymbolStores
                         using (TextReader reader = new StreamReader(filePtrStream))
                         {
                             string filePtr = await reader.ReadToEndAsync();
-                            Tracer.Information("SymwebHttpSymbolStore: file.ptr '{0}'", filePtr);
+                            Tracer.Verbose("SymwebHttpSymbolStore: file.ptr '{0}'", filePtr);
                             if (filePtr.StartsWith("PATH:"))
                             {
                                 filePtr = filePtr.Replace("PATH:", "");

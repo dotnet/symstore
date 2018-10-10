@@ -40,7 +40,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     return generator.GetKeys(flags);
                 }
             }
-            Tracer.Warning("Invalid file type: {0}", _file.FileName);
+            Tracer.Verbose("Unknown file type: {0}", _file.FileName);
             return SymbolStoreKey.EmptyArray;
         }
 

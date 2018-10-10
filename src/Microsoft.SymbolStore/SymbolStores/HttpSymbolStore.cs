@@ -114,14 +114,25 @@ namespace Microsoft.SymbolStore.SymbolStores
                         return await response.Content.ReadAsStreamAsync();
                     }
                 }
-                Tracer.Warning("HttpSymbolStore: {0} {1} '{2}'", (int)response.StatusCode, response.ReasonPhrase, requestUri);
-                response.Dispose();
 
                 // If the status code isn't some temporary or retryable condition, mark failure
-                if (!IsRetryableStatus(response.StatusCode))
+                bool retryable = IsRetryableStatus(response.StatusCode);
+                if (!retryable)
                 {
                     MarkClientFailure();
                 }
+
+                string message = string.Format("HttpSymbolStore: {0} {1} '{2}'", (int)response.StatusCode, response.ReasonPhrase, requestUri);
+                if (!retryable || response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Tracer.Error(message);
+                }
+                else 
+                {
+                    Tracer.Warning(message);
+                }
+
+                response.Dispose();
             }
             catch (HttpRequestException ex)
             {
