@@ -12,7 +12,8 @@
     <UsingToolXliff>false</UsingToolXliff>
 
     <!-- CoreFX -->
-    <SystemReflectionMetadataVersion>1.5.0</SystemReflectionMetadataVersion>
+    <SystemCollectionsImmutableVersion>1.5.0</SystemCollectionsImmutableVersion>
+    <SystemReflectionMetadataVersion>1.6.0</SystemReflectionMetadataVersion>
   </PropertyGroup>
 
   <PropertyGroup>
