@@ -55,6 +55,20 @@ namespace Microsoft.FileFormats.ELF.Tests
         }
 
         [Fact]
+        public void CheckFreeBSDIndexingInfo()
+        {
+            using (Stream stream = File.OpenRead("TestBinaries/ilasm.dbg"))
+            {
+                StreamAddressSpace dataSource = new StreamAddressSpace(stream);
+                ELFFile elf = new ELFFile(dataSource);
+                Assert.True(elf.IsValid());
+                Assert.True(elf.Header.Type == ELFHeaderType.Executable);
+                string buildId = TestUtilities.ToHexString(elf.BuildID);
+                Assert.Equal("4a91e41002a1307ef4097419d7875df001969daa", buildId);
+            }
+        }
+
+        [Fact]
         public void ParseCore()
         {
             using (Stream core = TestUtilities.OpenCompressedFile("TestBinaries/core.gz"))
