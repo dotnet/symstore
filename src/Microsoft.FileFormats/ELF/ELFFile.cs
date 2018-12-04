@@ -32,7 +32,7 @@ namespace Microsoft.FileFormats.ELF
             _segments = new Lazy<IEnumerable<ELFProgramSegment>>(ReadSegments);
             _sections = new Lazy<ELFSection[]>(ReadSections);
             _virtualAddressReader = new Lazy<Reader>(CreateVirtualAddressReader);
-            _buildId = new Lazy<byte[]>(ReadBuildID);
+            _buildId = new Lazy<byte[]>(ReadBuildId);
             _sectionNameTable = new Lazy<byte[]>(ReadSectionNameTable);
         }
 
@@ -146,20 +146,64 @@ namespace Microsoft.FileFormats.ELF
                 return DataSourceReader.WithAddressSpace(new ELFVirtualAddressSpace(Segments));
         }
 
-        private byte[] ReadBuildID()
+        private byte[] ReadBuildId()
         {
-            foreach (ELFProgramSegment segment in Segments)
+            byte[] buildId = null;
+
+            if (Header.ProgramHeaderOffset > 0 && Header.ProgramHeaderEntrySize > 0 && Header.ProgramHeaderCount > 0)
             {
-                if (segment.Header.Type == ELFProgramHeaderType.Note)
+                foreach (ELFProgramSegment segment in Segments)
                 {
-                    ELFNoteList noteList = new ELFNoteList(segment.Contents);
-                    foreach (ELFNote note in noteList.Notes)
+                    if (segment.Header.Type == ELFProgramHeaderType.Note)
                     {
-                        ELFNoteType type = note.Header.Type;
-                        if (type == ELFNoteType.PrpsInfo && note.Name.Equals("GNU"))
+                        buildId = ReadBuildIdNote(segment.Contents);
+                        if (buildId != null)
                         {
-                            return note.Contents.Read(0, (uint)note.Contents.Length);
+                            break;
                         }
+                    }
+                }
+            }
+
+            if (buildId == null)
+            { 
+                // Use sections to find build id if there isn't any program headers (i.e. some FreeBSD .dbg files)
+                try
+                {
+                    foreach (ELFSection section in Sections)
+                    {
+                        if (section.Header.Type == ELFSectionHeaderType.Note)
+                        {
+                            if (string.Equals(section.Name, ".note.gnu.build-id"))
+                            {
+                                buildId = ReadBuildIdNote(section.Contents);
+                                if (buildId != null)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
+                {
+                }
+            }
+
+            return buildId;
+        }
+
+        private byte[] ReadBuildIdNote(Reader noteReader)
+        {
+            if (noteReader != null)
+            {
+                var noteList = new ELFNoteList(noteReader);
+                foreach (ELFNote note in noteList.Notes)
+                {
+                    ELFNoteType type = note.Header.Type;
+                    if (type == ELFNoteType.PrpsInfo && note.Name.Equals("GNU"))
+                    {
+                        return note.Contents.Read(0, (uint)note.Contents.Length);
                     }
                 }
             }
@@ -206,13 +250,13 @@ namespace Microsoft.FileFormats.ELF
         {
             get
             {
-                return new ValidationRule("ELF Header SectionHeaderOffset is invalid or elf file is incomplete", () =>
+                return new ValidationRule("ELF Header SectionHeaderOffset is invalid or elf file is incomplete", () => 
                 {
-                    return Header.SectionHeaderOffset < _reader.Length && 
+                    return Header.SectionHeaderOffset < _reader.Length &&
                         Header.SectionHeaderOffset + (ulong)(Header.SectionHeaderEntrySize * Header.SectionHeaderCount) <= _reader.Length;
                 },
-                IsHeaderProgramHeaderEntrySizeValid, 
-                Header.IsProgramHeaderCountReasonable);
+                IsHeaderSectionHeaderEntrySizeValid,
+                Header.IsSectionHeaderCountReasonable);
             }
         }
 
