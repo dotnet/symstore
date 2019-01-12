@@ -4,14 +4,20 @@ This is a proof of concept implementation of a [Package Based Symbol Server](../
 
 ## Running the example ##
 
-Step 1 - Start a command line in this directory and run:
+Step 1 - Build the symstore repo
+    
+    c:\repos\symstore> build.cmd
 
-    NugetSymbolServer>dotnet restore
-       ...
-    NugetSymbolServer>dotnet run
-       ...
+Step 2 - Run the symbol server
+
+    c:\repos\symstore> dotnet artifacts\Debug\bin\NugetSymbolServer\netcoreapp2.1\NugetSymbolServer.dll
+
+    info: NugetSymbolServer.Service.Models.PackageStore[0]
+          Adding package c:\repos\symstore\artifacts\Debug\bin\NugetSymbolServer\netcoreapp2.1\.\nuget_feed\HelloWorld.1.0.0.nupkg
+    info: NugetSymbolServer.Service.Models.PackageBasedSymbolStore[0]
+          Adding symbol entry helloworld.dll/57847aae8000/helloworld.dll => C:\Users\mikem\AppData\Local\Temp\NugetSymbolServerFileCache\HelloWorld.1.0.0\1\lib\netcoreapp1.0\HelloWorld.dll
     Hosting environment: Production
-    Content root path: F:\github\symstore\src\samples\NugetSymbolServer\bin\Debug\netcoreapp1.0
+    Content root path: c:\repos\symstore\artifacts\Debug\bin\NugetSymbolServer\netcoreapp2.1\
     Now listening on: http://localhost:5000
     Application started. Press Ctrl+C to shut down.
 
@@ -19,8 +25,11 @@ Step 2 - Use your favorite web browser to send an SSQP request
 
     http://localhost:5000/symbol/HelloWorld.dll/57847aae8000/HelloWorld.dll
 
-Congratulations, you just made an request and downloaded a file. Normally a diagnostic tool would make this request on your behalf, for example when debugging a dump that was running the HelloWorld application.
+or use the dotnet symbol tool (after installing it):
 
+    dotnet symbol --server-path http://localhost:5000 <path>\HelloWorld.dll
+
+Congratulations, you just made an request and downloaded a file. Normally a diagnostic tool would make this request on your behalf, for example when debugging a dump that was running the HelloWorld application.
 
 ## Further exploration ##
 

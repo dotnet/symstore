@@ -10,8 +10,8 @@
     <PackAsTool>true</PackAsTool>
     <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
     <!-- The package version needs to be hard coded as a stable version so "dotnet tool install -g dotnet-symbols" works -->
-    <Version>1.0.0</Version>
-    <PackageVersion>1.0.0</PackageVersion>
+    <Version>1.0.1</Version>
+    <PackageVersion>1.0.1</PackageVersion>
     <ToolCommandName>dotnet-symbol</ToolCommandName>
     <Description>Symbols download utility</Description>
     <PackageTags>Symbols</PackageTags>
