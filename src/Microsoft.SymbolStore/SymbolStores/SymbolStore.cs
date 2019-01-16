@@ -12,7 +12,7 @@ namespace Microsoft.SymbolStore.SymbolStores
         /// <summary>
         /// Next symbol store to chain if this store refuses the request
         /// </summary>
-        private readonly SymbolStore _backingStore;
+        public SymbolStore BackingStore { get; }
 
         /// <summary>
         /// Trace/logging source
@@ -27,7 +27,7 @@ namespace Microsoft.SymbolStore.SymbolStores
         public SymbolStore(ITracer tracer, SymbolStore backingStore)
             : this(tracer)
         {
-            _backingStore = backingStore;
+            BackingStore = backingStore;
         }
 
         /// <summary>
@@ -41,9 +41,9 @@ namespace Microsoft.SymbolStore.SymbolStores
             SymbolStoreFile file = await GetFileInner(key, token);
             if (file == null)
             {
-                if (_backingStore != null)
+                if (BackingStore != null)
                 {
-                    file = await _backingStore.GetFile(key, token);
+                    file = await BackingStore.GetFile(key, token);
                     if (file != null)
                     {
                         await WriteFileInner(key, file);
@@ -68,9 +68,9 @@ namespace Microsoft.SymbolStore.SymbolStores
 
         public virtual void Dispose()
         {
-            if (_backingStore != null)
+            if (BackingStore != null)
             {
-                _backingStore.Dispose();
+                BackingStore.Dispose();
             }
         }
     }

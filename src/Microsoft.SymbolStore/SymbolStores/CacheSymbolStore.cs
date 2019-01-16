@@ -9,12 +9,12 @@ namespace Microsoft.SymbolStore.SymbolStores
 {
     public sealed class CacheSymbolStore : SymbolStore
     {
-        private readonly string _cacheDirectory;
+        public string CacheDirectory { get; }
 
         public CacheSymbolStore(ITracer tracer, SymbolStore backingStore, string cacheDirectory)
             : base(tracer, backingStore)
         {
-            _cacheDirectory = cacheDirectory ?? throw new ArgumentNullException(nameof(cacheDirectory));
+            CacheDirectory = cacheDirectory ?? throw new ArgumentNullException(nameof(cacheDirectory));
             Directory.CreateDirectory(cacheDirectory);
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.SymbolStore.SymbolStores
         private string GetCacheFilePath(SymbolStoreKey key)
         {
             if (SymbolStoreKey.IsKeyValid(key.Index)) {
-                return Path.Combine(_cacheDirectory, key.Index);
+                return Path.Combine(CacheDirectory, key.Index);
             }
             Tracer.Error("CacheSymbolStore: invalid key index {0}", key.Index);
             return null;
