@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -218,6 +219,12 @@ namespace dotnet.symbol
                 }
             }
 
+            // Add default symbol cache if one wasn't set by the command line
+            if (CacheDirectories.Count == 0)
+            {
+                CacheDirectories.Add(GetDefaultSymbolCache());
+            }
+
             foreach (string cache in ((IEnumerable<string>)CacheDirectories).Reverse())
             {
                 store = new CacheSymbolStore(Tracer, store, cache);
@@ -338,7 +345,7 @@ namespace dotnet.symbol
         private async Task WriteFileToDirectory(Stream stream, string fileName, string destinationDirectory)
         {
             stream.Position = 0;
-            string destination = Path.Combine(destinationDirectory, Path.GetFileName(fileName));
+            string destination = Path.Combine(destinationDirectory, Path.GetFileName(fileName.Replace('\\', '/')));
             if (File.Exists(destination))
             {
                 Tracer.Warning(Resources.FileAlreadyExists, destination);
@@ -350,6 +357,18 @@ namespace dotnet.symbol
                 {
                     await stream.CopyToAsync(destinationStream);
                 }
+            }
+        }
+
+        private static string GetDefaultSymbolCache()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return Path.Combine(Path.GetTempPath(), "SymbolCache");
+            }
+            else
+            {
+                return Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", "symbolcache");
             }
         }
     }

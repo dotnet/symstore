@@ -70,7 +70,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 }
                 if ((flags & KeyTypeFlags.ClrKeys) != 0)
                 {
-                    if (Path.GetFileName(_path.Replace('\\', '/')) == CoreClrFileName)
+                    if (GetFileName(_path) == CoreClrFileName)
                     {
                         string coreclrId = string.Format("{0:x}{1:x}", _peFile.Timestamp, _peFile.SizeOfImage);
                         foreach (string specialFileName in GetSpecialFiles())
@@ -161,7 +161,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
 
             // The clr special file flag can not be based on the GetSpecialFiles() list because 
             // that is only valid when "path" is the coreclr.dll.
-            string fileName = Path.GetFileName(path.Replace('\\', '/'));
+            string fileName = GetFileName(path);
             bool clrSpecialFile = s_coreClrSpecialFiles.Contains(fileName) || 
                 (s_longNameBinaryPrefixes.Any((prefix) => fileName.StartsWith(prefix)) && Path.GetExtension(fileName) == ".dll");
 

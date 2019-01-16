@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
 using NugetSymbolServer.Service.Models;
 using System;
 using System.IO;
@@ -15,8 +15,6 @@ namespace NugetSymbolServer
     {
         public Startup(IHostingEnvironment hostingEnvironment, IConfigurationSource hostProvidedConfiguration)
         { 
-            ApplicationEnvironment = PlatformServices.Default.Application;  
-
             Configuration = 
                 new ConfigurationBuilder()
                 .SetBasePath(ApplicationEnvironment.ApplicationBasePath)
@@ -40,8 +38,6 @@ namespace NugetSymbolServer
         public IConfiguration Configuration { get; private set; } 
  
         public IConfiguration LoggingConfiguration { get; private set; }
-
-        public ApplicationEnvironment ApplicationEnvironment { get; private set; }
 
         public void ConfigureServices(IServiceCollection services)
         {

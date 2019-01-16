@@ -451,7 +451,7 @@ SymClient [options] <files>
         private async Task WriteFileToDirectory(Stream stream, string fileName, string destinationDirectory)
         {
             stream.Position = 0;
-            string destination = Path.Combine(destinationDirectory, Path.GetFileName(fileName));
+            string destination = Path.Combine(destinationDirectory, Path.GetFileName(fileName.Replace('\\', '/')));
             if (File.Exists(destination)) {
                 Tracer.Warning("Writing: {0} already exists", destination);
             }

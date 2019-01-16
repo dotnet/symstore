@@ -88,9 +88,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <returns>key</returns>
         protected static SymbolStoreKey BuildKey(string path, string id, bool clrSpecialFile = false)
         {
-            // The back slashes are changed to forward slashes because Path.GetFileName doesn't work on 
-            // Linux /MacOS if there are backslashes. Both back and forward slashes work on Windows.
-            string file = Uri.EscapeDataString(Path.GetFileName(path.Replace('\\', '/')).ToLowerInvariant());
+            string file = Uri.EscapeDataString(GetFileName(path).ToLowerInvariant());
             return BuildKey(path, null, id, file, clrSpecialFile);
         }
 
@@ -104,7 +102,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <returns>key</returns>
         protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, bool clrSpecialFile = false)
         {
-            string file = Uri.EscapeDataString(Path.GetFileName(path.Replace('\\', '/')).ToLowerInvariant());
+            string file = Uri.EscapeDataString(GetFileName(path).ToLowerInvariant());
             return BuildKey(path, prefix, id, file, clrSpecialFile);
         }
 
@@ -159,6 +157,17 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 throw new ArgumentNullException(nameof(bytes));
             }
             return string.Concat(bytes.Select(b => b.ToString("x2")));
+        }
+
+        /// <summary>
+        /// The back slashes are changed to forward slashes because Path.GetFileName doesn't work 
+        /// on Linux /MacOS if there are backslashes. Both back and forward slashes work on Windows.
+        /// </summary>
+        /// <param name="path">possible windows path</param>
+        /// <returns>just the file name</returns>
+        internal static string GetFileName(string path)
+        {
+            return Path.GetFileName(path.Replace('\\', '/'));
         }
     }
 }

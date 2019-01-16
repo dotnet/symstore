@@ -87,7 +87,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 }
                 else
                 {
-                    bool clrSpecialFile = s_coreClrSpecialFiles.Contains(Path.GetFileName(path));
+                    bool clrSpecialFile = s_coreClrSpecialFiles.Contains(GetFileName(path));
                     yield return BuildKey(path, IdentityPrefix, buildId, clrSpecialFile);
                 }
             }
@@ -104,7 +104,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 if ((flags & KeyTypeFlags.ClrKeys) != 0)
                 {
                     /// Creates all the special CLR keys if the path is the coreclr module for this platform
-                    if (Path.GetFileName(path) == CoreClrFileName)
+                    if (GetFileName(path) == CoreClrFileName)
                     {
                         foreach (string specialFileName in s_coreClrSpecialFiles)
                         {
