@@ -362,17 +362,14 @@ namespace dotnet.symbol
 
         private static string GetDefaultSymbolCache()
         {
-            string environmentVar;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                environmentVar = "USERPROFILE";
+                return Path.Combine(Path.GetTempPath(), "SymbolCache");
             }
             else
             {
-                environmentVar = "HOME";
+                return Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", "symbolcache");
             }
-            string userPath = Environment.GetEnvironmentVariable(environmentVar);
-            return Path.GetFullPath(Path.Combine(userPath, ".dotnet", "symbolcache"));
         }
     }
 }
