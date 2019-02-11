@@ -15,7 +15,6 @@ namespace Microsoft.SymbolStore.SymbolStores
             : base(tracer, backingStore)
         {
             CacheDirectory = cacheDirectory ?? throw new ArgumentNullException(nameof(cacheDirectory));
-            Directory.CreateDirectory(cacheDirectory);
         }
 
         protected override Task<SymbolStoreFile> GetFileInner(SymbolStoreKey key, CancellationToken token)
@@ -35,11 +34,17 @@ namespace Microsoft.SymbolStore.SymbolStores
             string cacheFile = GetCacheFilePath(key);
             if (cacheFile != null && !File.Exists(cacheFile))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
-                using (Stream destinationStream = File.OpenWrite(cacheFile))
+                try
                 {
-                    await file.Stream.CopyToAsync(destinationStream);
-                    Tracer.Verbose("Cached: {0}", cacheFile);
+                    Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
+                    using (Stream destinationStream = File.OpenWrite(cacheFile))
+                    {
+                        await file.Stream.CopyToAsync(destinationStream);
+                        Tracer.Verbose("Cached: {0}", cacheFile);
+                    }
+                }
+                catch (Exception ex) when (ex is ArgumentException || ex is UnauthorizedAccessException || ex is IOException)
+                {
                 }
             }
         }
