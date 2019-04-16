@@ -41,8 +41,11 @@ namespace Microsoft.SymbolStore.SymbolStores
             {
                 throw new ArgumentException(nameof(symbolServerUri));
             }
+
             // Normal unauthenticated client
-            _client = new HttpClient();
+            _client = new HttpClient {
+                Timeout = TimeSpan.FromMinutes(4)
+            };
 
             // If PAT, create authenticated client
             if (!string.IsNullOrEmpty(personalAccessToken))
@@ -50,7 +53,9 @@ namespace Microsoft.SymbolStore.SymbolStores
                 var handler = new HttpClientHandler() {
                     AllowAutoRedirect = false
                 };
-                var client = new HttpClient(handler);
+                var client = new HttpClient(handler) {
+                    Timeout = TimeSpan.FromMinutes(4)
+                };
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                     "Basic", Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(string.Format("{0}:{1}", "", personalAccessToken))));

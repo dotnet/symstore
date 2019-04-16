@@ -271,39 +271,51 @@ namespace Microsoft.FileFormats.ELF
     public class ELFVirtualAddressSpace : IAddressSpace
     {
         private readonly ELFProgramSegment[] _segments;
-        private readonly ulong _length;
 
         public ELFVirtualAddressSpace(IEnumerable<ELFProgramSegment> segments)
         {
-            _segments = segments.ToArray();
-            _length = _segments.Max(s => s.Header.VirtualAddress + s.Header.VirtualSize);
+            _segments = segments.Where((programHeader) => programHeader.Header.FileSize > 0).ToArray();
+            Length = _segments.Max(s => s.Header.VirtualAddress + s.Header.VirtualSize);
         }
 
-        public ulong Length { get { return _length; } }
+        public ulong Length { get; private set; }
 
         public uint Read(ulong position, byte[] buffer, uint bufferOffset, uint count)
         {
-            for (int i = 0; i < _segments.Length; i++)
+            uint bytesRead = 0;
+            while (bytesRead != count)
             {
-                ELFProgramHeader header = _segments[i].Header;
-                // FileSize == 0 means the segment isn't backed by any data
-                if (header.FileSize > 0 && header.VirtualAddress <= position && position + count <= header.VirtualAddress + header.VirtualSize)
+                int i = 0;
+                for (; i < _segments.Length; i++)
                 {
-                    ulong segmentOffset = position - header.VirtualAddress;
-                    uint fileBytes = (uint)Math.Min(count, header.FileSize);
-                    uint bytesRead = _segments[i].Contents.Read(segmentOffset, buffer, bufferOffset, fileBytes);
+                    ELFProgramHeader header = _segments[i].Header;
 
-                    //zero the rest of the buffer if it is in the virtual address space but not the physical address space
-                    if (bytesRead == fileBytes && fileBytes != count)
+                    ulong upperAddress = header.VirtualAddress + header.VirtualSize;
+                    if (header.VirtualAddress <= position && position < upperAddress)
                     {
-                        Array.Clear(buffer, (int)(bufferOffset + fileBytes), (int)(count - fileBytes));
-                        bytesRead = count;
+                        uint bytesToReadRange = (uint)Math.Min(count - bytesRead, upperAddress - position);
+                        ulong segmentOffset = position - header.VirtualAddress;
+                        uint bytesReadRange = _segments[i].Contents.Read(segmentOffset, buffer, bufferOffset, bytesToReadRange);
+                        if (bytesReadRange == 0) {
+                            goto done;
+                        }
+                        position += bytesReadRange;
+                        bufferOffset += bytesReadRange;
+                        bytesRead += bytesReadRange;
+                        break;
                     }
-                    return bytesRead;
+                }
+                if (i == _segments.Length) {
+                    break;
                 }
             }
-
-            throw new InvalidVirtualAddressException(string.Format("Virtual address range is not mapped {0:X16} {1}", position, count));
+        done:
+            if (bytesRead == 0) {
+                throw new InvalidVirtualAddressException(string.Format("Virtual address range is not mapped {0:X16} {1}", position, count));
+            }
+            // Zero the rest of the buffer if read less than requested
+            Array.Clear(buffer, (int)bufferOffset, (int)(count - bytesRead));
+            return bytesRead;
         }
     }
 
