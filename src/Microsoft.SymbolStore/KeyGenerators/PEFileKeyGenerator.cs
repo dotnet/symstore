@@ -93,50 +93,59 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 ushort minor = fileVersion.ProductVersionMinor;
                 ushort build = fileVersion.ProductVersionBuild;
                 ushort revision = fileVersion.ProductVersionRevision;
-                string targetArch = null;
+
+                var hostArchitectures = new List<string>();
+                string targetArchitecture = null;
 
                 ImageFileMachine machine = (ImageFileMachine)_peFile.FileHeader.Machine;
                 switch (machine)
                 {
                     case ImageFileMachine.Amd64:
-                        targetArch = "amd64";
+                        targetArchitecture = "amd64";
                         break;
 
                     case ImageFileMachine.I386:
-                        targetArch = "x86";
+                        targetArchitecture = "x86";
                         break;
 
                     case ImageFileMachine.ArmNT:
-                        targetArch = "arm";
+                        targetArchitecture = "arm";
+                        hostArchitectures.Add("x86");
                         break;
 
                     case ImageFileMachine.Arm64:
-                        targetArch = "arm64";
+                        targetArchitecture = "arm64";
+                        hostArchitectures.Add("x64");
                         break;
                 }
 
-                if (targetArch != null)
+                if (targetArchitecture != null)
                 {
-                    string buildFlavor = "";
+                    hostArchitectures.Add(targetArchitecture);
 
-                    if ((fileVersion.FileFlags & FileInfoFlags.Debug) != 0)
+                    foreach (string hostArchitecture in hostArchitectures)
                     {
-                        if ((fileVersion.FileFlags & FileInfoFlags.SpecialBuild) != 0)
-                        {
-                            buildFlavor = ".dbg";
-                        }
-                        else
-                        {
-                            buildFlavor = ".chk";
-                        }
-                    }
+                        string buildFlavor = "";
 
-                    foreach (string name in s_longNameBinaryPrefixes)
-                    {
-                        // The name prefixes include the trailing "_".
-                        string longName = string.Format("{0}{1}_{2}_{3}.{4}.{5}.{6:00}{7}.dll",
-                            name, targetArch, targetArch, major, minor, build, revision, buildFlavor);
-                        specialFiles.Add(longName);
+                        if ((fileVersion.FileFlags & FileInfoFlags.Debug) != 0)
+                        {
+                            if ((fileVersion.FileFlags & FileInfoFlags.SpecialBuild) != 0)
+                            {
+                                buildFlavor = ".dbg";
+                            }
+                            else
+                            {
+                                buildFlavor = ".chk";
+                            }
+                        }
+
+                        foreach (string name in s_longNameBinaryPrefixes)
+                        {
+                            // The name prefixes include the trailing "_".
+                            string longName = string.Format("{0}{1}_{2}_{3}.{4}.{5}.{6:00}{7}.dll",
+                                name, hostArchitecture, targetArchitecture, major, minor, build, revision, buildFlavor);
+                            specialFiles.Add(longName);
+                        }
                     }
                 }
             }
