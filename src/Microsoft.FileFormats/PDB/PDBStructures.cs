@@ -34,10 +34,7 @@ namespace Microsoft.FileFormats.PDB
         #region Validation Rules
         public ValidationRule IsMagicValid
         {
-            get
-            {
-                return new ValidationRule("PDB header magic is invalid", () => Magic.SequenceEqual(ExpectedMagic));
-            }
+            get { return new ValidationRule("PDB header magic is invalid", () => Magic.SequenceEqual(ExpectedMagic)); }
         }
         #endregion
     }
@@ -50,5 +47,24 @@ namespace Microsoft.FileFormats.PDB
         [ArraySize(16)]
         public byte[] Guid;
         public uint CountStringBytes;
+    }
+
+    public class DbiStreamHeader : TStruct
+    {
+        const uint CurrentSignature = uint.MaxValue;
+        const uint CurrentVersion = 19990903;          // DBIImpvV70
+
+        public uint Signature;
+        public uint Version;
+        public uint Age;
+
+        // This is not the complete DBI header, but it is enough to get the Age.
+
+        #region Validation Rules
+        public ValidationRule IsHeaderValid 
+        {
+            get { return new ValidationRule("DBI header is invalid", () => Signature == CurrentSignature && Version == CurrentVersion); }
+        }
+        #endregion
     }
 }

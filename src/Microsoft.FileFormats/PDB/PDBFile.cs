@@ -14,6 +14,7 @@ namespace Microsoft.FileFormats.PDB
         private readonly Lazy<PDBFileHeader> _header;
         private readonly Lazy<Reader[]> _streams;
         private readonly Lazy<PDBNameStream> _nameStream;
+        private readonly Lazy<DbiStream> _dbiStream;
 
         public PDBFile(IAddressSpace dataSource)
         {
@@ -21,12 +22,14 @@ namespace Microsoft.FileFormats.PDB
             _header = new Lazy<PDBFileHeader>(() => _reader.Read<PDBFileHeader>(0));
             _streams = new Lazy<Reader[]>(ReadDirectory);
             _nameStream = new Lazy<PDBNameStream>(() => new PDBNameStream(Streams[1]));
+            _dbiStream = new Lazy<DbiStream>(() => new DbiStream(Streams[3]));
         }
 
         public PDBFileHeader Header { get { return _header.Value; } }
         public IList<Reader> Streams { get { return _streams.Value; } }
         public PDBNameStream NameStream { get { return _nameStream.Value; } }
-        public uint Age { get { return NameStream.Header.Age; } }
+        public DbiStream DbiStream { get { return _dbiStream.Value; } }
+        public uint Age { get { return DbiStream.Header.Age; } }
         public Guid Signature { get { return new Guid(NameStream.Header.Guid); } }
 
         public bool IsValid()
@@ -150,5 +153,20 @@ namespace Microsoft.FileFormats.PDB
         }
 
         public NameIndexStreamHeader Header { get { return _header.Value; } }
+    }
+
+    public class DbiStream
+    {
+        private readonly Reader _streamReader;
+        private readonly Lazy<DbiStreamHeader> _header;
+
+
+        public DbiStream(Reader streamReader)
+        {
+            _streamReader = streamReader;
+            _header = new Lazy<DbiStreamHeader>(() => _streamReader.Read<DbiStreamHeader>(0));
+        }
+
+        public DbiStreamHeader Header { get { _header.Value.IsHeaderValid.CheckThrowing(); return _header.Value; } }
     }
 }
