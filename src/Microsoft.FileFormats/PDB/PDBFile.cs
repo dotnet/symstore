@@ -29,7 +29,8 @@ namespace Microsoft.FileFormats.PDB
         public IList<Reader> Streams { get { return _streams.Value; } }
         public PDBNameStream NameStream { get { return _nameStream.Value; } }
         public DbiStream DbiStream { get { return _dbiStream.Value; } }
-        public uint Age { get { return DbiStream.Header.Age; } }
+        public uint Age { get { return NameStream.Header.Age; } }
+        public uint DbiAge { get { return DbiStream.Header.Age; } }
         public Guid Signature { get { return new Guid(NameStream.Header.Guid); } }
 
         public bool IsValid()
