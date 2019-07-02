@@ -184,6 +184,7 @@ namespace Microsoft.FileFormats.PE
         Bbt = 10,
         Reproducible = 16,
         EmbeddedPortablePdb = 17,
+        PdbChecksum = 19
     };
 
     /// <summary>
@@ -305,4 +306,19 @@ namespace Microsoft.FileFormats.PE
     }
 
     #endregion
+
+    /// <summary>
+    /// VS_PDBCHECKSUM struct
+    /// </summary>
+    public class VsPdbChecksum : TStruct
+    {
+        public VsPdbChecksum(string algorithmName, byte[] checksum)
+        {
+            AlgorithmName = algorithmName;
+            Checksum = checksum;
+        }
+
+        public string AlgorithmName { get; }
+        public byte[] Checksum { get; }
+    }
 }

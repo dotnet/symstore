@@ -33,17 +33,29 @@ namespace Microsoft.SymbolStore
         public static SymbolStoreKey[] EmptyArray = new SymbolStoreKey[0];
 
         /// <summary>
+        /// Name of algorithm used to checksum. Includes SHA256, SHA384, SHA512
+        /// </summary>
+        public readonly string ChecksumAlgorithmName;
+
+        /// <summary>
+        /// Checksum bytes encoded as a hex string
+        /// </summary>
+        public readonly string ChecksumAsHex;
+
+        /// <summary>
         /// Create key instance.
         /// </summary>
         /// <param name="index">index to lookup on symbol server</param>
         /// <param name="fullPathName">the full path name of the file</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
-        public SymbolStoreKey(string index, string fullPathName, bool clrSpecialFile = false)
+        public SymbolStoreKey(string index, string fullPathName, bool clrSpecialFile = false, string checksumAlgorithmName = null, string checksumAsHex = null)
         {
             Debug.Assert(index != null && fullPathName != null);
             Index = index;
             FullPathName = fullPathName;
             IsClrSpecialFile = clrSpecialFile;
+            ChecksumAlgorithmName = checksumAlgorithmName;
+            ChecksumAsHex = checksumAsHex;
         }
 
         /// <summary>

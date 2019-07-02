@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -85,11 +86,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="path">full path of file or binary</param>
         /// <param name="id">id string</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="checksum">Checksum of pdb file. May be null.</param>
         /// <returns>key</returns>
-        protected static SymbolStoreKey BuildKey(string path, string id, bool clrSpecialFile = false)
+        protected static SymbolStoreKey BuildKey(string path, string id, bool clrSpecialFile = false, VsPdbChecksum checksum = null)
         {
             string file = Uri.EscapeDataString(GetFileName(path).ToLowerInvariant());
-            return BuildKey(path, null, id, file, clrSpecialFile);
+            return BuildKey(path, null, id, file, clrSpecialFile, checksum);
         }
 
         /// <summary>
@@ -99,11 +101,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="prefix">optional id prefix</param>
         /// <param name="id">build id or uuid</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="checksum">Checksum of pdb file. May be null.</param>
         /// <returns>key</returns>
-        protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, bool clrSpecialFile = false)
+        protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, bool clrSpecialFile = false, VsPdbChecksum checksum = null)
         {
             string file = Uri.EscapeDataString(GetFileName(path).ToLowerInvariant());
-            return BuildKey(path, prefix, id, file, clrSpecialFile);
+            return BuildKey(path, prefix, id, file, clrSpecialFile, checksum);
         }
 
         /// <summary>
@@ -114,10 +117,33 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="id">build id or uuid</param>
         /// <param name="file">file name only</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="checksum">Checksum of pdb file. May be null.</param>
         /// <returns>key</returns>
-        protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, string file, bool clrSpecialFile = false)
+        protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, string file, bool clrSpecialFile = false, VsPdbChecksum checksum = null)
         {
-            return BuildKey(path, prefix, ToHexString(id), file, clrSpecialFile);
+            return BuildKey(path, prefix, ToHexString(id), file, clrSpecialFile, checksum);
+        }
+
+        /// <summary>
+        /// Key building helper for "prefix/byte_sequence_id/file_name" formats.
+        /// </summary>
+        /// <param name="path">full path of file or binary</param>
+        /// <param name="prefix">optional id prefix</param>
+        /// <param name="id">build id or uuid</param>
+        /// <param name="file">file name only</param>
+        /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="checksum">Checksum of pdb file. May be null.</param>
+        /// <returns>key</returns>
+        protected static SymbolStoreKey BuildKey(string path, string prefix, string id, string file, bool clrSpecialFile = false, VsPdbChecksum checksum = null)
+        {
+            string algorithmName = null;
+            string checksumAsHex = null;
+            if (checksum != null)
+            {
+                algorithmName = checksum.AlgorithmName;
+                checksumAsHex = ToHexString(checksum.Checksum);
+            }
+            return BuildKey(path, prefix, id, file, clrSpecialFile, algorithmName, checksumAsHex);
         }
 
         /// <summary>
@@ -128,8 +154,10 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="id">id string</param>
         /// <param name="file">file name only</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="algorithmName">Algorithm used to calculate the checksum. Includes SHA256, SHA384, SHA512</param>
+        /// <param name="checksumAsHex">Checksum of the pdb file. Some symbol servers require this.</param>
         /// <returns>key</returns>
-        static SymbolStoreKey BuildKey(string path, string prefix, string id, string file, bool clrSpecialFile)
+        static SymbolStoreKey BuildKey(string path, string prefix, string id, string file, bool clrSpecialFile, string algorithmName, string checksumAsHex)
         {
             var key = new StringBuilder();
             key.Append(file);
@@ -142,7 +170,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
             key.Append(id);
             key.Append("/");
             key.Append(file);
-            return new SymbolStoreKey(key.ToString(), path, clrSpecialFile);
+            return new SymbolStoreKey(key.ToString(), path, clrSpecialFile, algorithmName, checksumAsHex);
         }
 
         /// <summary>

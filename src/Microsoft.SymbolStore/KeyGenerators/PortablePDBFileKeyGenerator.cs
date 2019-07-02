@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,7 +50,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                         var blob = new BlobContentId(reader.DebugMetadataHeader.Id);
                         if ((flags & KeyTypeFlags.ForceWindowsPdbs) == 0)
                         {
-                            key = GetKey(_file.FileName, blob.Guid);
+                            key = GetKey(_file.FileName, blob.Guid, null);
                         }
                         else
                         {
@@ -76,11 +77,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="path">file name and path</param>
         /// <param name="pdbId">pdb guid</param>
         /// <returns>symbol store key</returns>
-        public static SymbolStoreKey GetKey(string path, Guid pdbId)
+        public static SymbolStoreKey GetKey(string path, Guid pdbId, VsPdbChecksum checksum)
         {
             Debug.Assert(path != null);
             Debug.Assert(pdbId != null);
-            return BuildKey(path, pdbId.ToString("N") + "FFFFFFFF");
+            return BuildKey(path, pdbId.ToString("N") + "FFFFFFFF", false, checksum);
         }
     }
 }

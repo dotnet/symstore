@@ -75,6 +75,14 @@ namespace Microsoft.SymbolStore.SymbolStores
         protected override async Task<SymbolStoreFile> GetFileInner(SymbolStoreKey key, CancellationToken token)
         {
             Uri uri = GetRequestUri(key.Index);
+
+            if (key.ChecksumAlgorithmName != null && key.ChecksumAsHex != null)
+            {
+                HttpClient client = _authenticatedClient ?? _client;
+                Tracer.Information($"SymbolChecksum: {key.ChecksumAlgorithmName}:{key.ChecksumAsHex}");
+                _client.DefaultRequestHeaders.Add("SymbolChecksum", $"{key.ChecksumAlgorithmName}:{key.ChecksumAsHex}");
+            }
+
             Stream stream = await GetFileStream(uri, token);
             if (stream != null)
             {

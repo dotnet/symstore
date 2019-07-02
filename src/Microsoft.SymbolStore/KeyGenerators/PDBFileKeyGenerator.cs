@@ -2,6 +2,7 @@
 
 using Microsoft.FileFormats;
 using Microsoft.FileFormats.PDB;
+using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,11 +45,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="signature">mvid guid</param>
         /// <param name="age">pdb age</param>
         /// <returns>symbol store key</returns>
-        public static SymbolStoreKey GetKey(string path, Guid signature, int age)
+        public static SymbolStoreKey GetKey(string path, Guid signature, int age, VsPdbChecksum checksum = null)
         {
             Debug.Assert(path != null);
             Debug.Assert(signature != null);
-            return BuildKey(path, string.Format("{0}{1:x}", signature.ToString("N"), age));
+            return BuildKey(path, string.Format("{0}{1:x}", signature.ToString("N"), age, checksum));
         }
     }
 }
