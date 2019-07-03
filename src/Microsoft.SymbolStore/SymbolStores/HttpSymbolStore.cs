@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -76,11 +78,12 @@ namespace Microsoft.SymbolStore.SymbolStores
         {
             Uri uri = GetRequestUri(key.Index);
 
-            if (key.ChecksumAlgorithmName != null && key.ChecksumAsHex != null)
+            if (key.PdbChecksums.Any())
             {
+                string checksumHeader = string.Join(";", key.PdbChecksums);
                 HttpClient client = _authenticatedClient ?? _client;
-                Tracer.Information($"SymbolChecksum: {key.ChecksumAlgorithmName}:{key.ChecksumAsHex}");
-                _client.DefaultRequestHeaders.Add("SymbolChecksum", $"{key.ChecksumAlgorithmName}:{key.ChecksumAsHex}");
+                Tracer.Information($"SymbolChecksum: {checksumHeader}");
+                _client.DefaultRequestHeaders.Add("SymbolChecksum", checksumHeader);
             }
 
             Stream stream = await GetFileStream(uri, token);

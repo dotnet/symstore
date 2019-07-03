@@ -50,7 +50,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                         var blob = new BlobContentId(reader.DebugMetadataHeader.Id);
                         if ((flags & KeyTypeFlags.ForceWindowsPdbs) == 0)
                         {
-                            key = GetKey(_file.FileName, blob.Guid, null);
+                            key = GetKey(_file.FileName, blob.Guid);
                         }
                         else
                         {
@@ -77,11 +77,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="path">file name and path</param>
         /// <param name="pdbId">pdb guid</param>
         /// <returns>symbol store key</returns>
-        public static SymbolStoreKey GetKey(string path, Guid pdbId, VsPdbChecksum checksum)
+        public static SymbolStoreKey GetKey(string path, Guid pdbId, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
             Debug.Assert(path != null);
             Debug.Assert(pdbId != null);
-            return BuildKey(path, pdbId.ToString("N") + "FFFFFFFF", false, checksum);
+            return BuildKey(path, pdbId.ToString("N") + "FFFFFFFF", false, pdbChecksums);
         }
     }
 }

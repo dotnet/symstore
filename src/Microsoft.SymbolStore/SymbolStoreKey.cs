@@ -3,6 +3,9 @@
 using System;
 using System.IO;
 using System.Diagnostics;
+using Microsoft.FileFormats.PE;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.SymbolStore
 {
@@ -33,14 +36,9 @@ namespace Microsoft.SymbolStore
         public static SymbolStoreKey[] EmptyArray = new SymbolStoreKey[0];
 
         /// <summary>
-        /// Name of algorithm used to checksum. Includes SHA256, SHA384, SHA512
+        /// The checksums of the pdb file (if any)
         /// </summary>
-        public readonly string ChecksumAlgorithmName;
-
-        /// <summary>
-        /// Checksum bytes encoded as a hex string
-        /// </summary>
-        public readonly string ChecksumAsHex;
+        public readonly IEnumerable<PdbChecksum> PdbChecksums;
 
         /// <summary>
         /// Create key instance.
@@ -48,14 +46,14 @@ namespace Microsoft.SymbolStore
         /// <param name="index">index to lookup on symbol server</param>
         /// <param name="fullPathName">the full path name of the file</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
-        public SymbolStoreKey(string index, string fullPathName, bool clrSpecialFile = false, string checksumAlgorithmName = null, string checksumAsHex = null)
+        /// <param name="pdbChecksums">if true, the file is one the clr special files</param>
+        public SymbolStoreKey(string index, string fullPathName, bool clrSpecialFile = false, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
             Debug.Assert(index != null && fullPathName != null);
             Index = index;
             FullPathName = fullPathName;
             IsClrSpecialFile = clrSpecialFile;
-            ChecksumAlgorithmName = checksumAlgorithmName;
-            ChecksumAsHex = checksumAsHex;
+            PdbChecksums = pdbChecksums ?? Enumerable.Empty<PdbChecksum>();
         }
 
         /// <summary>

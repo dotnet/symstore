@@ -26,7 +26,7 @@ namespace Microsoft.FileFormats.PE
         private readonly Lazy<IEnumerable<PEPdbRecord>> _pdb;
         private readonly Lazy<List<ImageSectionHeader>> _segments;
         private readonly Lazy<VsFixedFileInfo> _vsFixedFileInfo;
-        private readonly Lazy<IEnumerable<VsPdbChecksum>> _vsPdbChecksum;
+        private readonly Lazy<IEnumerable<PdbChecksum>> _pdbChecksum;
         private readonly Lazy<Reader> _virtualAddressReader;
 
         private const ushort ExpectedDosHeaderMagic = 0x5A4D;   // MZ
@@ -53,7 +53,7 @@ namespace Microsoft.FileFormats.PE
             _pdb = new Lazy<IEnumerable<PEPdbRecord>>(ReadPdbInfo);
             _segments = new Lazy<List<ImageSectionHeader>>(ReadSectionHeaders);
             _vsFixedFileInfo = new Lazy<VsFixedFileInfo>(ReadVersionResource);
-            _vsPdbChecksum = new Lazy<IEnumerable<VsPdbChecksum>>(ReadPdbChecksum);
+            _pdbChecksum = new Lazy<IEnumerable<PdbChecksum>>(ReadPdbChecksum);
             _virtualAddressReader = new Lazy<Reader>(CreateVirtualAddressReader);
 
         }
@@ -72,7 +72,7 @@ namespace Microsoft.FileFormats.PE
         public Reader RelativeVirtualAddressReader { get { return _virtualAddressReader.Value; } }
         public ReadOnlyCollection<ImageSectionHeader> Segments { get { return _segments.Value.AsReadOnly(); } }
         public VsFixedFileInfo VersionInfo { get { return _vsFixedFileInfo.Value; } }
-        public IEnumerable<VsPdbChecksum> PdbChecksums { get { return _vsPdbChecksum.Value; } }
+        public IEnumerable<PdbChecksum> PdbChecksums { get { return _pdbChecksum.Value; } }
 
         public bool IsValid()
         {
@@ -186,7 +186,7 @@ namespace Microsoft.FileFormats.PE
         }
 
 
-        private IEnumerable<VsPdbChecksum> ReadPdbChecksum()
+        private IEnumerable<PdbChecksum> ReadPdbChecksum()
         {
             ImageDataDirectory imageDebugDirectory = ImageDataDirectory[(int)ImageDirectoryEntry.Debug];
             uint count = imageDebugDirectory.Size / FileReader.SizeOf<ImageDebugDirectory>();
@@ -202,7 +202,7 @@ namespace Microsoft.FileFormats.PE
                     var algorithmLength = (uint)algorithmName.Length;
                     uint length = sizeOfData - algorithmLength - 1; // -1 for null terminator
                     byte[] checksum = RelativeVirtualAddressReader.ReadArray<byte>(position + algorithmLength + 1 /* +1 for null terminator */, length);
-                    yield return new VsPdbChecksum(algorithmName, checksum);
+                    yield return new PdbChecksum(algorithmName, checksum);
                 }
             }
         }

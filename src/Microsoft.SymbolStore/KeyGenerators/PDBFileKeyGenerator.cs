@@ -45,11 +45,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="signature">mvid guid</param>
         /// <param name="age">pdb age</param>
         /// <returns>symbol store key</returns>
-        public static SymbolStoreKey GetKey(string path, Guid signature, int age, VsPdbChecksum checksum = null)
+        public static SymbolStoreKey GetKey(string path, Guid signature, int age, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
             Debug.Assert(path != null);
             Debug.Assert(signature != null);
-            return BuildKey(path, string.Format("{0}{1:x}", signature.ToString("N"), age, checksum));
+            return BuildKey(path, string.Format("{0}{1:x}", signature.ToString("N"), age, pdbChecksums));
         }
     }
 }
