@@ -8,14 +8,6 @@ using System.Text;
 
 namespace Microsoft.SymbolStore
 {
-    public class InvalidChecksumException : Exception
-    {
-        public InvalidChecksumException(string message) : base(message)
-        {
-
-        } 
-    }
-
     class ChecksumValidator
     {
         private const string pdbStreamName = "#Pdb";
@@ -87,8 +79,7 @@ namespace Microsoft.SymbolStore
                                SeekOrigin.Begin);
 
                 // skip the version string
-                uint versionStringSize = 0;
-                versionStringSize = reader.ReadUInt32();
+                uint versionStringSize = reader.ReadUInt32();
 
                 pdbStream.Seek(versionStringSize, SeekOrigin.Current);
 
