@@ -93,10 +93,9 @@ namespace Microsoft.SymbolStore.SymbolStores
             Stream stream = await GetFileStream(uri, token);
             if (stream != null)
             {
-                if(needsChecksumMatch)
+                if (needsChecksumMatch)
                 {
-                    var validator = new ChecksumValidator(_tracer);
-                    validator.Validate(stream, key.PdbChecksums);
+                    ChecksumValidator.Validate(Tracer, stream, key.PdbChecksums);
                 }
                 return new SymbolStoreFile(stream, uri.ToString());
             }

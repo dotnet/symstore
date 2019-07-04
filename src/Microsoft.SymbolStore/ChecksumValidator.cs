@@ -12,14 +12,8 @@ namespace Microsoft.SymbolStore
     {
         private const string pdbStreamName = "#Pdb";
         private const uint pdbIdSize = 20;
-        private readonly ITracer _tracer;
 
-        public ChecksumValidator(ITracer tracer)
-        {
-            _tracer = tracer;
-        }
-
-        internal void Validate(Stream pdbStream, IEnumerable<PdbChecksum> pdbChecksums)
+        internal static void Validate(ITracer tracer, Stream pdbStream, IEnumerable<PdbChecksum> pdbChecksums)
         {
             using (MemoryStream ms = new MemoryStream())
             {
@@ -33,7 +27,7 @@ namespace Microsoft.SymbolStore
                 }
                 catch (Exception ex)
                 {
-                    _tracer.Error(ex.Message);
+                    tracer.Error(ex.Message);
                     throw;
                 }
 
@@ -44,7 +38,7 @@ namespace Microsoft.SymbolStore
 
                 foreach (var checksum in pdbChecksums)
                 {
-                    _tracer.Information($"Testing checksum: {checksum}");
+                    tracer.Information($"Testing checksum: {checksum}");
 
                     var algorithm = HashAlgorithm.Create(checksum.AlgorithmName);
                     if (algorithm != null)
@@ -53,7 +47,7 @@ namespace Microsoft.SymbolStore
                         if (hash.SequenceEqual(checksum.Checksum))
                         {
                             // If any of the checksums are OK, we're good
-                            _tracer.Information($"Found checksum match {checksum}");
+                            tracer.Information($"Found checksum match {checksum}");
                             return;
                         }
                     }
