@@ -150,10 +150,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
             return new SymbolStoreKey(key.ToString(), path, clrSpecialFile, pdbChecksums);
         }
 
-        /// <summary>
-        /// Convert an array of bytes to a lower case hex string.
-        /// </summary>
-        /// <param name="bytes">array of bytes</param>
+        /// <summary> /// Convert an array of bytes to a lower case hex string.  /// </summary> /// <param name="bytes">array of bytes</param>
         /// <returns>hex string</returns>
         public static string ToHexString(byte[] bytes)
         {

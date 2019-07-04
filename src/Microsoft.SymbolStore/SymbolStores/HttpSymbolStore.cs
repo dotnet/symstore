@@ -22,6 +22,7 @@ namespace Microsoft.SymbolStore.SymbolStores
     {
         private readonly HttpClient _client;
         private readonly HttpClient _authenticatedClient;
+        private readonly ITracer _tracer;
         private bool _clientFailure;
 
         /// <summary>
@@ -38,6 +39,7 @@ namespace Microsoft.SymbolStore.SymbolStores
         public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, string personalAccessToken = null)
             : base(tracer, backingStore)
         {
+            _tracer = tracer;
             Uri = symbolServerUri ?? throw new ArgumentNullException(nameof(symbolServerUri));
             if (!symbolServerUri.IsAbsoluteUri || symbolServerUri.IsFile)
             {
@@ -78,7 +80,9 @@ namespace Microsoft.SymbolStore.SymbolStores
         {
             Uri uri = GetRequestUri(key.Index);
 
-            if (key.PdbChecksums.Any())
+            bool needsChecksumMatch = key.PdbChecksums.Any();
+
+            if (needsChecksumMatch)
             {
                 string checksumHeader = string.Join(";", key.PdbChecksums);
                 HttpClient client = _authenticatedClient ?? _client;
@@ -89,6 +93,11 @@ namespace Microsoft.SymbolStore.SymbolStores
             Stream stream = await GetFileStream(uri, token);
             if (stream != null)
             {
+                if(needsChecksumMatch)
+                {
+                    var validator = new ChecksumValidator(_tracer);
+                    validator.Validate(stream, key.PdbChecksums);
+                }
                 return new SymbolStoreFile(stream, uri.ToString());
             }
             return null;

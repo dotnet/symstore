@@ -332,7 +332,7 @@ namespace Microsoft.FileFormats.PE
         /// </summary>
         /// <param name="bytes">array of bytes</param>
         /// <returns>hex string</returns>
-        private static string ToHexString(byte[] bytes)
+        public static string ToHexString(byte[] bytes)
         {
             if (bytes == null)
             {
