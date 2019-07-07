@@ -15,46 +15,47 @@ namespace Microsoft.SymbolStore
 
         internal static void Validate(ITracer tracer, Stream pdbStream, IEnumerable<PdbChecksum> pdbChecksums)
         {
-            using (MemoryStream ms = new MemoryStream())
+            uint offset = 0;
+
+            byte[] bytes = new byte[pdbStream.Length];
+            if (pdbStream.Read(bytes, offset: 0, count: bytes.Length) != bytes.Length)
             {
-                pdbStream.CopyTo(ms);
-                byte[] bytes = ms.ToArray();
-                uint offset = 0;
+                //throw ...
+            }
 
-                try
-                {
-                    offset = GetPdbStreamOffset(pdbStream);
-                }
-                catch (Exception ex)
-                {
-                    tracer.Error(ex.Message);
-                    throw;
-                }
+            try
+            {
+                offset = GetPdbStreamOffset(pdbStream);
+            }
+            catch (Exception ex)
+            {
+                tracer.Error(ex.Message);
+                throw;
+            }
 
-                for (int i = 0; i <= pdbIdSize; i++)
-                {
-                    bytes[i + offset] = 0;
-                }
+            for (int i = 0; i <= pdbIdSize; i++)
+            {
+                bytes[i + offset] = 0;
+            }
 
-                foreach (var checksum in pdbChecksums)
-                {
-                    tracer.Information($"Testing checksum: {checksum}");
+            foreach (var checksum in pdbChecksums)
+            {
+                tracer.Information($"Testing checksum: {checksum}");
 
-                    var algorithm = HashAlgorithm.Create(checksum.AlgorithmName);
-                    if (algorithm != null)
+                var algorithm = HashAlgorithm.Create(checksum.AlgorithmName);
+                if (algorithm != null)
+                {
+                    var hash = algorithm.ComputeHash(bytes);
+                    if (hash.SequenceEqual(checksum.Checksum))
                     {
-                        var hash = algorithm.ComputeHash(bytes);
-                        if (hash.SequenceEqual(checksum.Checksum))
-                        {
-                            // If any of the checksums are OK, we're good
-                            tracer.Information($"Found checksum match {checksum}");
-                            return;
-                        }
+                        // If any of the checksums are OK, we're good
+                        tracer.Information($"Found checksum match {checksum}");
+                        return;
                     }
-                    else
-                    {
-                        throw new ArgumentException("Unknown hash algorithm");
-                    }
+                }
+                else
+                {
+                    throw new InvalidChecksumException($"Unknown hash algorithm: {checksum.AlgorithmName}");
                 }
             }
             throw new InvalidChecksumException("PDB checksum mismatch");
@@ -63,9 +64,8 @@ namespace Microsoft.SymbolStore
         private static uint GetPdbStreamOffset(Stream pdbStream)
         {
             pdbStream.Position = 0;
-            var reader = new BinaryReader(pdbStream);
+            using (var reader = new BinaryReader(pdbStream, Encoding.UTF8, leaveOpen: true))
             {
-                uint signature = reader.ReadUInt32();
                 pdbStream.Seek(4 + // Signature
                                2 + // Version Major
                                2 + // Version Minor
