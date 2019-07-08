@@ -57,14 +57,14 @@ namespace Microsoft.SymbolStore
                     {
                         // If any of the checksums are OK, we're good
                         tracer.Information($"Found checksum match {checksum}");
+                        // Restore the pdb Id
+                        Array.Copy(pdbId, 0, bytes, offset, pdbIdSize);
+
                         return;
                     }
                 }
             }
                 
-            // Restore the pdb Id
-            Array.Copy(pdbId, 0, bytes, offset, pdbIdSize);
-
             if(!algorithmNameKnown)
             {
                 var algorithmNames = string.Join(" ", pdbChecksums.Select(c => c.AlgorithmName));
