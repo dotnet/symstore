@@ -18,6 +18,7 @@ namespace Microsoft.SymbolStore
             uint offset = 0;
 
             byte[] bytes = new byte[pdbStream.Length];
+            byte[] pdbId = new byte[pdbIdSize];
             if (pdbStream.Read(bytes, offset: 0, count: bytes.Length) != bytes.Length)
             {
                 throw new InvalidChecksumException("Unexpected stream length");
@@ -33,6 +34,10 @@ namespace Microsoft.SymbolStore
                 throw;
             }
 
+            // Make a copy of the pdb Id
+            Array.Copy(bytes, offset, pdbId, 0, pdbIdSize);
+
+            // Zero out the pdb Id
             for (int i = 0; i <= pdbIdSize; i++)
             {
                 bytes[i + offset] = 0;
@@ -57,6 +62,9 @@ namespace Microsoft.SymbolStore
                 }
             }
                 
+            // Restore the pdb Id
+            Array.Copy(pdbId, 0, bytes, offset, pdbIdSize);
+
             if(!algorithmNameKnown)
             {
                 var algorithmNames = string.Join(" ", pdbChecksums.Select(c => c.AlgorithmName));
