@@ -20,7 +20,7 @@ namespace Microsoft.SymbolStore
             byte[] bytes = new byte[pdbStream.Length];
             if (pdbStream.Read(bytes, offset: 0, count: bytes.Length) != bytes.Length)
             {
-                //throw ...
+                throw new InvalidChecksumException("Unexpected stream length");
             }
 
             try
@@ -38,6 +38,7 @@ namespace Microsoft.SymbolStore
                 bytes[i + offset] = 0;
             }
 
+            bool algorithmNameKnown = false;
             foreach (var checksum in pdbChecksums)
             {
                 tracer.Information($"Testing checksum: {checksum}");
@@ -45,6 +46,7 @@ namespace Microsoft.SymbolStore
                 var algorithm = HashAlgorithm.Create(checksum.AlgorithmName);
                 if (algorithm != null)
                 {
+                    algorithmNameKnown = true;
                     var hash = algorithm.ComputeHash(bytes);
                     if (hash.SequenceEqual(checksum.Checksum))
                     {
@@ -53,11 +55,14 @@ namespace Microsoft.SymbolStore
                         return;
                     }
                 }
-                else
-                {
-                    throw new InvalidChecksumException($"Unknown hash algorithm: {checksum.AlgorithmName}");
-                }
             }
+                
+            if(!algorithmNameKnown)
+            {
+                var algorithmNames = string.Join(" ", pdbChecksums.Select(c => c.AlgorithmName));
+                throw new InvalidChecksumException($"Unknown hash algorithm: {algorithmNames}");
+            }
+
             throw new InvalidChecksumException("PDB checksum mismatch");
         }
 
