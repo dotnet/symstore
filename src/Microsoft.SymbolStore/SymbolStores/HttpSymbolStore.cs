@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -20,6 +22,7 @@ namespace Microsoft.SymbolStore.SymbolStores
     {
         private readonly HttpClient _client;
         private readonly HttpClient _authenticatedClient;
+        private readonly ITracer _tracer;
         private bool _clientFailure;
 
         /// <summary>
@@ -36,6 +39,7 @@ namespace Microsoft.SymbolStore.SymbolStores
         public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, string personalAccessToken = null)
             : base(tracer, backingStore)
         {
+            _tracer = tracer;
             Uri = symbolServerUri ?? throw new ArgumentNullException(nameof(symbolServerUri));
             if (!symbolServerUri.IsAbsoluteUri || symbolServerUri.IsFile)
             {
@@ -75,9 +79,24 @@ namespace Microsoft.SymbolStore.SymbolStores
         protected override async Task<SymbolStoreFile> GetFileInner(SymbolStoreKey key, CancellationToken token)
         {
             Uri uri = GetRequestUri(key.Index);
+
+            bool needsChecksumMatch = key.PdbChecksums.Any();
+
+            if (needsChecksumMatch)
+            {
+                string checksumHeader = string.Join(";", key.PdbChecksums);
+                HttpClient client = _authenticatedClient ?? _client;
+                Tracer.Information($"SymbolChecksum: {checksumHeader}");
+                _client.DefaultRequestHeaders.Add("SymbolChecksum", checksumHeader);
+            }
+
             Stream stream = await GetFileStream(uri, token);
             if (stream != null)
             {
+                if (needsChecksumMatch)
+                {
+                    ChecksumValidator.Validate(Tracer, stream, key.PdbChecksums);
+                }
                 return new SymbolStoreFile(stream, uri.ToString());
             }
             return null;

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -85,11 +86,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="path">full path of file or binary</param>
         /// <param name="id">id string</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="pdbChecksums">Checksums of pdb file. May be null.</param>
         /// <returns>key</returns>
-        protected static SymbolStoreKey BuildKey(string path, string id, bool clrSpecialFile = false)
+        protected static SymbolStoreKey BuildKey(string path, string id, bool clrSpecialFile = false, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
             string file = Uri.EscapeDataString(GetFileName(path).ToLowerInvariant());
-            return BuildKey(path, null, id, file, clrSpecialFile);
+            return BuildKey(path, null, id, file, clrSpecialFile, pdbChecksums);
         }
 
         /// <summary>
@@ -99,11 +101,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="prefix">optional id prefix</param>
         /// <param name="id">build id or uuid</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="pdbChecksums">Checksums of pdb file. May be null.</param>
         /// <returns>key</returns>
-        protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, bool clrSpecialFile = false)
+        protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, bool clrSpecialFile = false, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
             string file = Uri.EscapeDataString(GetFileName(path).ToLowerInvariant());
-            return BuildKey(path, prefix, id, file, clrSpecialFile);
+            return BuildKey(path, prefix, id, file, clrSpecialFile, pdbChecksums);
         }
 
         /// <summary>
@@ -114,22 +117,24 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <param name="id">build id or uuid</param>
         /// <param name="file">file name only</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="pdbChecksums">Checksums of pdb file. May be null.</param>
         /// <returns>key</returns>
-        protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, string file, bool clrSpecialFile = false)
+        protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, string file, bool clrSpecialFile = false, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
-            return BuildKey(path, prefix, ToHexString(id), file, clrSpecialFile);
+            return BuildKey(path, prefix, ToHexString(id), file, clrSpecialFile, pdbChecksums);
         }
 
         /// <summary>
-        /// Key building helper "file_name/prefix-string_id/file_name".
+        /// Key building helper for "prefix/byte_sequence_id/file_name" formats.
         /// </summary>
         /// <param name="path">full path of file or binary</param>
         /// <param name="prefix">optional id prefix</param>
-        /// <param name="id">id string</param>
+        /// <param name="id">build id or uuid</param>
         /// <param name="file">file name only</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
+        /// <param name="pdbChecksums">Checksums of pdb file. May be null.</param>
         /// <returns>key</returns>
-        static SymbolStoreKey BuildKey(string path, string prefix, string id, string file, bool clrSpecialFile)
+        protected static SymbolStoreKey BuildKey(string path, string prefix, string id, string file, bool clrSpecialFile = false, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
             var key = new StringBuilder();
             key.Append(file);
@@ -142,13 +147,10 @@ namespace Microsoft.SymbolStore.KeyGenerators
             key.Append(id);
             key.Append("/");
             key.Append(file);
-            return new SymbolStoreKey(key.ToString(), path, clrSpecialFile);
+            return new SymbolStoreKey(key.ToString(), path, clrSpecialFile, pdbChecksums);
         }
 
-        /// <summary>
-        /// Convert an array of bytes to a lower case hex string.
-        /// </summary>
-        /// <param name="bytes">array of bytes</param>
+        /// <summary> /// Convert an array of bytes to a lower case hex string.  /// </summary> /// <param name="bytes">array of bytes</param>
         /// <returns>hex string</returns>
         public static string ToHexString(byte[] bytes)
         {

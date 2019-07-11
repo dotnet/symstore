@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using Microsoft.FileFormats.PE;
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.SymbolStore
 {
@@ -33,17 +35,24 @@ namespace Microsoft.SymbolStore
         public static SymbolStoreKey[] EmptyArray = new SymbolStoreKey[0];
 
         /// <summary>
+        /// The checksums of the pdb file (if any)
+        /// </summary>
+        public readonly IEnumerable<PdbChecksum> PdbChecksums;
+
+        /// <summary>
         /// Create key instance.
         /// </summary>
         /// <param name="index">index to lookup on symbol server</param>
         /// <param name="fullPathName">the full path name of the file</param>
         /// <param name="clrSpecialFile">if true, the file is one the clr special files</param>
-        public SymbolStoreKey(string index, string fullPathName, bool clrSpecialFile = false)
+        /// <param name="pdbChecksums">if true, the file is one the clr special files</param>
+        public SymbolStoreKey(string index, string fullPathName, bool clrSpecialFile = false, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
             Debug.Assert(index != null && fullPathName != null);
             Index = index;
             FullPathName = fullPathName;
             IsClrSpecialFile = clrSpecialFile;
+            PdbChecksums = pdbChecksums ?? Enumerable.Empty<PdbChecksum>();
         }
 
         /// <summary>

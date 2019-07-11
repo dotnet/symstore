@@ -47,7 +47,8 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 }
                 if ((flags & KeyTypeFlags.SymbolKey) != 0)
                 {
-                    IEnumerable<PEPdbRecord> pdbs = new PEPdbRecord[0]; 
+                    PEPdbRecord[] pdbs = new PEPdbRecord[0]; 
+
                     try
                     {
                         pdbs = _peFile.Pdbs.ToArray();
@@ -56,15 +57,16 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     {
                         Tracer.Error("Reading PDB records for {0}: {1}", _path, ex.Message);
                     }
-                    foreach (PEPdbRecord pdb in pdbs)
+
+                    foreach(PEPdbRecord pdb in pdbs)
                     {
                         if (((flags & KeyTypeFlags.ForceWindowsPdbs) == 0) && pdb.IsPortablePDB)
                         {
-                            yield return PortablePDBFileKeyGenerator.GetKey(pdb.Path, pdb.Signature);
+                            yield return PortablePDBFileKeyGenerator.GetKey(pdb.Path, pdb.Signature, _peFile.PdbChecksums);
                         }
                         else
                         {
-                            yield return PDBFileKeyGenerator.GetKey(pdb.Path, pdb.Signature, pdb.Age);
+                            yield return PDBFileKeyGenerator.GetKey(pdb.Path, pdb.Signature, pdb.Age, _peFile.PdbChecksums);
                         }
                     }
                 }

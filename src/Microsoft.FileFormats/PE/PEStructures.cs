@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 
 namespace Microsoft.FileFormats.PE
 {
@@ -184,6 +185,7 @@ namespace Microsoft.FileFormats.PE
         Bbt = 10,
         Reproducible = 16,
         EmbeddedPortablePdb = 17,
+        PdbChecksum = 19
     };
 
     /// <summary>
@@ -305,4 +307,38 @@ namespace Microsoft.FileFormats.PE
     }
 
     #endregion
+
+    /// <summary>
+    /// Pair of a checksum algorithm name (ex: "SHA256") and the bytes of the checksum.
+    /// </summary>
+    public class PdbChecksum : TStruct
+    {
+        public PdbChecksum(string algorithmName, byte[] checksum)
+        {
+            AlgorithmName = algorithmName;
+            Checksum = checksum;
+        }
+
+        public string AlgorithmName { get; }
+        public byte[] Checksum { get; }
+
+        public override string ToString()
+        {
+            return $"{AlgorithmName}:{ToHexString(Checksum)}";
+        }
+
+        /// <summary>
+        /// Convert an array of bytes to a lower case hex string.
+        /// </summary>
+        /// <param name="bytes">array of bytes</param>
+        /// <returns>hex string</returns>
+        public static string ToHexString(byte[] bytes)
+        {
+            if (bytes == null)
+            {
+                throw new ArgumentNullException(nameof(bytes));
+            }
+            return string.Concat(bytes.Select(b => b.ToString("x2")));
+        }
+    }
 }

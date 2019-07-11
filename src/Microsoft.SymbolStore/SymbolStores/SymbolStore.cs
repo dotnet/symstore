@@ -35,6 +35,10 @@ namespace Microsoft.SymbolStore.SymbolStores
         /// </summary>
         /// <param name="key">symbol index to retrieve</param>
         /// <param name="token">to cancel requests</param>
+        /// <exception cref="InvalidChecksumException">
+        /// Thrown for a pdb file when its checksum 
+        /// does not match the expected value.
+        /// </exception>
         /// <returns>file or null if not found</returns>
         public async Task<SymbolStoreFile> GetFile(SymbolStoreKey key, CancellationToken token)
         {
