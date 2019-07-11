@@ -1,23 +1,20 @@
 ﻿<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
-<Project Sdk="RoslynTools.RepoToolset">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RuntimeFrameworkVersion>2.1.0</RuntimeFrameworkVersion>
-    <NoWarn>;1591;1701</NoWarn>
-    <IsPublishable>true</IsPublishable>
+    <OutputType>Exe</OutputType>
+    <ToolCommandName>dotnet-symbol</ToolCommandName>
+    <RootNamespace>dotnet.symbol</RootNamespace>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
-    <!-- The package version needs to be hard coded as a stable version so "dotnet tool install -g dotnet-symbols" works -->
-    <Version>1.0.5</Version>
-    <PackageVersion>$(Version)</PackageVersion>
-    <ToolCommandName>dotnet-symbol</ToolCommandName>
+    <PackagedShimOutputRootDirectory>$(OutputPath)</PackagedShimOutputRootDirectory>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Description>Symbols download utility</Description>
     <PackageTags>Symbols</PackageTags>
     <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
-    <RootNamespace>dotnet.symbol</RootNamespace>
-    <PackagedShimOutputRootDirectory>$(OutputPath)</PackagedShimOutputRootDirectory>
+    <NoWarn>;1591;1701</NoWarn>
   </PropertyGroup>
   
   <ItemGroup>
