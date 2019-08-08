@@ -59,6 +59,8 @@ namespace Microsoft.SymbolStore
                         tracer.Information($"Found checksum match {checksum}");
                         // Restore the pdb Id
                         Array.Copy(pdbId, 0, bytes, offset, pdbIdSize);
+                        // Restore the steam position
+                        pdbStream.Seek(0, SeekOrigin.Begin);
 
                         return;
                     }
