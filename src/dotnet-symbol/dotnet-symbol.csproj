@@ -2,7 +2,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RuntimeFrameworkVersion>2.1.0</RuntimeFrameworkVersion>
     <OutputType>Exe</OutputType>
     <ToolCommandName>dotnet-symbol</ToolCommandName>
     <RootNamespace>dotnet.symbol</RootNamespace>
