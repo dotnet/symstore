@@ -1,0 +1,113 @@
+trigger:
+- master
+pr:
+- master
+
+variables:
+  - name: _TeamName
+    value: DotNetCore
+  
+resources:
+  containers:
+  - container: LinuxContainer
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-16.04-09ca40b-20190520220842
+
+# Three phases for each of the three OSes we want to run on
+jobs:
+- template: /eng/common/templates/jobs/jobs.yml
+  parameters:
+    enableMicrobuild: true
+    enableTelemetry: true
+    enablePublishBuildArtifacts: true
+    enablePublishTestResults: true
+    helixRepo: dotnet/symstore
+
+    jobs:
+    - job: Windows_NT
+      pool:
+        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+          name: NetCorePublic-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017.Open
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          name: NetCoreInternal-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017
+
+      variables:
+      - DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX: 2
+      - _PublishBlobFeedUrl: 'https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json'
+      - _SignType: ''
+      - _SignArgs: ''
+      - _PublishArgs: ''
+      - _OfficialBuildIdArgs: ''
+
+      strategy:
+        matrix:
+          build_debug:
+            _BuildConfig: Debug
+          build_release:
+            _BuildConfig: Release
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              _SignType: real
+              _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+              _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1) /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl) /p:DotNetPublishToBlobFeed=$(PublishPackages)
+              _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
+
+      steps:
+      - script: eng\common\cibuild.cmd
+          -configuration $(_BuildConfig)
+          -prepareMachine
+          $(_SignArgs)
+          $(_PublishArgs)
+          $(_OfficialBuildIdArgs)
+        name: Build
+        displayName: Build
+        condition: succeeded()
+
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - task: PublishBuildArtifacts@1
+          displayName: Publish Packages
+          inputs:
+            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/packages'
+            PublishLocation: Container
+            ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
+          continueOnError: true
+          condition: always()
+
+    - job: Linux
+      container: LinuxContainer
+      pool:
+        name: Hosted Ubuntu 1604
+
+      strategy:
+        matrix:
+          debug:
+            _BuildConfig: Debug
+          release:
+            _BuildConfig: Release
+
+      steps:
+      - script: eng/common/cibuild.sh
+          --configuration $(_BuildConfig)
+          --prepareMachine
+        name: Build
+        displayName: Build
+        condition: succeeded()
+
+    - job: MacOS
+      pool:
+        name: Hosted macOS
+
+      strategy:
+        matrix:
+          debug:
+            _BuildConfig: Debug
+          release:
+            _BuildConfig: Release
+
+      steps:
+      - script: eng/common/cibuild.sh
+          --configuration $(_BuildConfig)
+          --prepareMachine
+        name: Build
+        displayName: Build
+        condition: succeeded()
