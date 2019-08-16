@@ -315,7 +315,7 @@ namespace Microsoft.SymbolStore.Tests
 
         private void PortablePDBFileKeyGeneratorInternal(bool fileGenerator)
         {
-            const string TestBinary = "TestBinaries/System.Threading.Thread.pdb";
+            const string TestBinary = "TestBinaries/dir1/System.Threading.Thread.pdb";
             using (Stream pdb = File.OpenRead(TestBinary))
             {
                 var file = new SymbolStoreFile(pdb, TestBinary);
@@ -323,7 +323,7 @@ namespace Microsoft.SymbolStore.Tests
 
                 IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
                 Assert.True(identityKey.Count() == 1);
-                Assert.True(identityKey.First().Index == "system.threading.thread.pdb/cee18f629b6049cf9cd9adf025a89384FFFFFFFF/system.threading.thread.pdb");
+                Assert.True(identityKey.First().Index == "system.threading.thread.pdb/a43b38726e6a4b3cb1691f35f0d6cc48FFFFFFFF/system.threading.thread.pdb");
 
                 IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
                 Assert.True(symbolKey.Count() == 0);

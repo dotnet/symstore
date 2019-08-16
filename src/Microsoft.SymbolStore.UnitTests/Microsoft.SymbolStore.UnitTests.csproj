@@ -8,7 +8,6 @@
   <ItemGroup>
     <None Remove="TestBinaries\coreclr.dll.gz" />
     <None Remove="TestBinaries\StackTraceSymbols.CoreCLR.cs.gz" />
-    <None Remove="TestBinaries\System.Threading.Thread.pdb" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,13 +53,22 @@
     <Content Include="..\Microsoft.FileFormats.UnitTests\TestBinaries\System.Diagnostics.StackTrace.dll" Link="TestBinaries\System.Diagnostics.StackTrace.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestBinaries\dir1\System.Threading.Thread.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestBinaries\dir1\System.Threading.Thread.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestBinaries\dir2\System.Threading.Thread.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestBinaries\dir2\System.Threading.Thread.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestBinaries\coreclr.dll.gz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestBinaries\StackTraceSymbols.CoreCLR.cs.gz">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestBinaries\System.Threading.Thread.pdb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
