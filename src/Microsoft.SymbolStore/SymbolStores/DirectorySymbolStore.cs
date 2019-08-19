@@ -28,7 +28,7 @@ namespace SOS
         public DirectorySymbolStore(ITracer tracer, SymbolStore backingStore, string directory)
             : base(tracer, backingStore)
         {
-            Directory = directory;
+            Directory = directory ?? throw new ArgumentNullException(nameof(directory));
         }
 
         protected override Task<SymbolStoreFile> GetFileInner(SymbolStoreKey key, CancellationToken token)
