@@ -2,6 +2,7 @@
 
 using Microsoft.SymbolStore.KeyGenerators;
 using Microsoft.SymbolStore.SymbolStores;
+using SOS;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -64,38 +65,85 @@ namespace Microsoft.SymbolStore.Tests
             }
         }
 
-        private async Task DownloadFile(string path, bool ms, bool mi, string cache)
+        [Fact]
+        public async Task DirectorySymbolStore()
         {
-            using (Stream stream = TestUtilities.OpenCompressedFile(path))
+            using (Stream pdb = File.OpenRead("TestBinaries/dir1/System.Threading.Thread.pdb"))
             {
-                SymbolStoreFile file = new SymbolStoreFile(stream, path);
-                SymbolStores.SymbolStore store = null;
-                if (ms)
-                {
-                    Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
-                    store = new HttpSymbolStore(_tracer, store, uri);
-                }
-                if (mi)
-                {
-                    Uri.TryCreate("http://symweb.corp.microsoft.com/", UriKind.Absolute, out Uri uri);
-                    store = new SymwebHttpSymbolStore(_tracer, store, uri);
-                }
-                if (cache != null)
-                {
-                    store = new CacheSymbolStore(_tracer, store, cache);
-                }
-                KeyTypeFlags flags = KeyTypeFlags.IdentityKey;
-                var generator = new FileKeyGenerator(_tracer, file);
+                var inputFile = new SymbolStoreFile(pdb, "System.Threading.Thread.pdb");
+                var generator = new PortablePDBFileKeyGenerator(_tracer, inputFile);
 
-                IEnumerable<SymbolStoreKey> keys = generator.GetKeys(flags);
-                foreach (SymbolStoreKey key in keys)
+                IEnumerable<SymbolStoreKey> keys = generator.GetKeys(KeyTypeFlags.IdentityKey);
+                Assert.True(keys.Count() == 1);
+                SymbolStoreKey key = keys.First();
+
+                var dir1store = new DirectorySymbolStore(_tracer, null, "TestBinaries/dir1");
+                var dir2store = new DirectorySymbolStore(_tracer, dir1store, "TestBinaries/dir2");
+
+                SymbolStoreFile outputFile = await dir2store.GetFile(key, CancellationToken.None);
+                Assert.True(outputFile != null);
+
+                // Should NOT be the exact same SymbolStoreFile instance
+                Assert.True(inputFile != outputFile);
+
+                CompareStreams(pdb, outputFile.Stream);
+            }
+        }
+
+        [Fact]
+        public async Task HttpSymbolStore()
+        {
+            using (FileStream downloadStream = File.OpenRead("TestBinaries/dir1/System.Threading.Thread.dll"))
+            {
+                using (Stream compareStream = File.OpenRead("TestBinaries/dir1/System.Threading.Thread.pdb"))
                 {
-                    using (SymbolStoreFile symbolFile = await store.GetFile(key, CancellationToken.None))
+                    await DownloadFile(downloadStream, compareStream, ms: true, mi: false, KeyTypeFlags.SymbolKey);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SymwebHttpSymbolStore()
+        {
+            using (FileStream downloadStream = File.OpenRead("TestBinaries/dir2/System.Threading.Thread.dll"))
+            {
+                await DownloadFile(downloadStream, downloadStream, ms: false, mi: true, KeyTypeFlags.IdentityKey);
+            }
+        }
+
+        private async Task DownloadFile(FileStream downloadStream, Stream compareStream, bool ms, bool mi, KeyTypeFlags flags)
+        {
+            SymbolStoreFile file = new SymbolStoreFile(downloadStream, downloadStream.Name);
+            SymbolStores.SymbolStore store = null;
+            if (ms)
+            {
+                Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
+                store = new HttpSymbolStore(_tracer, store, uri);
+            }
+            if (mi)
+            {
+                Uri.TryCreate("http://symweb.corp.microsoft.com/", UriKind.Absolute, out Uri uri);
+                store = new SymwebHttpSymbolStore(_tracer, store, uri);
+            }
+            var generator = new FileKeyGenerator(_tracer, file);
+
+            IEnumerable<SymbolStoreKey> keys = generator.GetKeys(flags);
+            Assert.True(keys.Count() > 0);
+
+            foreach (SymbolStoreKey key in keys)
+            {
+                if (key.FullPathName.Contains(".ni.pdb")) {
+                    continue;
+                }
+                using (SymbolStoreFile symbolFile = await store.GetFile(key, CancellationToken.None))
+                {
+                    if (symbolFile != null)
                     {
-                        if (symbolFile != null)
-                        {
-                            CompareStreams(file.Stream, symbolFile.Stream);
-                        }
+                        Assert.True(downloadStream != symbolFile.Stream);
+                        Assert.True(compareStream != symbolFile.Stream);
+
+                        compareStream.Seek(0, SeekOrigin.Begin);
+                        CompareStreams(compareStream, symbolFile.Stream);
                     }
                 }
             }
