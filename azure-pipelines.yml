@@ -49,7 +49,12 @@ jobs:
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: real
               _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-              _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1) /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl) /p:DotNetPublishToBlobFeed=$(PublishPackages)
+              _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1) 
+                            /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl) 
+                            /p:DotNetPublishToBlobFeed=$(PublishPackages)
+                            /p:PublishToSymbolServer=$(PublishSymbols)
+                            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+                            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
               _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
 
       steps:
@@ -65,7 +70,7 @@ jobs:
 
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - task: PublishBuildArtifacts@1
-          displayName: Publish Packages
+          displayName: Publish Package Artifacts
           inputs:
             PathtoPublish: '$(Build.SourcesDirectory)/artifacts/packages'
             PublishLocation: Container

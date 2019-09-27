@@ -3,14 +3,16 @@
   <PropertyGroup>
     <!-- This repo version -->
     <VersionPrefix>1.0.0</VersionPrefix>
-    <PreReleaseVersionLabel>
-    </PreReleaseVersionLabel>
+    <PreReleaseVersionLabel></PreReleaseVersionLabel>
     <DotNetUseShippingVersions>true</DotNetUseShippingVersions>
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolXliff>false</UsingToolXliff>
+    <UsingToolSymbolUploader>true</UsingToolSymbolUploader>
+
     <!-- Build tools -->
     <MicrosoftNetCompilersVersion>3.0.0</MicrosoftNetCompilersVersion>
+
     <!-- CoreFX -->
     <SystemCollectionsImmutableVersion>1.5.0</SystemCollectionsImmutableVersion>
     <SystemReflectionMetadataVersion>1.6.0</SystemReflectionMetadataVersion>
