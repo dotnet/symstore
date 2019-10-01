@@ -7,6 +7,7 @@
     <Description>Symbol server key generation and access protocol</Description>
     <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
     <PackageTags>Symbol Indexing</PackageTags>
+    <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
   
   <ItemGroup>

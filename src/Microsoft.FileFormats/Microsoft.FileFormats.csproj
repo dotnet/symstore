@@ -7,5 +7,6 @@
     <Description>File format readers</Description>
     <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
     <PackageTags>File formats</PackageTags>
+    <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
 </Project>
