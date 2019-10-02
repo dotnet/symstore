@@ -61,6 +61,7 @@ jobs:
       - script: eng\common\cibuild.cmd
           -configuration $(_BuildConfig)
           -prepareMachine
+          -verbosity normal
           $(_SignArgs)
           $(_PublishArgs)
           $(_OfficialBuildIdArgs)

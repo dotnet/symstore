@@ -19,6 +19,7 @@
     <EnableSourceControlManagerQueries>true</EnableSourceControlManagerQueries>
     <IsShipping>true</IsShipping>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IsShippingAssembly>false</IsShippingAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

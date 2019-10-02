@@ -8,5 +8,6 @@
     <PackageReleaseNotes>$(Description)</PackageReleaseNotes>
     <PackageTags>File formats</PackageTags>
     <IncludeSymbols>true</IncludeSymbols>
+    <IsShippingAssembly>true</IsShippingAssembly>
   </PropertyGroup>
 </Project>
