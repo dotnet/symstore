@@ -28,7 +28,7 @@ Example:
 
 **COFF header SizeOfImage field:** `0x32000`
 
-**Lookup key:** `foo.exe/542d574200032000/foo.exe`
+**Lookup key:** `foo.exe/542d574232000/foo.exe`
 
 
 ### PDB-Signature-Age
