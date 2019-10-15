@@ -57,5 +57,24 @@ namespace Microsoft.SymbolStore.SymbolStores
             Tracer.Error("CacheSymbolStore: invalid key index {0}", key.Index);
             return null;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is CacheSymbolStore store)
+            {
+                return CacheDirectory.Equals(store.CacheDirectory);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return CacheDirectory.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"Cache: {CacheDirectory}";
+        }
     }
 }
