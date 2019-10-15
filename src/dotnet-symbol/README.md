@@ -52,7 +52,7 @@ To verify a symbol package on a local VSTS symbol server:
 
 ## Notes ##
 
-Symbol download is only supported for official .NET Core runtime versions installed from our official [web site](https://dotnet.microsoft.com/download/dotnet-core). Runtimes from community sites like [archlinux](https://www.archlinux.org/packages/community/x86_64/dotnet-runtime/) are not support. 
+Symbol download is only supported for official .NET Core runtime versions acquired through official channels such as [the official web site](https://dotnet.microsoft.com/download/dotnet-core) and the [default sources in the dotnet installation scripts](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-scripts). Runtimes obtained from community sites like [archlinux](https://www.archlinux.org/packages/community/x86_64/dotnet-runtime/) are not supported. 
 
 Core dumps generated with gdb (generate-core-file command) or gcore (utility that comes with gdb) do not currently work with this utility (issue [#47](https://github.com/dotnet/symstore/issues/47)).
 
