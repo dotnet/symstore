@@ -52,6 +52,8 @@ To verify a symbol package on a local VSTS symbol server:
 
 ## Notes ##
 
+Symbol download is only supported for official .NET Core runtime versions installed from our official [web site](https://dotnet.microsoft.com/download/dotnet-core). Runtimes from community sites like [archlinux](https://www.archlinux.org/packages/community/x86_64/dotnet-runtime/) are not support. 
+
 Core dumps generated with gdb (generate-core-file command) or gcore (utility that comes with gdb) do not currently work with this utility (issue [#47](https://github.com/dotnet/symstore/issues/47)).
 
 The best way to generate core dumps on Linux (not supported on Windows or OSX) is to use the [createdump](https://github.com/dotnet/coreclr/blob/master/Documentation/botr/xplat-minidump-generation.md#configurationpolicy) facility that is part of .NET Core 2.0 and greater. It can be setup to automatically generate a "minidump" like ELF core dump when your .NET Core app crashes. The normal Linux system core generation also works just fine but they are usually a lot larger than necessary.
