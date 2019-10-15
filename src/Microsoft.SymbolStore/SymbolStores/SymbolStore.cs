@@ -51,11 +51,14 @@ namespace Microsoft.SymbolStore.SymbolStores
                     if (file != null)
                     {
                         await WriteFileInner(key, file);
-
-                        // Reset stream to the beginning for next symbol store
-                        file.Stream.Position = 0;
                     }
                 }
+            }
+            if (file != null)
+            {
+                // Reset stream to the beginning because the stream may have
+                // been read or written by the symbol store implementation.
+                file.Stream.Position = 0;
             }
             return file;
         }
