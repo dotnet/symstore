@@ -67,5 +67,24 @@ namespace SOS
 
             return Task.FromResult(result);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is DirectorySymbolStore store)
+            {
+                return Directory.Equals(store.Directory);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Directory.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"Directory: {Directory}";
+        }
     }
 }

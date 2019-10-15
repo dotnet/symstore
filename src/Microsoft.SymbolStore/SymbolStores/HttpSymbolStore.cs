@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -201,6 +199,25 @@ namespace Microsoft.SymbolStore.SymbolStores
         protected void MarkClientFailure()
         {
             _clientFailure = true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is HttpSymbolStore store)
+            {
+                return Uri.Equals(store.Uri);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Uri.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"Server: {Uri}";
         }
     }
 }
