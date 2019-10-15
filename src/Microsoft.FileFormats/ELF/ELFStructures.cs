@@ -138,7 +138,7 @@ namespace Microsoft.FileFormats.ELF
         {
             get
             {
-                return new ValidationRule("Unreasonably large ELFHeader ProgramHeaderCount", () => ProgramHeaderCount <= 10000);
+                return new ValidationRule("Unreasonably large ELFHeader ProgramHeaderCount", () => ProgramHeaderCount <= 30000);
             }
         }
 
@@ -146,7 +146,7 @@ namespace Microsoft.FileFormats.ELF
         {
             get
             {
-                return new ValidationRule("Unreasonably large ELFHeader SectionHeaderCount", () => SectionHeaderCount <= 10000);
+                return new ValidationRule("Unreasonably large ELFHeader SectionHeaderCount", () => SectionHeaderCount <= 30000);
             }
         }
 
