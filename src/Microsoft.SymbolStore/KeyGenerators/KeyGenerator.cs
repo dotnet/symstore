@@ -3,13 +3,15 @@
 using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace Microsoft.SymbolStore.KeyGenerators
 {
+    /// <summary>
+    /// Type of keys to generate
+    /// </summary>
     [Flags]
     public enum KeyTypeFlags
     {
@@ -39,6 +41,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// the Portable and Windows PDBs are available on the symbol server.
         /// </summary>
         ForceWindowsPdbs = 0x08,
+
+        /// <summary>
+        /// Generate keys for the host program.
+        /// </summary>
+        HostKeys = 0x10
     }
 
     /// <summary>

@@ -81,6 +81,19 @@ namespace Microsoft.SymbolStore.KeyGenerators
                         }
                     }
                 }
+                if ((flags & KeyTypeFlags.HostKeys) != 0)
+                {
+                    if ((_peFile.FileHeader.Characteristics & (ushort)ImageFile.DLL) == 0 && !_peFile.IsILImage)
+                    {
+                        string id = string.Format("{0:x}{1:x}", _peFile.Timestamp, _peFile.SizeOfImage);
+
+                        // The host program as itself (usually dotnet.exe)
+                        yield return BuildKey(_path, id);
+
+                        // apphost.exe downloaded as the host program name
+                        yield return BuildKey(_path, prefix: null, id, "apphost.exe");
+                    }
+                }
             }
         }
 

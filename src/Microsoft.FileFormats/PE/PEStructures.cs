@@ -100,6 +100,19 @@ namespace Microsoft.FileFormats.PE
     }
 
     /// <summary>
+    /// Characteristics (IMAGE_FILE)
+    /// </summary>
+    [Flags]
+    public enum ImageFile : ushort
+    {
+        RELOCS_STRIPPED         = 0x0001,
+        EXECUTABLE_IMAGE        = 0x0002,
+        LARGE_ADDRESS_AWARE     = 0x0020,
+        SYSTEM                  = 0x1000,
+        DLL                     = 0x2000,
+    }
+
+    /// <summary>
     /// IMAGE_FILE_HEADER struct
     /// </summary>
     public class ImageFileHeader : TStruct

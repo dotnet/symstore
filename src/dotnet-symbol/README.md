@@ -14,6 +14,7 @@ This tool can download all the files needed for debugging (symbols, modules, SOS
       --authenticated-server-path <pat> <server path>   Add a http PAT authenticated server path.
       --cache-directory <file cache directory>          Add a cache directory.
       --recurse-subdirectories                          Process input files in all subdirectories.
+      --host-only                                       Download only the host program (i.e. dotnet) that lldb needs for loading coredumps.
       --symbols                                         Download the symbol files (.pdb, .dbg, .dwarf).
       --modules                                         Download the module files (.dll, .so, .dylib).
       --debugging                                       Download the special debugging modules (DAC, DBI, SOS).
@@ -24,23 +25,31 @@ This tool can download all the files needed for debugging (symbols, modules, SOS
 
 ## Install ##
 
-This is a dotnet global tool "extension" supported only in [.NET Core 2.1](https://www.microsoft.com/net/download/). The latest version of the downloader can be installed with the following command. Make sure you are not in any project directory with a NuGet.Config that doesn't include nuget.org as a source. See the Notes section about any errors. 
+This is a dotnet global tool "extension" supported only by [.NET Core 2.1](https://www.microsoft.com/net/download/) or greater. The latest version of the downloader can be installed with the following command. Make sure you are not in any project directory with a NuGet.Config that doesn't include nuget.org as a source. See the Notes section about any errors. 
 
     dotnet tool install -g dotnet-symbol
+
+If you already have dotnet-symbol installed you can update it with:
+
+    dotnet tool update -g dotnet-symbol
 
 ## Examples ##
 
 This will attempt to download all the modules, symbols and SOS/DAC files needed to debug the core dump including the managed assemblies and their PDBs if Linux/ELF core dump or Windows minidump:
 
-    dotnet symbol coredump.4507
+    dotnet-symbol coredump.4507
+
+This downloads just the host program needed to load a core dump on Linux or macOS under lldb. SOS under lldb can download the rest of the symbols and modules needed on demand or with the "loadsymbols" command. See [debugging coredumps](https://github.com/dotnet/diagnostics/blob/master/documentation/debugging-coredump.md) for more details.
+
+    dotnet-symbol --host-only coredump.4507
 
 To download the symbol files for a specific assembly:
 
-    dotnet symbol --symbols --cache-directory c:\temp\symcache --server-path http://symweb --output c:\temp\symout System.Threading.dll
+    dotnet-symbol --symbols --cache-directory c:\temp\symcache --server-path http://symweb --output c:\temp\symout System.Threading.dll
 
 Downloads all the symbol files for the shared runtime:
 
-    dotnet symbol --symbols --output /tmp/symbols /usr/share/dotnet/shared/Microsoft.NETCore.App/2.0.3/*
+    dotnet-symbol --symbols --output /tmp/symbols /usr/share/dotnet/shared/Microsoft.NETCore.App/2.0.3/*
 
 After the symbols are downloaded to `/tmp/symbols` they can be copied back to the above runtime directory so the native debuggers like lldb or gdb can find them, but the copy needs to be superuser:
 
@@ -48,7 +57,7 @@ After the symbols are downloaded to `/tmp/symbols` they can be copied back to th
 
 To verify a symbol package on a local VSTS symbol server:
 
-    dotnet symbol --authenticated-server-path x349x9dfkdx33333livjit4wcvaiwc3v4wjyvnq https://mikemvsts.artifacts.visualstudio.com/defaultcollection/_apis/Symbol/symsrv coredump.45634
+    dotnet-symbol --authenticated-server-path x349x9dfkdx33333livjit4wcvaiwc3v4wjyvnq https://mikemvsts.artifacts.visualstudio.com/defaultcollection/_apis/Symbol/symsrv coredump.45634
 
 ## Notes ##
 

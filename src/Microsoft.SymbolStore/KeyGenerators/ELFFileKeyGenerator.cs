@@ -57,6 +57,17 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     {
                         yield return key;
                     }
+                    if ((flags & KeyTypeFlags.HostKeys) != 0)
+                    {
+                        if (_elfFile.Header.Type == ELFHeaderType.Executable)
+                        {
+                            // The host program as itself (usually dotnet)
+                            yield return BuildKey(_path, IdentityPrefix, buildId);
+
+                            // apphost downloaded as the host program name
+                            yield return BuildKey(_path, IdentityPrefix, buildId, "apphost");
+                        }
+                    }
                 }
                 else
                 {
