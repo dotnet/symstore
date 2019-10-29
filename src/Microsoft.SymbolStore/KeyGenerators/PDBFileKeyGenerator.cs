@@ -49,7 +49,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         {
             Debug.Assert(path != null);
             Debug.Assert(signature != null);
-            return BuildKey(path, string.Format("{0}{1:x}", signature.ToString("N"), age, pdbChecksums));
+            return BuildKey(path, string.Format("{0}{1:x}", signature.ToString("N"), age));
         }
     }
 }

@@ -81,7 +81,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         {
             Debug.Assert(path != null);
             Debug.Assert(pdbId != null);
-            return BuildKey(path, pdbId.ToString("N") + "FFFFFFFF", false, pdbChecksums);
+            return BuildKey(path, pdbId.ToString("N") + "FFFFFFFF", clrSpecialFile: false, pdbChecksums);
         }
     }
 }

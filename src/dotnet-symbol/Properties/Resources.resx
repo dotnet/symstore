@@ -145,6 +145,7 @@ Options:
   --authenticated-server-path &lt;pat&gt; &lt;server path&gt;   Add a http PAT authenticated server path.
   --cache-directory &lt;file cache directory&gt;          Add a cache directory.
   --recurse-subdirectories                          Process input files in all subdirectories.
+  --host-only                                       Download only the host program (i.e. dotnet) that lldb needs for loading coredumps.
   --symbols                                         Download the symbol files (.pdb, .dbg, .dwarf).
   --modules                                         Download the module files (.dll, .so, .dylib).
   --debugging                                       Download the special debugging modules (DAC, DBI, SOS).

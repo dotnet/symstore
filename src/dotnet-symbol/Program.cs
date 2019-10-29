@@ -32,6 +32,7 @@ namespace dotnet.symbol
         private bool Debugging;
         private bool Modules;
         private bool ForceWindowsPdbs;
+        private bool HostOnly;
         private ITracer Tracer;
 
         public static void Main(string[] args)
@@ -123,6 +124,10 @@ namespace dotnet.symbol
 
                     case "--windows-pdbs":
                         program.ForceWindowsPdbs = true;
+                        break;
+
+                    case "--host-only":
+                        program.HostOnly = true;
                         break;
 
                     case "-d":
@@ -283,6 +288,10 @@ namespace dotnet.symbol
                 foreach (KeyGenerator generator in GetKeyGenerators(inputFile))
                 {
                     KeyTypeFlags flags = KeyTypeFlags.None;
+                    if (HostOnly)
+                    {
+                        flags = KeyTypeFlags.HostKeys;
+                    }
                     if (Symbols)
                     {
                         flags |= KeyTypeFlags.SymbolKey;
@@ -300,7 +309,7 @@ namespace dotnet.symbol
                         if (generator.IsDump())
                         {
                             // The default for dumps is to download everything
-                            flags = KeyTypeFlags.IdentityKey | KeyTypeFlags.SymbolKey | KeyTypeFlags.ClrKeys;
+                            flags = KeyTypeFlags.IdentityKey | KeyTypeFlags.SymbolKey | KeyTypeFlags.ClrKeys | KeyTypeFlags.HostKeys;
                         }
                         else
                         {
