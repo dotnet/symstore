@@ -83,7 +83,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 }
                 if ((flags & KeyTypeFlags.HostKeys) != 0)
                 {
-                    if ((_peFile.FileHeader.Characteristics & (ushort)ImageFile.DLL) == 0 && !_peFile.IsILImage)
+                    if ((_peFile.FileHeader.Characteristics & (ushort)ImageFile.Dll) == 0 && !_peFile.IsILImage)
                     {
                         string id = string.Format("{0:x}{1:x}", _peFile.Timestamp, _peFile.SizeOfImage);
 

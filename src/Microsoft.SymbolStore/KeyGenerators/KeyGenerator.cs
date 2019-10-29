@@ -43,7 +43,9 @@ namespace Microsoft.SymbolStore.KeyGenerators
         ForceWindowsPdbs = 0x08,
 
         /// <summary>
-        /// Generate keys for the host program.
+        /// Generate keys for the host program. This includes the exe or main
+        /// module key (usually "dotnet") and an "apphost" symbol index using 
+        /// the exe or main module's build id for self-contained apps.
         /// </summary>
         HostKeys = 0x10
     }

@@ -105,11 +105,11 @@ namespace Microsoft.FileFormats.PE
     [Flags]
     public enum ImageFile : ushort
     {
-        RELOCS_STRIPPED         = 0x0001,
-        EXECUTABLE_IMAGE        = 0x0002,
-        LARGE_ADDRESS_AWARE     = 0x0020,
-        SYSTEM                  = 0x1000,
-        DLL                     = 0x2000,
+        RelocsStripped      = 0x0001,
+        ExecutableImage     = 0x0002,
+        LargeAddressAware   = 0x0020,
+        System              = 0x1000,
+        Dll                 = 0x2000,
     }
 
     /// <summary>
