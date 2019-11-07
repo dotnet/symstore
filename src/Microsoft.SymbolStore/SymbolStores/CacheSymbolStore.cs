@@ -62,14 +62,14 @@ namespace Microsoft.SymbolStore.SymbolStores
         {
             if (obj is CacheSymbolStore store)
             {
-                return CacheDirectory.Equals(store.CacheDirectory);
+                return IsPathEqual(CacheDirectory, store.CacheDirectory);
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return CacheDirectory.GetHashCode();
+            return HashPath(CacheDirectory);
         }
 
         public override string ToString()

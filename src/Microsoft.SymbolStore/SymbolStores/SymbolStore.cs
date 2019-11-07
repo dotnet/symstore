@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.SymbolStore.SymbolStores
 {
@@ -79,6 +80,31 @@ namespace Microsoft.SymbolStore.SymbolStores
             {
                 BackingStore.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Compares two file paths using OS specific casing.
+        /// </summary>
+        internal static bool IsPathEqual(string path1, string path2)
+        {
+#if !NET45
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+            {
+                return string.Equals(path1, path2);
+            }
+#endif
+            return StringComparer.OrdinalIgnoreCase.Equals(path1, path2);
+        }
+
+        internal static int HashPath(string path)
+        {
+#if !NET45
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+            {
+                return path.GetHashCode();
+            }
+#endif
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(path);
         }
     }
 }

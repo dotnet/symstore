@@ -88,7 +88,7 @@ namespace Microsoft.FileFormats.MachO
             get
             {
                 return new ValidationRule("Mach Header NumberCommands is unreasonable",
-                                          () => NumberCommands <= 1000);
+                                          () => NumberCommands <= 10000);
             }
         }
         #endregion
