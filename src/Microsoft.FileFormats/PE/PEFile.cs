@@ -88,7 +88,7 @@ namespace Microsoft.FileFormats.PE
                         }
                     }
                 }
-                catch (InvalidVirtualAddressException)
+                catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
                 {
                 }
             }
