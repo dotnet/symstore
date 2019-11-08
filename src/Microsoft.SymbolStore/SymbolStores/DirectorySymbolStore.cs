@@ -72,14 +72,14 @@ namespace SOS
         {
             if (obj is DirectorySymbolStore store)
             {
-                return Directory.Equals(store.Directory);
+                return IsPathEqual(Directory, store.Directory);
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return Directory.GetHashCode();
+            return HashPath(Directory);
         }
 
         public override string ToString()

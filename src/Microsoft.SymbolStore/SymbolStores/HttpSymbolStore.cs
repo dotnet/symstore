@@ -29,6 +29,25 @@ namespace Microsoft.SymbolStore.SymbolStores
         public Uri Uri { get; }
 
         /// <summary>
+        /// Get or set the request timeout. Default 4 minutes.
+        /// </summary>
+        public TimeSpan Timeout
+        {
+            get 
+            { 
+                return _client.Timeout;
+            }
+            set 
+            { 
+                _client.Timeout = value; 
+                if (_authenticatedClient != null)
+                {
+                    _authenticatedClient.Timeout = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Create an instance of a http symbol store
         /// </summary>
         /// <param name="backingStore">next symbol store or null</param>
@@ -85,7 +104,7 @@ namespace Microsoft.SymbolStore.SymbolStores
                 string checksumHeader = string.Join(";", key.PdbChecksums);
                 HttpClient client = _authenticatedClient ?? _client;
                 Tracer.Information($"SymbolChecksum: {checksumHeader}");
-                _client.DefaultRequestHeaders.Add("SymbolChecksum", checksumHeader);
+                client.DefaultRequestHeaders.Add("SymbolChecksum", checksumHeader);
             }
 
             Stream stream = await GetFileStream(uri, token);
