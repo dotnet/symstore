@@ -65,7 +65,7 @@ Symbol download is only supported for official .NET Core runtime versions acquir
 
 Core dumps generated with gdb (generate-core-file command) or gcore (utility that comes with gdb) do not currently work with this utility (issue [#47](https://github.com/dotnet/symstore/issues/47)).
 
-The best way to generate core dumps on Linux (not supported on Windows or OSX) is to use the [createdump](https://github.com/dotnet/coreclr/blob/master/Documentation/botr/xplat-minidump-generation.md#configurationpolicy) facility that is part of .NET Core 2.0 and greater. It can be setup to automatically generate a "minidump" like ELF core dump when your .NET Core app crashes. The normal Linux system core generation also works just fine but they are usually a lot larger than necessary.
+The best way to generate core dumps on Linux (not supported on Windows or OSX) is to use the [createdump](https://github.com/dotnet/coreclr/blob/master/Documentation/botr/xplat-minidump-generation.md#configurationpolicy) facility that is part of .NET Core 2.0 and greater. It can be setup to automatically generate a "minidump" like ELF core dump when your .NET Core app crashes. The normal Linux system core generation also works if the [coredump_filter](http://man7.org/linux/man-pages/man5/core.5.html)  flags are set to at least 0x3f but they are usually a lot larger than necessary. 
 
 If you receive the below error when installing the extension, you are in a project or directory that contains a NuGet.Config that doesn't contain nuget.org. 
 
