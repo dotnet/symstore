@@ -12,9 +12,9 @@ namespace Microsoft.SymbolStore.KeyGenerators
     public class ELFFileKeyGenerator : KeyGenerator
     {
         /// <summary>
-        /// The default symbol file extension used by .NET Core.
+        /// Symbol file extensions. The first one is the default symbol file extension used by .NET Core.
         /// </summary>
-        private const string SymbolFileExtension = ".dbg";
+        private static readonly string[] SymbolFileExtensions = { ".dbg", ".debug" };
 
         private const string IdentityPrefix = "elf-buildid";
         private const string SymbolPrefix = "elf-buildid-sym";
@@ -51,7 +51,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 byte[] buildId = _elfFile.BuildID;
                 if (buildId != null && buildId.Length == 20)
                 {
-                    bool symbolFile = Path.GetExtension(_path) == SymbolFileExtension;
+                    bool symbolFile = Array.IndexOf(SymbolFileExtensions, Path.GetExtension(_path)) != -1;
                     string symbolFileName = GetSymbolFileName();
                     foreach (SymbolStoreKey key in GetKeys(flags, _path, buildId, symbolFile, symbolFileName))
                     {
@@ -108,7 +108,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 {
                     if (string.IsNullOrEmpty(symbolFileName))
                     {
-                        symbolFileName = path + SymbolFileExtension;
+                        symbolFileName = path + SymbolFileExtensions[0];
                     }
                     yield return BuildKey(symbolFileName, SymbolPrefix, buildId, "_.debug");
                 }
