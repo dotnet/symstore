@@ -130,7 +130,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
 
                     case ImageFileMachine.Arm64:
                         targetArchitecture = "arm64";
-                        hostArchitectures.Add("x64");
+                        hostArchitectures.Add("amd64");
                         break;
                 }
 
