@@ -121,7 +121,7 @@ namespace Microsoft.SymbolStore.SymbolStores
 
         protected Uri GetRequestUri(string index)
         {
-            if (!Uri.TryCreate(Uri, index, out Uri requestUri))
+            if (!Uri.TryCreate(Uri, Uri.EscapeUriString(index), out Uri requestUri))
             {
                 throw new ArgumentException(nameof(index));
             }
@@ -163,7 +163,7 @@ namespace Microsoft.SymbolStore.SymbolStores
                     MarkClientFailure();
                 }
 
-                string message = string.Format("HttpSymbolStore: {0} {1} '{2}'", (int)response.StatusCode, response.ReasonPhrase, requestUri);
+                string message = string.Format("HttpSymbolStore: {0} {1} '{2}'", (int)response.StatusCode, response.ReasonPhrase, requestUri.AbsoluteUri);
                 if (!retryable || response.StatusCode == HttpStatusCode.NotFound)
                 {
                     Tracer.Error(message);
@@ -177,7 +177,7 @@ namespace Microsoft.SymbolStore.SymbolStores
             }
             catch (HttpRequestException ex)
             {
-                Tracer.Error("HttpSymbolStore: {0} '{1}'", ex.Message, requestUri);
+                Tracer.Error("HttpSymbolStore: {0} '{1}'", ex.Message, requestUri.AbsoluteUri);
                 MarkClientFailure();
             }
             return null;

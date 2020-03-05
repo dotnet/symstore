@@ -99,7 +99,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <returns>key</returns>
         protected static SymbolStoreKey BuildKey(string path, string id, bool clrSpecialFile = false, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
-            string file = Uri.EscapeDataString(GetFileName(path).ToLowerInvariant());
+            string file = GetFileName(path).ToLowerInvariant();
             return BuildKey(path, null, id, file, clrSpecialFile, pdbChecksums);
         }
 
@@ -114,7 +114,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <returns>key</returns>
         protected static SymbolStoreKey BuildKey(string path, string prefix, byte[] id, bool clrSpecialFile = false, IEnumerable<PdbChecksum> pdbChecksums = null)
         {
-            string file = Uri.EscapeDataString(GetFileName(path).ToLowerInvariant());
+            string file = GetFileName(path).ToLowerInvariant();
             return BuildKey(path, prefix, id, file, clrSpecialFile, pdbChecksums);
         }
 
