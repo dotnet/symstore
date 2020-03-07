@@ -4,6 +4,7 @@ using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.SymbolStore
@@ -82,6 +83,8 @@ namespace Microsoft.SymbolStore
             return string.Equals(Index, right.Index);
         }
 
+        private static HashSet<char> s_invalidChars = new HashSet<char>(Path.GetInvalidFileNameChars());
+
         /// <summary>
         /// Validates a symbol index.
         ///
@@ -104,7 +107,7 @@ namespace Microsoft.SymbolStore
                     if (char.IsLetterOrDigit(c)) {
                         continue;
                     }
-                    if (c == '_' || c == '-' || c == '.' || c == '%') {
+                    if (!s_invalidChars.Contains(c)) {
                         continue;
                     }
                     return false;
