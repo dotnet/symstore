@@ -1,119 +1,176 @@
-trigger:
-- master
+trigger: none
+
 pr:
-- master
+  autoCancel: true
+  branches:
+    include:
+    - master
+    - release/*
+  paths:
+    exclude:
+    - docs/*
+    - THIRD-PARTY-NOTICES.TXT
+    - LICENSE.TXT
 
 variables:
   - name: _TeamName
     value: DotNetCore
+  - name: _DotNetArtifactsCategory
+    value: .NETCore
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - name: _SignType
+      value: real
+    - name: _PublishBlobFeedUrl
+      value: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+    # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
+    # DotNet-Diagnostics-SDL-Params provides Tsa* variables for SDL checks.
+    # DotNet-Symbol-Server-Pats provides: provides microsoft-symbol-server-pat and symweb-symbol-server-pat
+    # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+    - group: DotNet-Blob-Feed
+    - group: DotNet-Diagnostics-SDL-Params
+    - group: DotNet-Symbol-Server-Pats
+    - group: Publish-Build-Assets
   
 resources:
   containers:
   - container: LinuxContainer
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-16.04-09ca40b-20190520220842
 
-# Three phases for each of the three OSes we want to run on
-jobs:
-- template: /eng/common/templates/jobs/jobs.yml
-  parameters:
-    enableMicrobuild: true
-    enableTelemetry: true
-    enablePublishBuildArtifacts: true
-    enablePublishTestResults: true
-    helixRepo: dotnet/symstore
+stages:
+  - stage: build
+    displayName: Build and Test SymStore
 
+    # Three jobs for each of the three OSes we want to run on
     jobs:
-    - job: Windows_NT
-      pool:
-        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2017.Open
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          name: NetCoreInternal-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2017
+    - template: /eng/common/templates/jobs/jobs.yml
+      parameters:
+        enableMicrobuild: true
+        enableTelemetry: true
+        enablePublishBuildArtifacts: true
+        enablePublishTestResults: true
+        helixRepo: dotnet/symstore
 
-      variables:
-      - DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX: 2
-      - _PublishBlobFeedUrl: 'https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json'
-      - _SignType: ''
-      - _SignArgs: ''
-      - _PublishArgs: ''
-      - _OfficialBuildIdArgs: ''
-
-      strategy:
-        matrix:
-          build_debug:
-            _BuildConfig: Debug
-          build_release:
-            _BuildConfig: Release
+        jobs:
+        - job: Windows_NT
+          pool:
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              name: NetCorePublic-Pool
+              queue: BuildPool.Windows.10.Amd64.VS2017.Open
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              _SignType: real
-              _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-              _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1) 
-                            /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl) 
-                            /p:DotNetPublishToBlobFeed=$(PublishPackages)
-                            /p:PublishToSymbolServer=$(PublishSymbols)
-                            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-              _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
+              name: NetCoreInternal-Pool
+              queue: BuildPool.Windows.10.Amd64.VS2017
 
-      steps:
-      - script: eng\common\cibuild.cmd
-          -configuration $(_BuildConfig)
-          -prepareMachine
-          -verbosity normal
-          $(_SignArgs)
-          $(_PublishArgs)
-          $(_OfficialBuildIdArgs)
-        name: Build
-        displayName: Build
-        condition: succeeded()
+          variables:
+          - DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX: 2
+          - _InternalBuildArgs: ''
 
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - task: PublishBuildArtifacts@1
-          displayName: Publish Package Artifacts
-          inputs:
-            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/packages'
-            PublishLocation: Container
-            ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
-          continueOnError: true
-          condition: always()
+          strategy:
+            matrix:
+              build_debug:
+                _BuildConfig: Debug
+              build_release:
+                _BuildConfig: Release
+                ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+                  _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+                                      /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+                                      /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                                      /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+                                      /p:DotNetPublishToBlobFeed=$(PublishPackages)
+                                      /p:DotNetPublishUsingPipelines=$(PublishPackages)
+                                      /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+                                      /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+                                      /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
-    - job: Linux
-      container: LinuxContainer
-      pool:
-        name: Hosted Ubuntu 1604
+          steps:
+          - script: eng\common\cibuild.cmd
+              -configuration $(_BuildConfig)
+              -prepareMachine
+              -verbosity normal
+              $(_InternalBuildArgs)
+            name: Build
+            displayName: Build
+            condition: succeeded()
 
-      strategy:
-        matrix:
-          debug:
-            _BuildConfig: Debug
-          release:
-            _BuildConfig: Release
+          - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            - task: PublishBuildArtifacts@1
+              displayName: Publish Package Artifacts
+              inputs:
+                PathtoPublish: '$(Build.SourcesDirectory)/artifacts/packages'
+                PublishLocation: Container
+                ArtifactName: Packages
+              continueOnError: true
+              condition: always()
 
-      steps:
-      - script: eng/common/cibuild.sh
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        name: Build
-        displayName: Build
-        condition: succeeded()
+        - job: Linux
+          container: LinuxContainer
+          pool:
+            name: Hosted Ubuntu 1604
 
-    - job: MacOS
-      pool:
-        name: Hosted macOS
+          strategy:
+            matrix:
+              debug:
+                _BuildConfig: Debug
+              release:
+                _BuildConfig: Release
 
-      strategy:
-        matrix:
-          debug:
-            _BuildConfig: Debug
-          release:
-            _BuildConfig: Release
+          steps:
+          - script: eng/common/cibuild.sh
+              --configuration $(_BuildConfig)
+              --prepareMachine
+            name: Build
+            displayName: Build
+            condition: succeeded()
 
-      steps:
-      - script: eng/common/cibuild.sh
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        name: Build
-        displayName: Build
-        condition: succeeded()
+        - job: MacOS
+          pool:
+            name: Hosted macOS
+
+          strategy:
+            matrix:
+              debug:
+                _BuildConfig: Debug
+              release:
+                _BuildConfig: Release
+
+          steps:
+          - script: eng/common/cibuild.sh
+              --configuration $(_BuildConfig)
+              --prepareMachine
+            name: Build
+            displayName: Build
+            condition: succeeded()
+
+    - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+      - template: /eng/common/templates/job/publish-build-assets.yml
+        parameters:
+          configuration: Release
+          dependsOn: Windows_NT
+          publishUsingPipelines: true
+          pool:
+            name: NetCoreInternal-Pool
+            queue: buildpool.windows.10.amd64.vs2017
+
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - template: /eng/common/templates/post-build/post-build.yml
+      parameters:
+        # This is to enable SDL runs part of Post-Build Validation Stage.
+        # as well as NuGet, SourceLink, and signing validation.
+        # The variables get imported from group dotnet-diagnostics-sdl-params
+        enableSourceLinkValidation: true
+        symbolPublishingAdditionalParameters: '/p:PublishSpecialClrFiles=false'
+        SDLValidationParameters:
+          enable: true
+          continueOnError: false
+          params: ' -SourceToolsList @("policheck","credscan")
+          -TsaInstanceURL $(_TsaInstanceURL)
+          -TsaProjectName $(_TsaProjectName)
+          -TsaNotificationEmail $(_TsaNotificationEmail)
+          -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+          -TsaBugAreaPath $(_TsaBugAreaPath)
+          -TsaIterationPath $(_TsaIterationPath)
+          -TsaRepositoryName "symstore"
+          -TsaCodebaseName "symstore"
+          -TsaPublish $True'
+          artifactNames:
+          - 'Packages'
+
