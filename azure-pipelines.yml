@@ -1,4 +1,5 @@
-trigger: none
+trigger:
+- master
 
 pr:
   autoCancel: true
@@ -10,18 +11,14 @@ pr:
     exclude:
     - docs/*
     - THIRD-PARTY-NOTICES.TXT
-    - LICENSE.TXT
+    - License.txt
 
 variables:
   - name: _TeamName
     value: DotNetCore
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
+  - name: _SignType
+    value: real
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - name: _SignType
-      value: real
-    - name: _PublishBlobFeedUrl
-      value: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
     # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
     # DotNet-Diagnostics-SDL-Params provides Tsa* variables for SDL checks.
     # DotNet-Symbol-Server-Pats provides: provides microsoft-symbol-server-pat and symweb-symbol-server-pat
@@ -68,17 +65,13 @@ stages:
             matrix:
               build_debug:
                 _BuildConfig: Debug
+                _InternalBuildArgs: ''
               build_release:
                 _BuildConfig: Release
                 ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-                  _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-                                      /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
-                                      /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-                                      /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-                                      /p:DotNetPublishToBlobFeed=$(PublishPackages)
+                  _InternalBuildArgs: /p:DotNetSignType=$(_SignType) 
+                                      /p:TeamName=$(_TeamName)
                                       /p:DotNetPublishUsingPipelines=$(PublishPackages)
-                                      /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                                      /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                                       /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
           steps:
@@ -90,16 +83,6 @@ stages:
             name: Build
             displayName: Build
             condition: succeeded()
-
-          - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            - task: PublishBuildArtifacts@1
-              displayName: Publish Package Artifacts
-              inputs:
-                PathtoPublish: '$(Build.SourcesDirectory)/artifacts/packages'
-                PublishLocation: Container
-                ArtifactName: Packages
-              continueOnError: true
-              condition: always()
 
         - job: Linux
           container: LinuxContainer
@@ -172,5 +155,5 @@ stages:
           -TsaCodebaseName "symstore"
           -TsaPublish $True'
           artifactNames:
-          - 'Packages'
+          - 'PackageArtifacts'
 
