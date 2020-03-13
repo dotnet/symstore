@@ -1,6 +1,6 @@
 # SSQP Key conventions #
 
-When using [SSQP](Simple_Symbol_Query_Protocol) it is critical that the content publishers and content consumers agree what keys should correspond to which files. Although any publisher-consumer pair is free to create private agreements, using a standard key format offers the widest compatibility.
+When using [SSQP](Simple_Symbol_Query_Protocol.md) it is critical that the content publishers and content consumers agree what keys should correspond to which files. Although any publisher-consumer pair is free to create private agreements, using a standard key format offers the widest compatibility.
 
 
 ## Key formatting basic rules
