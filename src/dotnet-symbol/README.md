@@ -1,6 +1,6 @@
 # Symbol downloader dotnet cli extension #
 
-This tool can download all the files needed for debugging (symbols, modules, SOS and DAC for the coreclr module given) for any given core dump, minidump or any supported platform's file formats like ELF, MachO, Windows DLLs, PDBs and portable PDBs.
+This tool can download all the files needed for debugging (symbols, modules, SOS and DAC for the coreclr module given) for any given core dump, minidump or any supported platform's file formats like ELF, MachO, Windows DLLs, PDBs and portable PDBs. See [debugging coredumps](https://github.com/dotnet/diagnostics/blob/master/documentation/debugging-coredump.md) for more details.
       
     Usage: dotnet symbol [options] <FILES>
     
@@ -35,7 +35,7 @@ If you already have dotnet-symbol installed you can update it with:
 
 ## Examples ##
 
-This will attempt to download all the modules, symbols and SOS/DAC files needed to debug the core dump including the managed assemblies and their PDBs if Linux/ELF core dump or Windows minidump:
+This will attempt to download all the modules, symbols and DAC/DBI files needed to debug the core dump including the managed assemblies and their PDBs if Linux/ELF core dump or Windows minidump:
 
     dotnet-symbol coredump.4507
 
@@ -65,7 +65,14 @@ Symbol download is only supported for official .NET Core runtime versions acquir
 
 Core dumps generated with gdb (generate-core-file command) or gcore (utility that comes with gdb) do not currently work with this utility (issue [#47](https://github.com/dotnet/symstore/issues/47)).
 
-The best way to generate core dumps on Linux (not supported on Windows or OSX) is to use the [createdump](https://github.com/dotnet/coreclr/blob/master/Documentation/botr/xplat-minidump-generation.md#configurationpolicy) facility that is part of .NET Core 2.0 and greater. It can be setup to automatically generate a "minidump" like ELF core dump when your .NET Core app crashes. The normal Linux system core generation also works if the [coredump_filter](http://man7.org/linux/man-pages/man5/core.5.html)  flags are set to at least 0x3f but they are usually a lot larger than necessary. 
+The best way to generate core dumps on Linux (not supported on Windows or MacOS) is to use the [createdump](https://github.com/dotnet/runtime/blob/master/docs/design/coreclr/botr/xplat-minidump-generation.md) facility that is part of .NET Core 2.0 and greater. It can be setup (see [createdump](https://github.com/dotnet/runtime/blob/master/docs/design/coreclr/botr/xplat-minidump-generation.md#configurationpolicy) for the details) to automatically generate a "minidump" like ELF core dump when your .NET Core app crashes. The coredump will contain all the necessary managed state to analyze with SOS or dotnet-dump. 
+
+ Linux system core generation (enabled with `ulimit -c unlimited`) also works if the coredump_filter flags are set (see [core](http://man7.org/linux/man-pages/man5/core.5.html)) to at least 0x3f but they are usually a lot larger than necessary. 
+```
+echo 0x3f > /proc/self/coredump_filter
+ulimit -c unlimited
+```
+
 
 If you receive the below error when installing the extension, you are in a project or directory that contains a NuGet.Config that doesn't contain nuget.org. 
 
