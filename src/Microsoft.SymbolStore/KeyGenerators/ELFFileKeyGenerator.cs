@@ -11,17 +11,20 @@ namespace Microsoft.SymbolStore.KeyGenerators
 {
     public class ELFFileKeyGenerator : KeyGenerator
     {
-        /// <summary>
-        /// Symbol file extensions. The first one is the default symbol file extension used by .NET Core.
-        /// </summary>
-        private static readonly string[] SymbolFileExtensions = { ".dbg", ".debug" };
-
         private const string IdentityPrefix = "elf-buildid";
         private const string SymbolPrefix = "elf-buildid-sym";
         private const string CoreClrPrefix = "elf-buildid-coreclr";
         private const string CoreClrFileName = "libcoreclr.so";
 
-        private static HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(new string[] { "libmscordaccore.so", "libmscordbi.so", "libsos.so", "SOS.NETCore.dll" });
+        /// <summary>
+        /// Symbol file extensions. The first one is the default symbol file extension used by .NET Core.
+        /// </summary>
+        private static readonly string[] s_symbolFileExtensions = { ".dbg", ".debug" };
+        
+        /// <summary>
+        /// List of special clr files that are also indexed with libcoreclr.so's key.
+        /// </summary>
+        private static HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(new string[] { "libmscordaccore.so", "libmscordbi.so", "mscordaccore.dll", "libsos.so", "SOS.NETCore.dll" });
 
         private readonly ELFFile _elfFile;
         private readonly string _path;
@@ -51,7 +54,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 byte[] buildId = _elfFile.BuildID;
                 if (buildId != null && buildId.Length == 20)
                 {
-                    bool symbolFile = Array.IndexOf(SymbolFileExtensions, Path.GetExtension(_path)) != -1;
+                    bool symbolFile = Array.IndexOf(s_symbolFileExtensions, Path.GetExtension(_path)) != -1;
                     string symbolFileName = GetSymbolFileName();
                     foreach (SymbolStoreKey key in GetKeys(flags, _path, buildId, symbolFile, symbolFileName))
                     {
@@ -108,7 +111,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 {
                     if (string.IsNullOrEmpty(symbolFileName))
                     {
-                        symbolFileName = path + SymbolFileExtensions[0];
+                        symbolFileName = path + s_symbolFileExtensions[0];
                     }
                     yield return BuildKey(symbolFileName, SymbolPrefix, buildId, "_.debug");
                 }
