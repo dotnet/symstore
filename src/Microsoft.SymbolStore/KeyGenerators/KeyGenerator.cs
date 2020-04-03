@@ -47,7 +47,13 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// module key (usually "dotnet") and an "apphost" symbol index using 
         /// the exe or main module's build id for self-contained apps.
         /// </summary>
-        HostKeys = 0x10
+        HostKeys = 0x10,
+
+        /// <summary>
+        /// Return only the DAC (including any cross-OS DACs) and DBI module 
+        /// keys. Does not including any SOS binaries.
+        /// </summary>
+        DacDbiKeys = 0x20
     }
 
     /// <summary>

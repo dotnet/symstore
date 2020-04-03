@@ -14,8 +14,14 @@ namespace Microsoft.SymbolStore.KeyGenerators
     {
         private const string CoreClrFileName = "coreclr.dll";
 
-        private static HashSet<string> s_longNameBinaryPrefixes = new HashSet<string>(new string[] { "mscordaccore_", "sos_" });
-        private static HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(new string[] { "mscordaccore.dll", "mscordbi.dll", "sos.dll", "SOS.NETCore.dll" });
+        private static readonly HashSet<string> s_longNameBinaryPrefixes = new HashSet<string>(new string[] { "mscordaccore_", "sos_" });
+        private static readonly HashSet<string> s_daclongNameBinaryPrefixes = new HashSet<string>(new string[] { "mscordaccore_" });
+
+        private static readonly string[] s_specialFiles = new string[] { "mscordaccore.dll", "mscordbi.dll" };
+        private static readonly string[] s_sosSpecialFiles = new string[] { "sos.dll", "SOS.NETCore.dll" };
+
+        private static readonly HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(s_specialFiles.Concat(s_sosSpecialFiles));
+        private static readonly HashSet<string> s_dacdbiSpecialFiles = new HashSet<string>(s_specialFiles);
 
         private readonly PEFile _peFile;
         private readonly string _path;
@@ -70,12 +76,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
                         }
                     }
                 }
-                if ((flags & KeyTypeFlags.ClrKeys) != 0)
+                if ((flags & (KeyTypeFlags.ClrKeys | KeyTypeFlags.DacDbiKeys)) != 0)
                 {
                     if (GetFileName(_path) == CoreClrFileName)
                     {
                         string coreclrId = string.Format("{0:x}{1:x}", _peFile.Timestamp, _peFile.SizeOfImage);
-                        foreach (string specialFileName in GetSpecialFiles())
+                        foreach (string specialFileName in GetSpecialFiles(flags))
                         {
                             yield return BuildKey(specialFileName, coreclrId);
                         }
@@ -97,9 +103,9 @@ namespace Microsoft.SymbolStore.KeyGenerators
             }
         }
 
-        private IEnumerable<string> GetSpecialFiles()
+        private IEnumerable<string> GetSpecialFiles(KeyTypeFlags flags)
         {
-            var specialFiles = new List<string>(s_coreClrSpecialFiles);
+            var specialFiles = new List<string>((flags & KeyTypeFlags.DacDbiKeys) != 0 ? s_dacdbiSpecialFiles : s_coreClrSpecialFiles);
 
             VsFixedFileInfo fileVersion = _peFile.VersionInfo;
             if (fileVersion != null)
@@ -154,7 +160,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                             }
                         }
 
-                        foreach (string name in s_longNameBinaryPrefixes)
+                        foreach (string name in (flags & KeyTypeFlags.DacDbiKeys) != 0 ? s_daclongNameBinaryPrefixes : s_longNameBinaryPrefixes)
                         {
                             // The name prefixes include the trailing "_".
                             string longName = string.Format("{0}{1}_{2}_{3}.{4}.{5}.{6:00}{7}.dll",

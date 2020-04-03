@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Microsoft.SymbolStore.KeyGenerators
 {
@@ -24,7 +25,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <summary>
         /// List of special clr files that are also indexed with libcoreclr.so's key.
         /// </summary>
-        private static HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(new string[] { "libmscordaccore.so", "libmscordbi.so", "mscordaccore.dll", "libsos.so", "SOS.NETCore.dll" });
+        private static readonly string[] s_specialFiles = new string[] { "libmscordaccore.so", "libmscordbi.so", "mscordaccore.dll" };
+        private static readonly string[] s_sosSpecialFiles = new string[] { "libsos.so", "SOS.NETCore.dll" };
+
+        private static readonly HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(s_specialFiles.Concat(s_sosSpecialFiles));
+        private static readonly HashSet<string> s_dacdbiSpecialFiles = new HashSet<string>(s_specialFiles);
 
         private readonly ELFFile _elfFile;
         private readonly string _path;
@@ -115,12 +120,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     }
                     yield return BuildKey(symbolFileName, SymbolPrefix, buildId, "_.debug");
                 }
-                if ((flags & KeyTypeFlags.ClrKeys) != 0)
+                if ((flags & (KeyTypeFlags.ClrKeys | KeyTypeFlags.DacDbiKeys)) != 0)
                 {
                     /// Creates all the special CLR keys if the path is the coreclr module for this platform
                     if (GetFileName(path) == CoreClrFileName)
                     {
-                        foreach (string specialFileName in s_coreClrSpecialFiles)
+                        foreach (string specialFileName in (flags & KeyTypeFlags.DacDbiKeys) != 0 ? s_dacdbiSpecialFiles : s_coreClrSpecialFiles)
                         {
                             yield return BuildKey(specialFileName, CoreClrPrefix, buildId);
                         }
