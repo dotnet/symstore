@@ -94,8 +94,16 @@ namespace Microsoft.SymbolStore.Tests
 
                 Dictionary<string, SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys).ToDictionary((key) => key.Index);
                 Assert.True(clrKeys.ContainsKey("libmscordaccore.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libmscordaccore.so"));
+                Assert.True(clrKeys.ContainsKey("libmscordbi.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libmscordbi.so"));
+                Assert.True(clrKeys.ContainsKey("mscordaccore.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/mscordaccore.dll"));
                 Assert.True(clrKeys.ContainsKey("libsos.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libsos.so"));
                 Assert.True(clrKeys.ContainsKey("sos.netcore.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/sos.netcore.dll"));
+
+                Dictionary<string, SymbolStoreKey> dacdbiKeys = generator.GetKeys(KeyTypeFlags.DacDbiKeys).ToDictionary((key) => key.Index);
+                Assert.True(dacdbiKeys.ContainsKey("libmscordaccore.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libmscordaccore.so"));
+                Assert.True(dacdbiKeys.ContainsKey("libmscordbi.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libmscordbi.so"));
+                Assert.False(dacdbiKeys.ContainsKey("libsos.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libsos.so"));
+                Assert.False(dacdbiKeys.ContainsKey("sos.netcore.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/sos.netcore.dll"));
             }
 
             using (Stream stream = TestUtilities.OpenCompressedFile("TestBinaries/libcoreclrtraceptprovider.so.dbg.gz"))
@@ -131,6 +139,7 @@ namespace Microsoft.SymbolStore.Tests
                 Dictionary<string, SymbolStoreKey> identityKeys = generator.GetKeys(KeyTypeFlags.IdentityKey).ToDictionary((key) => key.Index);
                 Dictionary<string, SymbolStoreKey> symbolKeys = generator.GetKeys(KeyTypeFlags.SymbolKey).ToDictionary((key) => key.Index);
                 Dictionary<string, SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys).ToDictionary((key) => key.Index);
+                Dictionary<string, SymbolStoreKey> dacdbiKeys = generator.GetKeys(KeyTypeFlags.DacDbiKeys).ToDictionary((key) => key.Index);
 
                 // System.Native.dylib
                 Assert.True(identityKeys.ContainsKey("system.native.dylib/mach-uuid-f7c77509e13a3da18099a2b97e90fade/system.native.dylib"));
@@ -141,8 +150,14 @@ namespace Microsoft.SymbolStore.Tests
                 Assert.True(symbolKeys.ContainsKey("_.dwarf/mach-uuid-sym-3e0f66c5527338b18141e9d63b8ab415/_.dwarf"));
 
                 Assert.True(clrKeys.ContainsKey("libmscordaccore.dylib/mach-uuid-coreclr-3e0f66c5527338b18141e9d63b8ab415/libmscordaccore.dylib"));
+                Assert.True(clrKeys.ContainsKey("libmscordbi.dylib/mach-uuid-coreclr-3e0f66c5527338b18141e9d63b8ab415/libmscordbi.dylib"));
                 Assert.True(clrKeys.ContainsKey("libsos.dylib/mach-uuid-coreclr-3e0f66c5527338b18141e9d63b8ab415/libsos.dylib"));
                 Assert.True(clrKeys.ContainsKey("sos.netcore.dll/mach-uuid-coreclr-3e0f66c5527338b18141e9d63b8ab415/sos.netcore.dll"));
+
+                Assert.True(dacdbiKeys.ContainsKey("libmscordaccore.dylib/mach-uuid-coreclr-3e0f66c5527338b18141e9d63b8ab415/libmscordaccore.dylib"));
+                Assert.True(dacdbiKeys.ContainsKey("libmscordbi.dylib/mach-uuid-coreclr-3e0f66c5527338b18141e9d63b8ab415/libmscordbi.dylib"));
+                Assert.False(dacdbiKeys.ContainsKey("libsos.dylib/mach-uuid-coreclr-3e0f66c5527338b18141e9d63b8ab415/libsos.dylib"));
+                Assert.False(dacdbiKeys.ContainsKey("sos.netcore.dll/mach-uuid-coreclr-3e0f66c5527338b18141e9d63b8ab415/sos.netcore.dll"));
             }
         }
 
@@ -302,8 +317,15 @@ namespace Microsoft.SymbolStore.Tests
 
                 Dictionary<string, SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys).ToDictionary((key) => key.Index);
                 Assert.True(clrKeys.ContainsKey("mscordaccore.dll/595ebcd5538000/mscordaccore.dll"));
+                Assert.True(clrKeys.ContainsKey("mscordbi.dll/595ebcd5538000/mscordbi.dll"));
                 Assert.True(clrKeys.ContainsKey("sos.dll/595ebcd5538000/sos.dll"));
                 Assert.True(clrKeys.ContainsKey("sos.netcore.dll/595ebcd5538000/sos.netcore.dll"));
+
+                Dictionary<string, SymbolStoreKey> dacdbiKeys = generator.GetKeys(KeyTypeFlags.DacDbiKeys).ToDictionary((key) => key.Index);
+                Assert.True(dacdbiKeys.ContainsKey("mscordaccore.dll/595ebcd5538000/mscordaccore.dll"));
+                Assert.True(dacdbiKeys.ContainsKey("mscordbi.dll/595ebcd5538000/mscordbi.dll"));
+                Assert.False(dacdbiKeys.ContainsKey("sos.dll/595ebcd5538000/sos.dll"));
+                Assert.False(dacdbiKeys.ContainsKey("sos.netcore.dll/595ebcd5538000/sos.netcore.dll"));
             }
         }
 

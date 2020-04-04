@@ -4,7 +4,7 @@ using Microsoft.FileFormats;
 using Microsoft.FileFormats.MachO;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Linq;
 
 namespace Microsoft.SymbolStore.KeyGenerators
 {
@@ -20,7 +20,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
         private const string CoreClrPrefix = "mach-uuid-coreclr";
         private const string CoreClrFileName = "libcoreclr.dylib";
 
-        private static HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(new string[] { "libmscordaccore.dylib", "libmscordbi.dylib", "libsos.dylib", "SOS.NETCore.dll" });
+        private static readonly string[] s_specialFiles = new string[] { "libmscordaccore.dylib", "libmscordbi.dylib" };
+        private static readonly string[] s_sosSpecialFiles = new string[] { "libsos.dylib", "SOS.NETCore.dll" };
+
+        private static readonly HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(s_specialFiles.Concat(s_sosSpecialFiles));
+        private static readonly HashSet<string> s_dacdbiSpecialFiles = new HashSet<string>(s_specialFiles);
 
         private readonly MachOFile _machoFile;
         private readonly string _path;
@@ -113,12 +117,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     }
                     yield return BuildKey(symbolFileName, SymbolPrefix, uuid, "_.dwarf");
                 }
-                if ((flags & KeyTypeFlags.ClrKeys) != 0)
+                if ((flags & (KeyTypeFlags.ClrKeys | KeyTypeFlags.DacDbiKeys)) != 0)
                 {
                     /// Creates all the special CLR keys if the path is the coreclr module for this platform
                     if (GetFileName(path) == CoreClrFileName)
                     {
-                        foreach (string specialFileName in s_coreClrSpecialFiles)
+                        foreach (string specialFileName in (flags & KeyTypeFlags.ClrKeys) != 0 ? s_coreClrSpecialFiles : s_dacdbiSpecialFiles)
                         {
                             yield return BuildKey(specialFileName, CoreClrPrefix, uuid);
                         }
