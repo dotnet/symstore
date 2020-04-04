@@ -125,7 +125,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     /// Creates all the special CLR keys if the path is the coreclr module for this platform
                     if (GetFileName(path) == CoreClrFileName)
                     {
-                        foreach (string specialFileName in (flags & KeyTypeFlags.DacDbiKeys) != 0 ? s_dacdbiSpecialFiles : s_coreClrSpecialFiles)
+                        foreach (string specialFileName in (flags & KeyTypeFlags.ClrKeys) != 0 ? s_coreClrSpecialFiles : s_dacdbiSpecialFiles)
                         {
                             yield return BuildKey(specialFileName, CoreClrPrefix, buildId);
                         }

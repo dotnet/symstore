@@ -105,7 +105,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
 
         private IEnumerable<string> GetSpecialFiles(KeyTypeFlags flags)
         {
-            var specialFiles = new List<string>((flags & KeyTypeFlags.DacDbiKeys) != 0 ? s_dacdbiSpecialFiles : s_coreClrSpecialFiles);
+            var specialFiles = new List<string>((flags & KeyTypeFlags.ClrKeys) != 0 ? s_coreClrSpecialFiles : s_dacdbiSpecialFiles);
 
             VsFixedFileInfo fileVersion = _peFile.VersionInfo;
             if (fileVersion != null)
@@ -160,7 +160,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                             }
                         }
 
-                        foreach (string name in (flags & KeyTypeFlags.DacDbiKeys) != 0 ? s_daclongNameBinaryPrefixes : s_longNameBinaryPrefixes)
+                        foreach (string name in (flags & KeyTypeFlags.ClrKeys) != 0 ? s_longNameBinaryPrefixes : s_daclongNameBinaryPrefixes)
                         {
                             // The name prefixes include the trailing "_".
                             string longName = string.Format("{0}{1}_{2}_{3}.{4}.{5}.{6:00}{7}.dll",
