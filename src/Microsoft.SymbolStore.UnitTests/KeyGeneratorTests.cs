@@ -96,12 +96,15 @@ namespace Microsoft.SymbolStore.Tests
                 Assert.True(clrKeys.ContainsKey("libmscordaccore.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libmscordaccore.so"));
                 Assert.True(clrKeys.ContainsKey("libmscordbi.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libmscordbi.so"));
                 Assert.True(clrKeys.ContainsKey("mscordaccore.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/mscordaccore.dll"));
+                Assert.True(clrKeys.ContainsKey("mscordbi.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/mscordbi.dll"));
                 Assert.True(clrKeys.ContainsKey("libsos.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libsos.so"));
                 Assert.True(clrKeys.ContainsKey("sos.netcore.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/sos.netcore.dll"));
 
                 Dictionary<string, SymbolStoreKey> dacdbiKeys = generator.GetKeys(KeyTypeFlags.DacDbiKeys).ToDictionary((key) => key.Index);
                 Assert.True(dacdbiKeys.ContainsKey("libmscordaccore.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libmscordaccore.so"));
                 Assert.True(dacdbiKeys.ContainsKey("libmscordbi.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libmscordbi.so"));
+                Assert.True(dacdbiKeys.ContainsKey("mscordaccore.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/mscordaccore.dll"));
+                Assert.True(dacdbiKeys.ContainsKey("mscordbi.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/mscordbi.dll"));
                 Assert.False(dacdbiKeys.ContainsKey("libsos.so/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/libsos.so"));
                 Assert.False(dacdbiKeys.ContainsKey("sos.netcore.dll/elf-buildid-coreclr-ef8f58a0b402d11c68f78342ef4fcc7d23798d4c/sos.netcore.dll"));
             }

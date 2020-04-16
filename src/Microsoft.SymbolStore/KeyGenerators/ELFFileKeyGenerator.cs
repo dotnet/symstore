@@ -25,7 +25,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <summary>
         /// List of special clr files that are also indexed with libcoreclr.so's key.
         /// </summary>
-        private static readonly string[] s_specialFiles = new string[] { "libmscordaccore.so", "libmscordbi.so", "mscordaccore.dll" };
+        private static readonly string[] s_specialFiles = new string[] { "libmscordaccore.so", "libmscordbi.so", "mscordaccore.dll", "mscordbi.dll" };
         private static readonly string[] s_sosSpecialFiles = new string[] { "libsos.so", "SOS.NETCore.dll" };
 
         private static readonly HashSet<string> s_coreClrSpecialFiles = new HashSet<string>(s_specialFiles.Concat(s_sosSpecialFiles));
