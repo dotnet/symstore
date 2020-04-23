@@ -33,7 +33,10 @@ namespace Microsoft.SymbolStore.KeyGenerators
             {
                 if ((flags & KeyTypeFlags.IdentityKey) != 0)
                 {
-                    yield return GetKey(_path, _pdbFile.Signature, unchecked((int)_pdbFile.DbiAge));
+                    if (_pdbFile.DbiStream.IsValid())
+                    {
+                        yield return GetKey(_path, _pdbFile.Signature, unchecked((int)_pdbFile.DbiAge));
+                    }
                 }
             }
         }

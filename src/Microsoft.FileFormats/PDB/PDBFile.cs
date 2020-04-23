@@ -168,6 +168,14 @@ namespace Microsoft.FileFormats.PDB
             _header = new Lazy<DbiStreamHeader>(() => _streamReader.Read<DbiStreamHeader>(0));
         }
 
+        public bool IsValid()
+        {
+            if (_streamReader.Length >= _streamReader.SizeOf<DbiStreamHeader>()) {
+                return _header.Value.IsHeaderValid.Check();
+            }
+            return false;
+        }
+
         public DbiStreamHeader Header { get { _header.Value.IsHeaderValid.CheckThrowing(); return _header.Value; } }
     }
 }
