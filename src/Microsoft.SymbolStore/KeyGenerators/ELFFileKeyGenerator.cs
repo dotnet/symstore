@@ -49,7 +49,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         public override bool IsValid()
         {
             return _elfFile.IsValid() &&
-                (_elfFile.Header.Type == ELFHeaderType.Executable || _elfFile.Header.Type == ELFHeaderType.Shared);
+                (_elfFile.Header.Type == ELFHeaderType.Executable || _elfFile.Header.Type == ELFHeaderType.Shared || _elfFile.Header.Type == ELFHeaderType.Relocatable);
         }
 
         public override IEnumerable<SymbolStoreKey> GetKeys(KeyTypeFlags flags)
