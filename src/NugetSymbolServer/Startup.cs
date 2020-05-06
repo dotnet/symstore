@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,7 +16,7 @@ namespace NugetSymbolServer
         { 
             Configuration = 
                 new ConfigurationBuilder()
-                .SetBasePath(ApplicationEnvironment.ApplicationBasePath)
+                .SetBasePath(AppContext.BaseDirectory)
                 .Add(hostProvidedConfiguration)
                 .AddJsonFile("config.json", optional: hostingEnvironment.IsDevelopment())
                 .AddJsonFile($"config.{hostingEnvironment.EnvironmentName}.json", optional: true)
@@ -28,7 +27,7 @@ namespace NugetSymbolServer
  
             LoggingConfiguration = 
                 new ConfigurationBuilder()
-                .SetBasePath(ApplicationEnvironment.ApplicationBasePath)
+                .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("logging.json", optional: true)
                 .AddJsonFile($"logging.{hostingEnvironment.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables()
@@ -52,7 +51,7 @@ namespace NugetSymbolServer
                         throw new Exception("No configuration specified for FileCache:CachePath");
                     }
                     cachePath = Environment.ExpandEnvironmentVariables(cachePath);
-                    options.RootPath = Path.Combine(ApplicationEnvironment.ApplicationBasePath, cachePath);
+                    options.RootPath = Path.Combine(AppContext.BaseDirectory, cachePath);
                 })
                 .Configure<DirectoryPackageSourceOptions>(options =>
                 {
@@ -62,7 +61,7 @@ namespace NugetSymbolServer
                         throw new Exception("No configuration specified for PackageSource:SourcePath");
                     }
                     sourcePath = Environment.ExpandEnvironmentVariables(sourcePath);
-                    options.SourcePath = Path.Combine(ApplicationEnvironment.ApplicationBasePath, sourcePath);
+                    options.SourcePath = Path.Combine(AppContext.BaseDirectory, sourcePath);
                 })
                 .AddSingleton<IFileStore, FileStore>()
                 .AddSingleton<ISymbolAccess, PackageBasedSymbolStore>()
