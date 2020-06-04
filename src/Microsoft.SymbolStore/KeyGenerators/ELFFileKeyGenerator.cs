@@ -59,7 +59,18 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 byte[] buildId = _elfFile.BuildID;
                 if (buildId != null && buildId.Length == 20)
                 {
-                    bool symbolFile = Array.IndexOf(s_symbolFileExtensions, Path.GetExtension(_path)) != -1;
+                    bool symbolFile = false;
+                    try
+                    {
+                        symbolFile = Array.Exists(_elfFile.Sections, section => ((section.Name == ".debug_info") || (section.Name == ".zdebug_info")));
+                    }
+                    catch (Exception ex) when (ex is InvalidVirtualAddressException)
+                    {
+                        // This could occur when trying to read sections for an ELF image grabbed from a core dump
+                        // In that case, fallback to checking the file extension
+                        symbolFile = Array.IndexOf(s_symbolFileExtensions, Path.GetExtension(_path)) != -1;
+                    }
+
                     string symbolFileName = GetSymbolFileName();
                     foreach (SymbolStoreKey key in GetKeys(flags, _path, buildId, symbolFile, symbolFileName))
                     {

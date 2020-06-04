@@ -124,6 +124,39 @@ namespace Microsoft.SymbolStore.Tests
                 IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
                 Assert.True(clrKeys.Count() == 0);
             }
+
+            using (Stream stream = File.OpenRead("TestBinaries/symbolized_executable"))
+            {
+                var file = new SymbolStoreFile(stream, "symbolized_executable");
+                KeyGenerator generator = fileGenerator ? (KeyGenerator)new FileKeyGenerator(_tracer, file) : new ELFFileKeyGenerator(_tracer, file);
+
+                IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
+                Assert.True(identityKey.Count() == 1);
+                Assert.True(identityKey.First().Index == "_.debug/elf-buildid-sym-126ba1461caf6644cfdd124bfcceeffa81b18897/_.debug");
+
+                IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
+                Assert.True(symbolKey.Count() == 0);
+
+                IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
+                Assert.True(clrKeys.Count() == 0);
+            }
+
+            using (Stream stream = File.OpenRead("TestBinaries/stripped_executable"))
+            {
+                var file = new SymbolStoreFile(stream, "stripped_executable");
+                KeyGenerator generator = fileGenerator ? (KeyGenerator)new FileKeyGenerator(_tracer, file) : new ELFFileKeyGenerator(_tracer, file);
+
+                IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
+                Assert.True(identityKey.Count() == 1);
+                Assert.True(identityKey.First().Index == "stripped_executable/elf-buildid-126ba1461caf6644cfdd124bfcceeffa81b18897/stripped_executable");
+
+                IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
+                Assert.True(symbolKey.Count() == 1);
+                Assert.True(symbolKey.First().Index == "_.debug/elf-buildid-sym-126ba1461caf6644cfdd124bfcceeffa81b18897/_.debug");
+
+                IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
+                Assert.True(clrKeys.Count() == 0);
+            }
         }
 
         [Fact(Skip = "Need an alternate scheme to acquire the binary this test was reading")]
