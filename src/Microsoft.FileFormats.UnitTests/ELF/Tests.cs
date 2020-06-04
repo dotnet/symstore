@@ -69,6 +69,20 @@ namespace Microsoft.FileFormats.ELF.Tests
         }
 
         [Fact]
+        public void CheckCustomNamedBuildIdSection()
+        {
+            using (Stream stream = File.OpenRead("TestBinaries/renamed_build_id_section"))
+            {
+                StreamAddressSpace dataSource = new StreamAddressSpace(stream);
+                ELFFile elf = new ELFFile(dataSource);
+                Assert.True(elf.IsValid());
+                Assert.True(elf.Header.Type == ELFHeaderType.Shared);
+                string buildId = TestUtilities.ToHexString(elf.BuildID);
+                Assert.Equal("1bd6a199dcb6f234558d9439cfcbba2727f1e1d9", buildId);
+            }
+        }
+
+        [Fact]
         public void ParseCore()
         {
             using (Stream core = TestUtilities.OpenCompressedFile("TestBinaries/core.gz"))
