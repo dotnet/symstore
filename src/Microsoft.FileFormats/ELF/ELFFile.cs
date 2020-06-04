@@ -174,13 +174,10 @@ namespace Microsoft.FileFormats.ELF
                     {
                         if (section.Header.Type == ELFSectionHeaderType.Note)
                         {
-                            if (string.Equals(section.Name, ".note.gnu.build-id"))
+                            buildId = ReadBuildIdNote(section.Contents);
+                            if (buildId != null)
                             {
-                                buildId = ReadBuildIdNote(section.Contents);
-                                if (buildId != null)
-                                {
-                                    break;
-                                }
+                                break;
                             }
                         }
                     }
