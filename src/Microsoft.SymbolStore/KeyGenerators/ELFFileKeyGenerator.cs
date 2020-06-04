@@ -62,7 +62,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     bool symbolFile = false;
                     try
                     {
-                        symbolFile = Array.Exists(_elfFile.Sections, section => (section.Name.StartsWith(".debug_") || section.Name.StartsWith(".zdebug_")));
+                        symbolFile = Array.Exists(_elfFile.Sections, section => (section.Name.StartsWith(".debug_info") || section.Name.StartsWith(".zdebug_info")));
                     }
                     catch (Exception ex) when (ex is InvalidVirtualAddressException)
                     {
