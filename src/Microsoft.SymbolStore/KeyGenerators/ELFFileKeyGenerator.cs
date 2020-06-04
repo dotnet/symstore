@@ -57,7 +57,8 @@ namespace Microsoft.SymbolStore.KeyGenerators
             if (IsValid())
             {
                 byte[] buildId = _elfFile.BuildID;
-                if (buildId != null && buildId.Length == 20)
+                NormalizeBuildId(ref buildId);
+                if (buildId != null)
                 {
                     bool symbolFile = false;
                     try
@@ -107,7 +108,10 @@ namespace Microsoft.SymbolStore.KeyGenerators
         public static IEnumerable<SymbolStoreKey> GetKeys(KeyTypeFlags flags, string path, byte[] buildId, bool symbolFile, string symbolFileName)
         {
             Debug.Assert(path != null);
-            Debug.Assert(buildId != null && buildId.Length == 20);
+            Debug.Assert(buildId != null);
+            NormalizeBuildId(ref buildId);
+
+            Debug.Assert(buildId.Length == 20);
 
             if ((flags & KeyTypeFlags.IdentityKey) != 0)
             {
@@ -160,6 +164,25 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 Tracer.Verbose("ELF .gnu_debuglink section in {0}: {1}", _path, ex.Message);
             }
             return null;
+        }
+
+        /// <summary>
+        /// Extends build-ids of 16 bytes (created by MD5 or UUID build ids) to 20 bytes
+        /// using a zero extension
+        /// </summary>
+        /// <param name="buildId">Reference to ELF build-id. This build-id maybe extended to 20 bytes</param>
+        /// <returns>symbol store keys</returns>
+        private static void NormalizeBuildId(ref byte[] buildId)
+        {
+            if (buildId != null && buildId.Length < 20 && buildId.Length >= 16)
+            {
+                int oldLength = buildId.Length;
+                Array.Resize(ref buildId, 20);
+                for (int i = oldLength; i < buildId.Length; i++)
+                {
+                    buildId[i] = 0;
+                }
+            }
         }
     }
 }
