@@ -157,6 +157,23 @@ namespace Microsoft.SymbolStore.Tests
                 IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
                 Assert.True(clrKeys.Count() == 0);
             }
+
+            using (Stream stream = File.OpenRead("TestBinaries/md5_build_id"))
+            {
+                var file = new SymbolStoreFile(stream, "md5_build_id");
+                KeyGenerator generator = fileGenerator ? (KeyGenerator)new FileKeyGenerator(_tracer, file) : new ELFFileKeyGenerator(_tracer, file);
+
+                IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
+                Assert.True(identityKey.Count() == 1);
+                Assert.True(identityKey.First().Index == "md5_build_id/elf-buildid-001ba81f23966cf77e40bcbb0701cd3400000000/md5_build_id");
+
+                IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
+                Assert.True(symbolKey.Count() == 1);
+                Assert.True(symbolKey.First().Index == "_.debug/elf-buildid-sym-001ba81f23966cf77e40bcbb0701cd3400000000/_.debug");
+
+                IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
+                Assert.True(clrKeys.Count() == 0);
+            }
         }
 
         [Fact(Skip = "Need an alternate scheme to acquire the binary this test was reading")]

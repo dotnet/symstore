@@ -65,7 +65,7 @@ Example:
 
 ### ELF-buildid
 
-This applies to any ELF format files that have been stripped of debugging information, commonly using the .so suffix or no suffix. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The final key is formatted:
+This applies to any ELF format files that have been stripped of debugging information, commonly using the .so suffix or no suffix. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). If byte sequence is smaller than 20 bytes, bytes of value 0x00 should be added until the byte sequence is 20 bytes long. The final key is formatted:
 
 `<file_name>/elf-buildid-<note_byte_sequence>/<file_name>`
 
@@ -80,7 +80,7 @@ Example:
 
 ### ELF-buildid-sym
 
-This applies to any ELF format files that have not been stripped of debugging information, commonly ending in ‘.so.dbg’ or ‘.dbg’. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). The file name is not used in the index because there are cases where all we have is the build id. The final key is formatted:
+This applies to any ELF format files that have not been stripped of debugging information, commonly ending in ‘.so.dbg’ or ‘.dbg’. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). If byte sequence is smaller than 20 bytes, bytes of value 0x00 should be added until the byte sequence is 20 bytes long. The file name is not used in the index because there are cases where all we have is the build id. The final key is formatted:
 
 `_.debug/elf-buildid-sym-<note_byte_sequence>/_.debug`
 
@@ -91,6 +91,14 @@ Example:
 **Build note bytes:** `0x18, 0x0a, 0x37, 0x3d, 0x6a, 0xfb, 0xab, 0xf0, 0xeb, 0x1f, 0x09, 0xbe, 0x1b, 0xc4, 0x5b, 0xd7, 0x96, 0xa7, 0x10, 0x85`
 
 **Lookup key:** `_.debug/elf-buildid-sym-180a373d6afbabf0eb1f09be1bc45bd796a71085/_.debug`
+
+Example:
+
+**File name:** `bar.so.dbg`
+
+**Build note bytes:** `0x18, 0x0a, 0x37, 0x3d, 0x6a, 0xfb, 0xab, 0xf0, 0xeb, 0x1f, 0x09, 0xbe, 0x1b, 0xc4, 0x5b, 0xd7`
+
+**Lookup key:** `_.debug/elf-buildid-sym-180a373d6afbabf0eb1f09be1bc45bd700000000/_.debug`
 
 
 ### Mach-uuid

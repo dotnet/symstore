@@ -57,6 +57,15 @@ namespace Microsoft.SymbolStore.KeyGenerators
             if (IsValid())
             {
                 byte[] buildId = _elfFile.BuildID;
+                if (buildId != null && buildId.Length < 20 && buildId.Length >= 16)
+                {
+                    int oldLength = buildId.Length;
+                    Array.Resize(ref buildId, 20);
+                    for (int i = oldLength; i < buildId.Length; i++)
+                    {
+                        buildId[i] = 0;
+                    }
+                }
                 if (buildId != null && buildId.Length == 20)
                 {
                     bool symbolFile = false;
