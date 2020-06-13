@@ -65,7 +65,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     {
                         symbolFile = Array.Exists(_elfFile.Sections, section => (section.Name.StartsWith(".debug_info") || section.Name.StartsWith(".zdebug_info")));
                     }
-                    catch (Exception ex) when (ex is InvalidVirtualAddressException)
+                    catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
                     {
                         // This could occur when trying to read sections for an ELF image grabbed from a core dump
                         // In that case, fallback to checking the file extension
