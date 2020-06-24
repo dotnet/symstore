@@ -20,7 +20,7 @@ Each symbol package is a compressed container of files in the zip format. At the
             "blobPath" : "Content/localized/en-us/data.xml"
         },
         {
-[//]: # ([SuppressMessage\("Microsoft.Security", "CS002:SecretInNextLine", Justification="Below client key is a false positive."\)])
+<!-- [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Below client key is a false positive.")] -->
             "clientKey" : "312&312-123*&^ndw"
             "blobPath" : "Content/localized/en-us/data.xml"
         }
