@@ -6,24 +6,26 @@ A zip package based symbol server is a network service that implements the [Simp
 
 Each symbol package is a compressed container of files in the zip format. At the root of the container there must be one file named 'symbol\_index.json'. There may be an arbitrary number of other files in the container either at the root level or in arbitrarily nested sub-containers. The symbol\_index.json is a json array where each element identifies a clientKey and a blobPath,  the corresponding file in the zip that should be returned by an SSQP request for the clientKey. The blobPath is a filename, preceded by 0 or more container names using '/' as the separator:
 
-    [
-        {
-            "clientKey" : "12387532",
-            "blobPath" : "debug_info.txt"
-        },
-        {
-            "clientKey" : "MyProgram.exe/09safnf82asddasdqwd998vds/MyProgram.exe",
-            "blobPath" : "MyProgram.exe"
-        },
-        {
-            "clientKey" : "12-09",
-            "blobPath" : "Content/localized/en-us/data.xml"
-        },
-        {
-            "clientKey" : "312&312-123*&^ndw"
-            "blobPath" : "Content/localized/en-us/data.xml"
-        }
+```json
+[
+    {
+        "clientKey" : "12387532",
+        "blobPath" : "debug_info.txt"
+    },
+    {
+        "clientKey" : "MyProgram.exe/09safnf82asddasdqwd998vds/MyProgram.exe",
+        "blobPath" : "MyProgram.exe"
+    },
+    {
+        "clientKey" : "12-09",
+        "blobPath" : "Content/localized/en-us/data.xml"
+    },
+    {  
+        "clientKey" : "312&312-123*&^ndw",
+        "blobPath" : "Content/localized/en-us/data.xml"
     }
+]
+```
 
 ## Expected service behavior ##
 

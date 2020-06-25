@@ -1,0 +1,10 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+        {
+            "file": "docs/specs/Package_Based_Symbol_Server.md",
+            "hash": "en80FMzg3AplGgbJmlz6zoHzpGcx8dmxtYm0tLWzYag=",
+            "_justification": "Client key is not a secret."
+        }
+    ]
+}
