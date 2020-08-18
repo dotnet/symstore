@@ -290,7 +290,7 @@ namespace dotnet.symbol
                     KeyTypeFlags flags = KeyTypeFlags.None;
                     if (HostOnly)
                     {
-                        flags = KeyTypeFlags.HostKeys;
+                        flags |= KeyTypeFlags.HostKeys;
                     }
                     if (Symbols)
                     {
@@ -302,7 +302,7 @@ namespace dotnet.symbol
                     }
                     if (Debugging)
                     {
-                        flags |= KeyTypeFlags.ClrKeys;
+                        flags |= KeyTypeFlags.RuntimeKeys | KeyTypeFlags.ClrKeys;
                     }
                     if (flags == KeyTypeFlags.None)
                     {

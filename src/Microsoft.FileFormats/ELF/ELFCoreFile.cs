@@ -118,7 +118,8 @@ namespace Microsoft.FileFormats.ELF
             ELFFileTableEntryPointers[] ptrs = _noteReader.ReadArray<ELFFileTableEntryPointers>(ref readPosition, (uint)(ulong)header.EntryCount);
             for (int i = 0; i < (int)(ulong)header.EntryCount; i++)
             {
-                files.Add(new ELFFileTableEntry(_noteReader.Read<string>(ref readPosition), ptrs[i]));
+                string path = _noteReader.Read<string>(ref readPosition);
+                files.Add(new ELFFileTableEntry(path.Replace(" (deleted)", ""), ptrs[i]));
             }
             return files;
         }

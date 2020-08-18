@@ -95,6 +95,8 @@ namespace Microsoft.SymbolStore.KeyGenerators
             Debug.Assert(path != null);
             Debug.Assert(uuid != null && uuid.Length == 16);
 
+            string fileName = GetFileName(path);
+
             if ((flags & KeyTypeFlags.IdentityKey) != 0)
             {
                 if (symbolFile)
@@ -103,12 +105,16 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 }
                 else
                 {
-                    bool clrSpecialFile = s_coreClrSpecialFiles.Contains(GetFileName(path));
+                    bool clrSpecialFile = s_coreClrSpecialFiles.Contains(fileName);
                     yield return BuildKey(path, IdentityPrefix, uuid, clrSpecialFile);
                 }
             }
             if (!symbolFile)
             {
+                if ((flags & KeyTypeFlags.RuntimeKeys) != 0 && fileName == CoreClrFileName)
+                {
+                    yield return BuildKey(path, IdentityPrefix, uuid);
+                }
                 if ((flags & KeyTypeFlags.SymbolKey) != 0)
                 {
                     if (string.IsNullOrEmpty(symbolFileName))
@@ -120,7 +126,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 if ((flags & (KeyTypeFlags.ClrKeys | KeyTypeFlags.DacDbiKeys)) != 0)
                 {
                     /// Creates all the special CLR keys if the path is the coreclr module for this platform
-                    if (GetFileName(path) == CoreClrFileName)
+                    if (fileName == CoreClrFileName)
                     {
                         foreach (string specialFileName in (flags & KeyTypeFlags.ClrKeys) != 0 ? s_coreClrSpecialFiles : s_dacdbiSpecialFiles)
                         {
