@@ -51,10 +51,13 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 {
                     yield return GetKey(_path, _peFile.Timestamp, _peFile.SizeOfImage);
                 }
+                if ((flags & KeyTypeFlags.RuntimeKeys) != 0 && GetFileName(_path) == CoreClrFileName)
+                {
+                    yield return GetKey(_path, _peFile.Timestamp, _peFile.SizeOfImage);
+                }
                 if ((flags & KeyTypeFlags.SymbolKey) != 0)
                 {
                     PEPdbRecord[] pdbs = new PEPdbRecord[0]; 
-
                     try
                     {
                         pdbs = _peFile.Pdbs.ToArray();
@@ -64,7 +67,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                         Tracer.Error("Reading PDB records for {0}: {1}", _path, ex.Message);
                     }
 
-                    foreach(PEPdbRecord pdb in pdbs)
+                    foreach (PEPdbRecord pdb in pdbs)
                     {
                         if (((flags & KeyTypeFlags.ForceWindowsPdbs) == 0) && pdb.IsPortablePDB)
                         {

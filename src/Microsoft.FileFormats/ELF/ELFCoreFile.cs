@@ -118,7 +118,12 @@ namespace Microsoft.FileFormats.ELF
             ELFFileTableEntryPointers[] ptrs = _noteReader.ReadArray<ELFFileTableEntryPointers>(ref readPosition, (uint)(ulong)header.EntryCount);
             for (int i = 0; i < (int)(ulong)header.EntryCount; i++)
             {
-                files.Add(new ELFFileTableEntry(_noteReader.Read<string>(ref readPosition), ptrs[i]));
+                string path = _noteReader.Read<string>(ref readPosition);
+
+                // This substitution is for unloaded modules for which Linux appends " (deleted)" to the module name.
+                path = path.Replace(" (deleted)", "");
+
+                files.Add(new ELFFileTableEntry(path, ptrs[i]));
             }
             return files;
         }

@@ -53,7 +53,13 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// Return only the DAC (including any cross-OS DACs) and DBI module 
         /// keys. Does not including any SOS binaries.
         /// </summary>
-        DacDbiKeys = 0x20
+        DacDbiKeys = 0x20,
+
+        /// <summary>
+        /// Include the runtime modules (coreclr.dll, clrjit.dll, clrgc.dll, 
+        /// libcoreclr.so, libclrjit.so, libcoreclr.dylib, etc.)
+        /// </summary>
+        RuntimeKeys = 0x40
     }
 
     /// <summary>

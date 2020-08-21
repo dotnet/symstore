@@ -113,6 +113,8 @@ namespace Microsoft.SymbolStore.KeyGenerators
 
             Debug.Assert(buildId.Length == 20);
 
+            string fileName = GetFileName(path);
+
             if ((flags & KeyTypeFlags.IdentityKey) != 0)
             {
                 if (symbolFile)
@@ -121,12 +123,22 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 }
                 else
                 {
-                    bool clrSpecialFile = s_coreClrSpecialFiles.Contains(GetFileName(path));
+                    bool clrSpecialFile = s_coreClrSpecialFiles.Contains(fileName);
                     yield return BuildKey(path, IdentityPrefix, buildId, clrSpecialFile);
                 }
             }
             if (!symbolFile)
             {
+                // This is a workaround for 5.0 where the ELF file type of dotnet isn't Executable but 
+                // Shared. It doesn't work for self-contained apps (apphost renamed to host program).
+                if ((flags & KeyTypeFlags.HostKeys) != 0 && fileName == "dotnet")
+                {
+                    yield return BuildKey(path, IdentityPrefix, buildId, clrSpecialFile: false);
+                }
+                if ((flags & KeyTypeFlags.RuntimeKeys) != 0 && fileName == CoreClrFileName)
+                {
+                    yield return BuildKey(path, IdentityPrefix, buildId);
+                }
                 if ((flags & KeyTypeFlags.SymbolKey) != 0)
                 {
                     if (string.IsNullOrEmpty(symbolFileName))
@@ -138,7 +150,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 if ((flags & (KeyTypeFlags.ClrKeys | KeyTypeFlags.DacDbiKeys)) != 0)
                 {
                     /// Creates all the special CLR keys if the path is the coreclr module for this platform
-                    if (GetFileName(path) == CoreClrFileName)
+                    if (fileName == CoreClrFileName)
                     {
                         foreach (string specialFileName in (flags & KeyTypeFlags.ClrKeys) != 0 ? s_coreClrSpecialFiles : s_dacdbiSpecialFiles)
                         {
