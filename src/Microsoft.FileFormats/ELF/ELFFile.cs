@@ -198,7 +198,7 @@ namespace Microsoft.FileFormats.ELF
                 foreach (ELFNote note in noteList.Notes)
                 {
                     ELFNoteType type = note.Header.Type;
-                    if (type == ELFNoteType.PrpsInfo && note.Name.Equals("GNU"))
+                    if (type == ELFNoteType.GnuBuildId && note.Name.Equals("GNU"))
                     {
                         return note.Contents.Read(0, (uint)note.Contents.Length);
                     }
