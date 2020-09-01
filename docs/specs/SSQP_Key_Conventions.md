@@ -65,7 +65,7 @@ Example:
 
 ### ELF-buildid
 
-This applies to any ELF format files that have been stripped of debugging information, commonly using the .so suffix or no suffix. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). If byte sequence is smaller than 20 bytes, bytes of value 0x00 should be added until the byte sequence is 20 bytes long. The final key is formatted:
+This applies to any ELF format files that have been stripped of debugging information, commonly using the .so suffix or no suffix. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type GNU Build Id (3). If byte sequence is smaller than 20 bytes, bytes of value 0x00 should be added until the byte sequence is 20 bytes long. The final key is formatted:
 
 `<file_name>/elf-buildid-<note_byte_sequence>/<file_name>`
 
@@ -80,7 +80,7 @@ Example:
 
 ### ELF-buildid-sym
 
-This applies to any ELF format files that have not been stripped of debugging information, commonly ending in ‘.so.dbg’ or ‘.dbg’. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type PRPSINFO (3). If byte sequence is smaller than 20 bytes, bytes of value 0x00 should be added until the byte sequence is 20 bytes long. The file name is not used in the index because there are cases where all we have is the build id. The final key is formatted:
+This applies to any ELF format files that have not been stripped of debugging information, commonly ending in ‘.so.dbg’ or ‘.dbg’. The key is computed by reading the 20 byte sequence of the ELF Note section that is named “GNU” and that has note type GNU Build Id (3). If byte sequence is smaller than 20 bytes, bytes of value 0x00 should be added until the byte sequence is 20 bytes long. The file name is not used in the index because there are cases where all we have is the build id. The final key is formatted:
 
 `_.debug/elf-buildid-sym-<note_byte_sequence>/_.debug`
 
