@@ -83,7 +83,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 {
                     if (GetFileName(_path) == CoreClrFileName)
                     {
-                        string coreclrId = string.Format("{0:x}{1:x}", _peFile.Timestamp, _peFile.SizeOfImage);
+                        string coreclrId = string.Format("{0:X8}{1:x}", _peFile.Timestamp, _peFile.SizeOfImage);
                         foreach (string specialFileName in GetSpecialFiles(flags))
                         {
                             yield return BuildKey(specialFileName, coreclrId);
@@ -94,7 +94,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 {
                     if ((_peFile.FileHeader.Characteristics & (ushort)ImageFile.Dll) == 0 && !_peFile.IsILImage)
                     {
-                        string id = string.Format("{0:x}{1:x}", _peFile.Timestamp, _peFile.SizeOfImage);
+                        string id = string.Format("{0:X8}{1:x}", _peFile.Timestamp, _peFile.SizeOfImage);
 
                         // The host program as itself (usually dotnet.exe)
                         yield return BuildKey(_path, id);
@@ -198,7 +198,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
             bool clrSpecialFile = s_coreClrSpecialFiles.Contains(fileName) || 
                 (s_longNameBinaryPrefixes.Any((prefix) => fileName.StartsWith(prefix)) && Path.GetExtension(fileName) == ".dll");
 
-            string id = string.Format("{0:x}{1:x}", timestamp, sizeOfImage);
+            string id = string.Format("{0:X8}{1:x}", timestamp, sizeOfImage);
             return BuildKey(path, id, clrSpecialFile);
         }
     }
