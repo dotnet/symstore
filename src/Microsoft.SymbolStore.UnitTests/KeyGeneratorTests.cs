@@ -52,11 +52,11 @@ namespace Microsoft.SymbolStore.Tests
                 Dictionary<string, SymbolStoreKey> runtimeKeys = generator.GetKeys(KeyTypeFlags.RuntimeKeys).ToDictionary((key) => key.Index);
 
                 // Program (SymbolTestApp2)
-                Assert.True(identityKeys.ContainsKey("symboltestapp2.dll/dd52998f8000/symboltestapp2.dll"));
+                Assert.True(identityKeys.ContainsKey("symboltestapp2.dll/DD52998F8000/symboltestapp2.dll"));
                 Assert.True(symbolKeys.ContainsKey("symboltestapp2.pdb/ed4317cbcab24c1fa06d93f8164c74ddFFFFFFFF/symboltestapp2.pdb"));
 
                 // System.IO.dll
-                Assert.True(identityKeys.ContainsKey("system.io.dll/595cd90631400/system.io.dll"));
+                Assert.True(identityKeys.ContainsKey("system.io.dll/595CD90631400/system.io.dll"));
                 Assert.True(symbolKeys.ContainsKey("system.io.pdb/5e949d2065c746a1b510de28f35d114cFFFFFFFF/system.io.pdb"));
 
                 // System.Native.so
@@ -291,11 +291,11 @@ namespace Microsoft.SymbolStore.Tests
                 Dictionary<string, SymbolStoreKey> symbolKeys = generator.GetKeys(KeyTypeFlags.SymbolKey).ToDictionary((key) => key.Index);
 
                 // Program (exception.exe)
-                Assert.True(identityKeys.ContainsKey("exception.exe/57b39ffa6000/exception.exe"));
+                Assert.True(identityKeys.ContainsKey("exception.exe/57B39FFA6000/exception.exe"));
                 Assert.True(symbolKeys.ContainsKey("exception.pdb/df85e94d63ae4d8992fbf81730a7ac911/exception.pdb"));
 
                 // mscoree.dll
-                Assert.True(identityKeys.ContainsKey("mscoree.dll/57a5832766000/mscoree.dll"));
+                Assert.True(identityKeys.ContainsKey("mscoree.dll/57A5832766000/mscoree.dll"));
                 Assert.True(symbolKeys.ContainsKey("mscoree.pdb/4a348372fdff448ab6a1bfc8b93ffb6b1/mscoree.pdb"));
             }
         }
@@ -342,7 +342,7 @@ namespace Microsoft.SymbolStore.Tests
 
                 IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
                 Assert.True(identityKey.Count() == 1);
-                Assert.True(identityKey.First().Index == "helloworld.exe/577f59198000/helloworld.exe");
+                Assert.True(identityKey.First().Index == "helloworld.exe/577F59198000/helloworld.exe");
 
                 IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
                 Assert.True(symbolKey.Count() == 1);
@@ -360,7 +360,7 @@ namespace Microsoft.SymbolStore.Tests
 
                 IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
                 Assert.True(identityKey.Count() == 1);
-                Assert.True(identityKey.First().Index == "system.diagnostics.stacktrace.dll/595cd91b35a00/system.diagnostics.stacktrace.dll");
+                Assert.True(identityKey.First().Index == "system.diagnostics.stacktrace.dll/595CD91B35a00/system.diagnostics.stacktrace.dll");
 
                 IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
                 Assert.True(symbolKey.Count() == 2);
@@ -378,26 +378,26 @@ namespace Microsoft.SymbolStore.Tests
 
                 IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
                 Assert.True(identityKey.Count() == 1);
-                Assert.True(identityKey.First().Index == "coreclr.dll/595ebcd5538000/coreclr.dll");
+                Assert.True(identityKey.First().Index == "coreclr.dll/595EBCD5538000/coreclr.dll");
 
                 IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
                 Assert.True(symbolKey.Count() == 1);
                 Assert.True(symbolKey.First().Index == "coreclr.pdb/3f3d5a3258e64ae8b86b31ff776949351/coreclr.pdb");
 
                 Dictionary<string, SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys).ToDictionary((key) => key.Index);
-                Assert.True(clrKeys.ContainsKey("mscordaccore.dll/595ebcd5538000/mscordaccore.dll"));
-                Assert.True(clrKeys.ContainsKey("mscordbi.dll/595ebcd5538000/mscordbi.dll"));
-                Assert.True(clrKeys.ContainsKey("sos.dll/595ebcd5538000/sos.dll"));
-                Assert.True(clrKeys.ContainsKey("sos.netcore.dll/595ebcd5538000/sos.netcore.dll"));
+                Assert.True(clrKeys.ContainsKey("mscordaccore.dll/595EBCD5538000/mscordaccore.dll"));
+                Assert.True(clrKeys.ContainsKey("mscordbi.dll/595EBCD5538000/mscordbi.dll"));
+                Assert.True(clrKeys.ContainsKey("sos.dll/595EBCD5538000/sos.dll"));
+                Assert.True(clrKeys.ContainsKey("sos.netcore.dll/595EBCD5538000/sos.netcore.dll"));
 
                 Dictionary<string, SymbolStoreKey> dacdbiKeys = generator.GetKeys(KeyTypeFlags.DacDbiKeys).ToDictionary((key) => key.Index);
-                Assert.True(dacdbiKeys.ContainsKey("mscordaccore.dll/595ebcd5538000/mscordaccore.dll"));
-                Assert.True(dacdbiKeys.ContainsKey("mscordbi.dll/595ebcd5538000/mscordbi.dll"));
-                Assert.False(dacdbiKeys.ContainsKey("sos.dll/595ebcd5538000/sos.dll"));
-                Assert.False(dacdbiKeys.ContainsKey("sos.netcore.dll/595ebcd5538000/sos.netcore.dll"));
+                Assert.True(dacdbiKeys.ContainsKey("mscordaccore.dll/595EBCD5538000/mscordaccore.dll"));
+                Assert.True(dacdbiKeys.ContainsKey("mscordbi.dll/595EBCD5538000/mscordbi.dll"));
+                Assert.False(dacdbiKeys.ContainsKey("sos.dll/595EBCD5538000/sos.dll"));
+                Assert.False(dacdbiKeys.ContainsKey("sos.netcore.dll/595EBCD5538000/sos.netcore.dll"));
 
                 Dictionary<string, SymbolStoreKey> runtimeKeys = generator.GetKeys(KeyTypeFlags.RuntimeKeys).ToDictionary((key) => key.Index);
-                Assert.True(runtimeKeys.ContainsKey("coreclr.dll/595ebcd5538000/coreclr.dll"));
+                Assert.True(runtimeKeys.ContainsKey("coreclr.dll/595EBCD5538000/coreclr.dll"));
             }
         }
 

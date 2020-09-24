@@ -20,6 +20,8 @@ This key references Windows Portable Executable format files which commonly have
 
 `<filename>/<Timestamp><SizeOfImage>/<filename>`
 
+Note that the timeStamp is always printed as eight digits (with leading zeroes as needed) using upper-case for ‘A’ to ‘F’ (important if your symbol server is case sensitive), whereas the image size is printed using as few digits as needed, in lower-case.
+
 Example:
 	
 **File name:** `Foo.exe`
