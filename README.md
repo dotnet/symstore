@@ -2,7 +2,7 @@
 
 Implements API for retrieval of symbols and other debug artifacts from symbol store.
 
-Builds are available on the dotnet-core feed: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+Builds are available on the dotnet-tools feed: https://dev.azure.com/dnceng/public/_packaging?_a=feed&feed=dotnet-tools
 
 [//]: # (Begin current test results)
 
