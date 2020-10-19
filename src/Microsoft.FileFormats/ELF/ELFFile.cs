@@ -49,10 +49,11 @@ namespace Microsoft.FileFormats.ELF
         {
             if (_reader.Length > (_position + _reader.SizeOf<ELFHeaderIdent>()))
             {
-                try {
+                try 
+                {
                     return Ident.IsIdentMagicValid.Check();
                 }
-                catch (InvalidVirtualAddressException)
+                catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
                 {
                 }
             }
