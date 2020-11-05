@@ -12,7 +12,8 @@ namespace Microsoft.FileFormats.ELF
         Interp = 3,
         Note = 4,
         Shlib = 5,
-        Phdr = 6
+        Phdr = 6,
+        GnuEHFrame = 0x6474e550,
     }
 
     [Flags]

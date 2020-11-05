@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using dotnet.symbol.Properties;
+using Microsoft.FileFormats;
+using Microsoft.FileFormats.ELF;
+using Microsoft.FileFormats.MachO;
+using Microsoft.FileFormats.PE;
 using Microsoft.SymbolStore;
 using Microsoft.SymbolStore.KeyGenerators;
 using Microsoft.SymbolStore.SymbolStores;
@@ -35,7 +39,8 @@ namespace dotnet.symbol
         private bool Modules;
         private bool ForceWindowsPdbs;
         private bool HostOnly;
-        private ITracer Tracer;
+        private bool VerifyCore;
+        private Tracer Tracer;
 
         public static void Main(string[] args)
         {
@@ -55,12 +60,12 @@ namespace dotnet.symbol
                 {
                     case "--microsoft-symbol-server":
                         Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out uri);
-                        program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null});
+                        program.SymbolServers.Add(new ServerInfo { Uri = uri, PersonalAccessToken = null });
                         break;
 
                     case "--internal-server":
                         Uri.TryCreate("http://symweb.corp.microsoft.com/", UriKind.Absolute, out uri);
-                        program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null, InternalSymwebServer = true});
+                        program.SymbolServers.Add(new ServerInfo { Uri = uri, PersonalAccessToken = null, InternalSymwebServer = true });
                         break;
 
                     case "--authenticated-server-path":
@@ -87,7 +92,7 @@ namespace dotnet.symbol
                                 goto usage;
                             }
                             Uri.TryCreate(serverPath, UriKind.Absolute, out uri);
-                            program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = personalAccessToken});
+                            program.SymbolServers.Add(new ServerInfo { Uri = uri, PersonalAccessToken = personalAccessToken });
                         }
                         else
                             goto usage;
@@ -111,7 +116,7 @@ namespace dotnet.symbol
                             double timeoutInMinutes = double.Parse(args[i]);
                             program.Timeout = TimeSpan.FromMinutes(timeoutInMinutes);
                         }
-                        else 
+                        else
                             goto usage;
                         break;
 
@@ -146,6 +151,10 @@ namespace dotnet.symbol
                         program.HostOnly = true;
                         break;
 
+                    case "--verifycore":
+                        program.VerifyCore = true;
+                        break;
+
                     case "-d":
                     case "--diagnostics":
                         tracer.Enabled = true;
@@ -168,28 +177,35 @@ namespace dotnet.symbol
                         break;
                 }
             }
-            // Default to public Microsoft symbol server
-            if (program.SymbolServers.Count == 0)
+            if (program.VerifyCore)
             {
-                Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
-                program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null});
+                program.VerifyCoreDump();
             }
-            foreach (ServerInfo server in program.SymbolServers)
+            else
             {
-                tracer.WriteLine(Resources.DownloadFromUri, server.Uri);
-            }
-            if (program.OutputDirectory != null)
-            {
-                Directory.CreateDirectory(program.OutputDirectory);
-                tracer.WriteLine(Resources.WritingFilesToOutput, program.OutputDirectory);
-            }
-            try
-            {
-                program.DownloadFiles().GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                tracer.Error("{0}{1}", ex.Message, ex.InnerException != null ? " -> " + ex.InnerException.Message : "");
+                // Default to public Microsoft symbol server
+                if (program.SymbolServers.Count == 0)
+                {
+                    Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
+                    program.SymbolServers.Add(new ServerInfo { Uri = uri, PersonalAccessToken = null });
+                }
+                foreach (ServerInfo server in program.SymbolServers)
+                {
+                    tracer.WriteLine(Resources.DownloadFromUri, server.Uri);
+                }
+                if (program.OutputDirectory != null)
+                {
+                    Directory.CreateDirectory(program.OutputDirectory);
+                    tracer.WriteLine(Resources.WritingFilesToOutput, program.OutputDirectory);
+                }
+                try
+                {
+                    program.DownloadFiles().GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    tracer.Error("{0}{1}", ex.Message, ex.InnerException != null ? " -> " + ex.InnerException.Message : "");
+                }
             }
             return;
 
@@ -239,7 +255,7 @@ namespace dotnet.symbol
                     store = new HttpSymbolStore(Tracer, store, server.Uri, server.PersonalAccessToken);
                 }
                 if (Timeout.HasValue && store is HttpSymbolStore http)
-                { 
+                {
                     http.Timeout = Timeout.Value;
                 }
             }
@@ -290,18 +306,7 @@ namespace dotnet.symbol
 
         private IEnumerable<SymbolStoreKeyWrapper> GetKeys()
         {
-            var inputFiles = InputFilePaths.SelectMany((string file) =>
-            {
-                string directory = Path.GetDirectoryName(file);
-                string pattern = Path.GetFileName(file);
-                return Directory.EnumerateFiles(string.IsNullOrWhiteSpace(directory) ? "." : directory, pattern,
-                    Subdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-            });
-
-            if (!inputFiles.Any())
-            {
-                throw new ArgumentException(Resources.NoInputFiles);
-            }
+            IEnumerable<string> inputFiles = GetInputFiles();
 
             foreach (string inputFile in inputFiles)
             {
@@ -341,7 +346,7 @@ namespace dotnet.symbol
                     {
                         flags |= KeyTypeFlags.ForceWindowsPdbs;
                     }
-                    foreach(var wrapper in generator.GetKeys(flags).Select((key) => new SymbolStoreKeyWrapper(key, inputFile)))
+                    foreach (var wrapper in generator.GetKeys(flags).Select((key) => new SymbolStoreKeyWrapper(key, inputFile)))
                     {
                         yield return wrapper;
                     }
@@ -361,7 +366,7 @@ namespace dotnet.symbol
 
         private async Task WriteFile(SymbolStoreFile file, SymbolStoreKeyWrapper wrapper)
         {
-            if (OutputDirectory != null) 
+            if (OutputDirectory != null)
             {
                 await WriteFileToDirectory(file.Stream, wrapper.Key.FullPathName, OutputDirectory);
             }
@@ -399,6 +404,145 @@ namespace dotnet.symbol
             {
                 return Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", "symbolcache");
             }
+        }
+
+        internal void VerifyCoreDump()
+        {
+            foreach (string inputFile in GetInputFiles())
+            {
+                Console.WriteLine($"{inputFile}");
+
+                using Stream inputStream = File.Open(inputFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var dataSource = new StreamAddressSpace(inputStream);
+                var core = new ELFCoreFile(dataSource);
+
+                ulong segmentsTotal = core.Segments.Max(s => s.Header.FileOffset + s.Header.FileSize);
+                if (segmentsTotal > dataSource.Length)
+                {
+                    Console.WriteLine($"Core file not complete: File size 0x{dataSource.Length:X8} Segments Total 0x{segmentsTotal:X8}");
+                }
+
+                if (Tracer.Enabled)
+                {
+                    foreach (ELFProgramSegment segment in core.Segments)
+                    {
+                        Tracer.Information("{0:X16}-{1:X16} {2:X8} {3:X8} {4}",
+                            segment.Header.VirtualAddress.Value,
+                            segment.Header.VirtualAddress + segment.Header.VirtualSize,
+                            segment.Header.FileOffset.Value,
+                            (ulong)segment.Header.FileSize,
+                            segment.Header.Type);
+                    }
+                }
+
+                foreach (ELFLoadedImage image in core.LoadedImages)
+                {
+                    Console.WriteLine("{0:X16} {1}", image.LoadAddress, image.Path);
+                    try
+                    {
+                        ELFFile elfFile = image.Image;
+                        if (elfFile.IsValid())
+                        {
+                            try
+                            {
+                                byte[] buildid = elfFile.BuildID;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("                 ELF file invalid build id - {0}", ex.Message);
+                            }
+                            foreach (ELFProgramSegment segment in elfFile.Segments)
+                            {
+                                Tracer.Verbose("                 {0:X16}-{1:X16} file off {2:X8} file size {3:X8} {4}",
+                                    segment.Header.VirtualAddress.Value,
+                                    segment.Header.VirtualAddress + segment.Header.VirtualSize,
+                                    segment.Header.FileOffset.Value,
+                                    (ulong)segment.Header.FileSize,
+                                    segment.Header.Type);
+
+                                if (segment.Header.Type == ELFProgramHeaderType.Note ||
+                                    segment.Header.Type == ELFProgramHeaderType.Dynamic ||
+                                    segment.Header.Type == ELFProgramHeaderType.GnuEHFrame)
+                                {
+                                    try
+                                    {
+                                        byte[] data = segment.Contents.Read(0, (uint)segment.Header.VirtualSize);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine("                 ELF file segment {0} virt addr {1:X16} virt size {2:X8} INVALID - {3}",
+                                            segment.Header.Type, segment.Header.VirtualAddress, segment.Header.VirtualSize, ex.Message);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            IAddressSpace addressSpace = new RelativeAddressSpace(core.DataSource, image.LoadAddress, core.DataSource.Length);
+                            var machoFile = new MachOFile(addressSpace);
+                            if (machoFile.IsValid())
+                            {
+                                try
+                                {
+                                    byte[] uuid = machoFile.Uuid;
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("                 MachO file invalid uuid - {0}", ex.Message);
+                                }
+                                foreach (MachSegment segment in machoFile.Segments)
+                                {
+                                    Tracer.Verbose("                 {0:X16}-{1:X16} offset {2:X16} size {3:X16} {4} {5}",
+                                        (ulong)segment.LoadCommand.VMAddress,
+                                        segment.LoadCommand.VMAddress + segment.LoadCommand.VMSize,
+                                        (ulong)segment.LoadCommand.FileOffset,
+                                        (ulong)segment.LoadCommand.FileSize,
+                                        segment.LoadCommand.Command,
+                                        segment.LoadCommand.SegName);
+
+                                    foreach (MachSection section in segment.Sections)
+                                    {
+                                        Tracer.Verbose("                         addr {0:X16} size {1:X16} offset {2:X8} {3}",
+                                            (ulong)section.Address,
+                                            (ulong)section.Size,
+                                            section.Offset,
+                                            section.SectionName);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var peFile = new PEFile(addressSpace, true);
+                                if (!peFile.IsValid())
+                                {
+                                    Console.WriteLine("{0:X16} invalid image - {1}", image.LoadAddress, image.Path);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("{0:X16} ELF file invalid - {1}", image.LoadAddress, ex.Message);
+                    }
+                }
+            }
+        }
+
+        private IEnumerable<string> GetInputFiles()
+        {
+            IEnumerable<string> inputFiles = InputFilePaths.SelectMany((string file) =>
+            {
+                string directory = Path.GetDirectoryName(file);
+                string pattern = Path.GetFileName(file);
+                return Directory.EnumerateFiles(string.IsNullOrWhiteSpace(directory) ? "." : directory, pattern,
+                    Subdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+            });
+
+            if (!inputFiles.Any())
+            {
+                throw new ArgumentException("Input files not found");
+            }
+            return inputFiles;
         }
     }
 }

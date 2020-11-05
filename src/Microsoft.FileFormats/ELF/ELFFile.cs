@@ -86,7 +86,7 @@ namespace Microsoft.FileFormats.ELF
             {
                 ulong minAddr = ulong.MaxValue;
 
-                foreach(var segment in Segments)
+                foreach (var segment in Segments)
                 {
                     if(segment.Header.Type == ELFProgramHeaderType.Load)
                     {
@@ -116,11 +116,27 @@ namespace Microsoft.FileFormats.ELF
             IsHeaderProgramHeaderOffsetValid.CheckThrowing();
             IsHeaderProgramHeaderEntrySizeValid.CheckThrowing();
 
+            // Calculate the loadBias. It is usually just the base address except for some executable modules.
+            ulong loadBias = _position;
+            if (loadBias > 0)
+            {
+                for (uint i = 0; i < Header.ProgramHeaderCount; i++)
+                {
+                    ulong programHeaderOffset = _position + Header.ProgramHeaderOffset + i * Header.ProgramHeaderEntrySize;
+                    ELFProgramHeader header = DataSourceReader.Read<ELFProgramHeader>(programHeaderOffset);
+                    if (header.Type == ELFProgramHeaderType.Load && header.FileOffset == 0)
+                    {
+                        loadBias -= header.VirtualAddress;
+                    }
+                }
+            }
+
+            // Build the program segments
             List<ELFProgramSegment> segments = new List<ELFProgramSegment>();
             for (uint i = 0; i < Header.ProgramHeaderCount; i++)
             {
-                segments.Add(new ELFProgramSegment(DataSourceReader, _position,
-                    _position + Header.ProgramHeaderOffset + i * Header.ProgramHeaderEntrySize, _isDataSourceVirtualAddressSpace));
+                ulong programHeaderOffset = _position + Header.ProgramHeaderOffset + i * Header.ProgramHeaderEntrySize;
+                segments.Add(new ELFProgramSegment(DataSourceReader, loadBias, programHeaderOffset, _isDataSourceVirtualAddressSpace));
             }
             return segments;
         }
@@ -319,40 +335,27 @@ namespace Microsoft.FileFormats.ELF
 
     public class ELFProgramSegment
     {
-        private readonly Reader _dataSourceReader;
-        private readonly ulong _programHeaderOffset;
-        private readonly Lazy<ELFProgramHeader> _header;
         private readonly Lazy<Reader> _contents;
 
         public ELFProgramSegment(Reader dataSourceReader, ulong elfOffset, ulong programHeaderOffset, bool isDataSourceVirtualAddressSpace)
         {
-            _dataSourceReader = dataSourceReader;
-            _programHeaderOffset = programHeaderOffset;
-            _header = new Lazy<ELFProgramHeader>(() => _dataSourceReader.Read<ELFProgramHeader>(_programHeaderOffset));
-            //TODO: validate p_vaddr, p_offset, p_filesz
-            if (isDataSourceVirtualAddressSpace && _header.Value.Type == ELFProgramHeaderType.Load)
+            Header = dataSourceReader.Read<ELFProgramHeader>(programHeaderOffset);
+            if (isDataSourceVirtualAddressSpace)
             {
-                _contents = new Lazy<Reader>(() => _dataSourceReader.WithRelativeAddressSpace(Header.VirtualAddress, Header.VirtualSize));
+                _contents = new Lazy<Reader>(() => dataSourceReader.WithRelativeAddressSpace(elfOffset + Header.VirtualAddress, Header.VirtualSize));
             }
             else
             {
-                _contents = new Lazy<Reader>(() => _dataSourceReader.WithRelativeAddressSpace(elfOffset + Header.FileOffset, Header.FileSize));
+                _contents = new Lazy<Reader>(() => dataSourceReader.WithRelativeAddressSpace(elfOffset + Header.FileOffset, Header.FileSize));
             }
         }
 
-        public ELFProgramHeader Header { get { return _header.Value; } }
+        public ELFProgramHeader Header { get; }
         public Reader Contents { get { return _contents.Value; } }
 
         public override string ToString()
         {
-            if (_header.IsValueCreated)
-            {
-                return "Segment@[" + Header.VirtualAddress.ToString() + "-" + (Header.VirtualAddress + Header.VirtualSize).ToString("x") + ")";
-            }
-            else
-            {
-                return "SegmentHeader@0x" + _programHeaderOffset.ToString("x");
-            }
+            return "Segment@[" + Header.VirtualAddress.ToString() + "-" + (Header.VirtualAddress + Header.VirtualSize).ToString("x") + ")";
         }
     }
 

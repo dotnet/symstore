@@ -182,9 +182,9 @@ namespace Microsoft.FileFormats.MachO
         public MachFixedLengthString16 SegmentName;
         public SizeT Address;
         public SizeT Size;
-        public SizeT Offset;
-        public SizeT Align;
-        public SizeT RelativeOffset;
+        public uint Offset;
+        public uint Align;
+        public uint RelativeOffset;
         public uint CountRelocs;
         public uint Flags;
         public uint Reserved1;
