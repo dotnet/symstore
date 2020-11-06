@@ -53,6 +53,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 yield return new MinidumpKeyGenerator(Tracer, _file);
                 yield return new ELFFileKeyGenerator(Tracer, _file);
                 yield return new PEFileKeyGenerator(Tracer, _file);
+                yield return new MachOFatHeaderKeyGenerator(Tracer, _file);
                 yield return new MachOFileKeyGenerator(Tracer, _file);
                 yield return new PDBFileKeyGenerator(Tracer, _file);
                 yield return new PortablePDBFileKeyGenerator(Tracer, _file);
