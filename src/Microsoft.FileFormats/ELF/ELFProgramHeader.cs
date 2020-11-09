@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.FileFormats;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.FileFormats.ELF
 {
@@ -18,6 +13,17 @@ namespace Microsoft.FileFormats.ELF
         Note = 4,
         Shlib = 5,
         Phdr = 6
+    }
+
+    [Flags]
+    public enum ELFProgramHeaderFlags : uint
+    {
+        Executable = 1,             // PF_X
+        Writable = 2,               // PF_W
+        Readable = 4,               // PF_R
+        ReadWriteExecute = Executable | Writable | Readable,
+        OSMask = 0x0FF00000,        // PF_MASKOS
+        ProcessorMask = 0xF0000000, // PF_MASKPROC
     }
 
     public class ELFProgramHeader : TStruct
