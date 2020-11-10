@@ -71,6 +71,9 @@
     <Content Include="TestBinaries\coreclr.dll.gz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestBinaries\libSystem.Security.Cryptography.Native.Apple.dylib.gz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestBinaries\md5_build_id">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

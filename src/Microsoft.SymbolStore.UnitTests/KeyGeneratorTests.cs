@@ -272,6 +272,20 @@ namespace Microsoft.SymbolStore.Tests
                 IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
                 Assert.True(clrKeys.Count() == 0);
             }
+
+            using (Stream machofat = TestUtilities.OpenCompressedFile("TestBinaries/libSystem.Security.Cryptography.Native.Apple.dylib.gz"))
+            {
+                var file = new SymbolStoreFile(machofat, "libsystem.security.cryptography.native.apple.dylib");
+                KeyGenerator generator = fileGenerator ? (KeyGenerator)new FileKeyGenerator(_tracer, file) : new MachOFatHeaderKeyGenerator(_tracer, file);
+
+                Dictionary<string, SymbolStoreKey> identityKeys = generator.GetKeys(KeyTypeFlags.IdentityKey).ToDictionary((key) => key.Index);
+                Assert.True(identityKeys.ContainsKey("libsystem.security.cryptography.native.apple.dylib/mach-uuid-fad93e41f2e23d11aab75e98d7fe66d6/libsystem.security.cryptography.native.apple.dylib"));
+                Assert.True(identityKeys.ContainsKey("libsystem.security.cryptography.native.apple.dylib/mach-uuid-e5bf8b935f393806a20933aa98adf5b7/libsystem.security.cryptography.native.apple.dylib"));
+
+                Dictionary<string, SymbolStoreKey> symbolKeys = generator.GetKeys(KeyTypeFlags.SymbolKey).ToDictionary((key) => key.Index);
+                Assert.True(symbolKeys.ContainsKey("_.dwarf/mach-uuid-sym-fad93e41f2e23d11aab75e98d7fe66d6/_.dwarf"));
+                Assert.True(symbolKeys.ContainsKey("_.dwarf/mach-uuid-sym-e5bf8b935f393806a20933aa98adf5b7/_.dwarf"));
+            }
         }
 
         [Fact]

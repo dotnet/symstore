@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.FileFormats.ELF
 {
@@ -29,6 +27,10 @@ namespace Microsoft.FileFormats.ELF
         {
             return _elf.IsValid() && _elf.Header.Type == ELFHeaderType.Core;
         }
+
+        public bool Is64Bit => _elf.Is64Bit;
+
+        public IEnumerable<ELFProgramSegment> Segments => _elf.Segments;
 
         private ELFFileTable ReadFileTable()
         {
