@@ -12,14 +12,15 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
+    <PackageReference Condition="'$(TargetFramework)' != 'net45'" Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
+    <PackageReference Condition="'$(TargetFramework)' == 'net45'" Include="System.Reflection.Metadata" Version="1.6.0" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.FileFormats\Microsoft.FileFormats.csproj" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 </Project>

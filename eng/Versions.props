@@ -14,7 +14,6 @@
     <MicrosoftNetCompilersVersion>3.0.0</MicrosoftNetCompilersVersion>
     <!-- CoreFX -->
     <SystemReflectionMetadataVersion>1.8.1</SystemReflectionMetadataVersion>
-    <SystemCollectionsImmutableVersion>1.7.1</SystemCollectionsImmutableVersion>
   </PropertyGroup>
   <PropertyGroup>
     <RestoreSources>
