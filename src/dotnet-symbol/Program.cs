@@ -27,6 +27,7 @@ namespace dotnet.symbol
         private readonly List<string> CacheDirectories = new List<string>();
         private readonly List<ServerInfo> SymbolServers = new List<ServerInfo>();
         private string OutputDirectory;
+        private TimeSpan? Timeout;
         private bool Subdirectories;
         private bool Symbols;
         private bool Debugging;
@@ -96,6 +97,16 @@ namespace dotnet.symbol
                         if (++i < args.Length)
                             program.OutputDirectory = args[i];
                         else
+                            goto usage;
+                        break;
+
+                    case "--timeout":
+                        if (++i < args.Length)
+                        {
+                            int timeoutInMinutes = int.Parse(args[i]);
+                            program.Timeout = TimeSpan.FromMinutes(timeoutInMinutes);
+                        }
+                        else 
                             goto usage;
                         break;
 
@@ -221,6 +232,10 @@ namespace dotnet.symbol
                 else
                 {
                     store = new HttpSymbolStore(Tracer, store, server.Uri, server.PersonalAccessToken);
+                }
+                if (Timeout.HasValue && store is HttpSymbolStore http)
+                { 
+                    http.Timeout = Timeout.Value;
                 }
             }
 

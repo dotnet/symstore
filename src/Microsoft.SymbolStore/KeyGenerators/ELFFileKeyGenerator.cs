@@ -65,7 +65,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     {
                         symbolFile = Array.Exists(_elfFile.Sections, section => (section.Name.StartsWith(".debug_info") || section.Name.StartsWith(".zdebug_info")));
                     }
-                    catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
+                    catch (Exception ex) when 
+                       (ex is InvalidVirtualAddressException ||
+                        ex is ArgumentOutOfRangeException ||
+                        ex is IndexOutOfRangeException ||
+                        ex is BadInputFormatException)
                     {
                         // This could occur when trying to read sections for an ELF image grabbed from a core dump
                         // In that case, fallback to checking the file extension
@@ -171,7 +175,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     return section.Contents.Read<string>(0);
                 }
             }
-            catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
+            catch (Exception ex) when 
+               (ex is InvalidVirtualAddressException ||
+                ex is ArgumentOutOfRangeException ||
+                ex is IndexOutOfRangeException ||
+                ex is BadInputFormatException)
+ 
             {
                 Tracer.Verbose("ELF .gnu_debuglink section in {0}: {1}", _path, ex.Message);
             }

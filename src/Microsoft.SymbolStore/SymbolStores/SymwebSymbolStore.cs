@@ -32,7 +32,7 @@ namespace Microsoft.SymbolStore.SymbolStores
                 return file;
             }
             Uri filePtrUri = GetRequestUri(key.IndexPrefix + "file.ptr");
-            Stream filePtrStream = await GetFileStream(filePtrUri, token);
+            Stream filePtrStream = await GetFileStream(key.FullPathName, filePtrUri, token);
             if (filePtrStream != null)
             {
                 using (filePtrStream)
