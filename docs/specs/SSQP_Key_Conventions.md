@@ -26,11 +26,11 @@ Example:
 	
 **File name:** `Foo.exe`
 
-**COFF header Timestamp field:** `0x542d5742`
+**COFF header Timestamp field:** `0x542d574e`
 
-**COFF header SizeOfImage field:** `0x32000`
+**COFF header SizeOfImage field:** `0xc2000`
 
-**Lookup key:** `foo.exe/542d574232000/foo.exe`
+**Lookup key:** `foo.exe/542D574Ec2000/foo.exe`
 
 
 ### PDB-Signature-Age
