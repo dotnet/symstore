@@ -108,7 +108,7 @@ namespace dotnet.symbol
                     case "--timeout":
                         if (++i < args.Length)
                         {
-                            int timeoutInMinutes = int.Parse(args[i]);
+                            double timeoutInMinutes = double.Parse(args[i]);
                             program.Timeout = TimeSpan.FromMinutes(timeoutInMinutes);
                         }
                         else 
