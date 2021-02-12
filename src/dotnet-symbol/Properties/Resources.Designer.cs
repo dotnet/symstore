@@ -19,7 +19,7 @@ namespace dotnet.symbol.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -106,7 +106,7 @@ namespace dotnet.symbol.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Usage: dotnet symbols [options] &lt;FILES&gt;
+        ///   Looks up a localized string similar to Usage: dotnet symbol [options] &lt;FILES&gt;
         ///
         ///Arguments:
         ///  &lt;FILES&gt;   List of files. Can contain wildcards.
@@ -115,7 +115,7 @@ namespace dotnet.symbol.Properties {
         ///  --microsoft-symbol-server                         Add &apos;http://msdl.microsoft.com/download/symbols&apos; symbol server path (default).
         ///  --internal-server                                 Add &apos;http://symweb.corp.microsoft.com&apos; internal symbol server path.
         ///  --server-path &lt;symbol server path&gt;                Add a http server path.
-        ///  --authenticated-server-path &lt;pat&gt; &lt;server path&gt;   Add a http P [rest of string was truncated]&quot;;.
+        ///  --authenticated-server-path &lt;pat&gt; &lt;server path&gt;   Add a http PA [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string UsageOptions {
             get {

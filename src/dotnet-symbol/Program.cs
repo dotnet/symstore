@@ -28,6 +28,7 @@ namespace dotnet.symbol
         private readonly List<ServerInfo> SymbolServers = new List<ServerInfo>();
         private string OutputDirectory;
         private TimeSpan? Timeout;
+        private bool Overwrite;
         private bool Subdirectories;
         private bool Symbols;
         private bool Debugging;
@@ -98,6 +99,10 @@ namespace dotnet.symbol
                             program.OutputDirectory = args[i];
                         else
                             goto usage;
+                        break;
+
+                    case "--overwrite":
+                        program.Overwrite = true;
                         break;
 
                     case "--timeout":
@@ -370,9 +375,9 @@ namespace dotnet.symbol
         {
             stream.Position = 0;
             string destination = Path.Combine(destinationDirectory, Path.GetFileName(fileName.Replace('\\', '/')));
-            if (File.Exists(destination))
+            if (!Overwrite && File.Exists(destination))
             {
-                Tracer.Warning(Resources.FileAlreadyExists, destination);
+                Tracer.WriteLine(Resources.FileAlreadyExists, destination);
             }
             else
             {
