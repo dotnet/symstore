@@ -20,7 +20,6 @@ namespace Microsoft.SymbolStore.SymbolStores
     {
         private readonly HttpClient _client;
         private readonly HttpClient _authenticatedClient;
-        private readonly ITracer _tracer;
         private bool _clientFailure;
 
         /// <summary>
@@ -56,7 +55,6 @@ namespace Microsoft.SymbolStore.SymbolStores
         public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, string personalAccessToken = null)
             : base(tracer, backingStore)
         {
-            _tracer = tracer;
             Uri = symbolServerUri ?? throw new ArgumentNullException(nameof(symbolServerUri));
             if (!symbolServerUri.IsAbsoluteUri || symbolServerUri.IsFile)
             {
@@ -107,7 +105,7 @@ namespace Microsoft.SymbolStore.SymbolStores
                 client.DefaultRequestHeaders.Add("SymbolChecksum", checksumHeader);
             }
 
-            Stream stream = await GetFileStream(uri, token);
+            Stream stream = await GetFileStream(key.FullPathName, uri, token);
             if (stream != null)
             {
                 if (needsChecksumMatch)
@@ -132,13 +130,14 @@ namespace Microsoft.SymbolStore.SymbolStores
             return requestUri;
         }
 
-        protected async Task<Stream> GetFileStream(Uri requestUri, CancellationToken token)
+        protected async Task<Stream> GetFileStream(string path, Uri requestUri, CancellationToken token)
         {
             // Just return if previous failure
             if (_clientFailure)
             {
                 return null;
             }
+            string fileName = Path.GetFileName(path);
             try
             {
                 HttpClient client = _authenticatedClient ?? _client;
@@ -163,7 +162,15 @@ namespace Microsoft.SymbolStore.SymbolStores
                     MarkClientFailure();
                 }
 
-                string message = string.Format("HttpSymbolStore: {0} {1} '{2}'", (int)response.StatusCode, response.ReasonPhrase, requestUri.AbsoluteUri);
+                string message;
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    message = string.Format("Not Found: {0} - '{1}'", fileName, requestUri.AbsoluteUri);
+                }
+                else
+                {
+                    message = string.Format("{0} {1}: {2} - '{3}'", (int)response.StatusCode, response.ReasonPhrase, fileName, requestUri.AbsoluteUri);
+                }
                 if (!retryable || response.StatusCode == HttpStatusCode.NotFound)
                 {
                     Tracer.Error(message);
@@ -177,7 +184,7 @@ namespace Microsoft.SymbolStore.SymbolStores
             }
             catch (HttpRequestException ex)
             {
-                Tracer.Error("HttpSymbolStore: {0} '{1}'", ex.Message, requestUri.AbsoluteUri);
+                Tracer.Error("HttpSymbolStore: {0} {1} - '{2}'", ex.Message, fileName, requestUri.AbsoluteUri);
                 MarkClientFailure();
             }
             return null;

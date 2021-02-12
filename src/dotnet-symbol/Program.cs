@@ -27,6 +27,8 @@ namespace dotnet.symbol
         private readonly List<string> CacheDirectories = new List<string>();
         private readonly List<ServerInfo> SymbolServers = new List<ServerInfo>();
         private string OutputDirectory;
+        private TimeSpan? Timeout;
+        private bool Overwrite;
         private bool Subdirectories;
         private bool Symbols;
         private bool Debugging;
@@ -96,6 +98,20 @@ namespace dotnet.symbol
                         if (++i < args.Length)
                             program.OutputDirectory = args[i];
                         else
+                            goto usage;
+                        break;
+
+                    case "--overwrite":
+                        program.Overwrite = true;
+                        break;
+
+                    case "--timeout":
+                        if (++i < args.Length)
+                        {
+                            double timeoutInMinutes = double.Parse(args[i]);
+                            program.Timeout = TimeSpan.FromMinutes(timeoutInMinutes);
+                        }
+                        else 
                             goto usage;
                         break;
 
@@ -221,6 +237,10 @@ namespace dotnet.symbol
                 else
                 {
                     store = new HttpSymbolStore(Tracer, store, server.Uri, server.PersonalAccessToken);
+                }
+                if (Timeout.HasValue && store is HttpSymbolStore http)
+                { 
+                    http.Timeout = Timeout.Value;
                 }
             }
 
@@ -355,9 +375,9 @@ namespace dotnet.symbol
         {
             stream.Position = 0;
             string destination = Path.Combine(destinationDirectory, Path.GetFileName(fileName.Replace('\\', '/')));
-            if (File.Exists(destination))
+            if (!Overwrite && File.Exists(destination))
             {
-                Tracer.Warning(Resources.FileAlreadyExists, destination);
+                Tracer.WriteLine(Resources.FileAlreadyExists, destination);
             }
             else
             {

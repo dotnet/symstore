@@ -144,12 +144,14 @@ Options:
   --server-path &lt;symbol server path&gt;                Add a http server path.
   --authenticated-server-path &lt;pat&gt; &lt;server path&gt;   Add a http PAT authenticated server path.
   --cache-directory &lt;file cache directory&gt;          Add a cache directory.
+  --timeout &lt;minutes&gt;                               Change http timeout in minutes (default: 4).
   --recurse-subdirectories                          Process input files in all subdirectories.
   --host-only                                       Download only the host program (i.e. dotnet) that lldb needs for loading coredumps.
   --symbols                                         Download the symbol files (.pdb, .dbg, .dwarf).
   --modules                                         Download the module files (.dll, .so, .dylib).
   --debugging                                       Download the special debugging modules (DAC, DBI, SOS).
   --windows-pdbs                                    Force the downloading of the Windows PDBs when Portable PDBs are also available.
+  --overwrite                                       Overwrite existing files in output directory.
   -o, --output &lt;output directory&gt;                   Set the output directory. Otherwise, write next to the input file (default).
   -d, --diagnostics                                 Enable diagnostic output.
   -h, --help                                        Show help information.</value>
