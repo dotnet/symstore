@@ -119,7 +119,7 @@ namespace Microsoft.SymbolStore.SymbolStores
 
         protected Uri GetRequestUri(string index)
         {
-            if (!Uri.TryCreate(Uri, Uri.EscapeDataString(index), out Uri requestUri))
+            if (!Uri.TryCreate(Uri, Uri.EscapeUriString(index), out Uri requestUri))
             {
                 throw new ArgumentException(nameof(index));
             }
