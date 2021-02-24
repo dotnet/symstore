@@ -226,13 +226,13 @@ SymClient [options] <files>
 -o |--output-directory <output directory>           Set the output directory
 -oi|--output-by-inputfile                           Write symbol file next to input file
 -p |--packages                                      Input files are nuget packages
--ae|--add-source-extension <ext>                    Add source file extension
+-se|--add-source-extension <ext>                    Add source file extension
 -e |--add-valid-extension <ext>                     Add file extension to be indexed in package
 -r |--recurse-subdirectories                        Process input files in all subdirectories
    |--symbols                                       Get the symbol files (.pdb, .dbg, .dwarf)
    |--modules                                       Get the module files (.dll, .so, .dylib)
    |--debugging                                     Get the special debugging modules (DAC, DBI, SOS)
--w |--force-windows-pdbs                            Force downloading of the Windows PDBs
+-w |--windows-pdbs                                  Force downloading of the Windows PDBs
 -d |--diag                                          Enable diagnostic output
 -vd|--verbose-diag                                  Enable diagnostic and verbose diagnostic output
 -h |--help                                          This help message");

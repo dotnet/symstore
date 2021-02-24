@@ -119,7 +119,9 @@ namespace Microsoft.SymbolStore.SymbolStores
 
         protected Uri GetRequestUri(string index)
         {
-            if (!Uri.TryCreate(Uri, Uri.EscapeUriString(index), out Uri requestUri))
+            // Escape everything except the forward slashes (/) in the index
+            index = string.Join("/", index.Split('/').Select(part => Uri.EscapeDataString(part)));
+            if (!Uri.TryCreate(Uri, index, out Uri requestUri))
             {
                 throw new ArgumentException(nameof(index));
             }
