@@ -21,7 +21,7 @@ Each symbol package is a compressed container of files in the zip format. At the
         "blobPath" : "Content/localized/en-us/data.xml"
     },
     {  
-        "clientKey" : "312&312-123*&^ndw",
+        "clientKey" : "23456",
         "blobPath" : "Content/localized/en-us/data.xml"
     }
 ]
