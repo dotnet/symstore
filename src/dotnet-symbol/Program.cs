@@ -416,12 +416,6 @@ namespace dotnet.symbol
                 var dataSource = new StreamAddressSpace(inputStream);
                 var core = new ELFCoreFile(dataSource);
 
-                ulong segmentsTotal = core.Segments.Max(s => s.Header.FileOffset + s.Header.FileSize);
-                if (segmentsTotal > dataSource.Length)
-                {
-                    Console.WriteLine($"Core file not complete: File size 0x{dataSource.Length:X8} Segments Total 0x{segmentsTotal:X8}");
-                }
-
                 if (Tracer.Enabled)
                 {
                     foreach (ELFProgramSegment segment in core.Segments)
@@ -438,6 +432,9 @@ namespace dotnet.symbol
                 foreach (ELFLoadedImage image in core.LoadedImages)
                 {
                     Console.WriteLine("{0:X16} {1}", image.LoadAddress, image.Path);
+                    Exception elfException = null;
+                    Exception machoException = null;
+                    Exception peException = null;
                     try
                     {
                         ELFFile elfFile = image.Image;
@@ -475,55 +472,92 @@ namespace dotnet.symbol
                                     }
                                 }
                             }
-                        }
-                        else
-                        {
-                            IAddressSpace addressSpace = new RelativeAddressSpace(core.DataSource, image.LoadAddress, core.DataSource.Length);
-                            var machoFile = new MachOFile(addressSpace);
-                            if (machoFile.IsValid())
-                            {
-                                try
-                                {
-                                    byte[] uuid = machoFile.Uuid;
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine("                 MachO file invalid uuid - {0}", ex.Message);
-                                }
-                                foreach (MachSegment segment in machoFile.Segments)
-                                {
-                                    Tracer.Verbose("                 {0:X16}-{1:X16} offset {2:X16} size {3:X16} {4} {5}",
-                                        (ulong)segment.LoadCommand.VMAddress,
-                                        segment.LoadCommand.VMAddress + segment.LoadCommand.VMSize,
-                                        (ulong)segment.LoadCommand.FileOffset,
-                                        (ulong)segment.LoadCommand.FileSize,
-                                        segment.LoadCommand.Command,
-                                        segment.LoadCommand.SegName);
 
-                                    foreach (MachSection section in segment.Sections)
-                                    {
-                                        Tracer.Verbose("                         addr {0:X16} size {1:X16} offset {2:X8} {3}",
-                                            (ulong)section.Address,
-                                            (ulong)section.Size,
-                                            section.Offset,
-                                            section.SectionName);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                var peFile = new PEFile(addressSpace, true);
-                                if (!peFile.IsValid())
-                                {
-                                    Console.WriteLine("{0:X16} invalid image - {1}", image.LoadAddress, image.Path);
-                                }
-                            }
+                            // The ELF module was valid try next module
+                            continue;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("{0:X16} ELF file invalid - {1}", image.LoadAddress, ex.Message);
+                        elfException = ex;
                     }
+
+                    IAddressSpace addressSpace = new RelativeAddressSpace(core.DataSource, image.LoadAddress, core.DataSource.Length);
+                    try
+                    {
+                        var machoFile = new MachOFile(addressSpace);
+                        if (machoFile.IsValid())
+                        {
+                            try
+                            {
+                                byte[] uuid = machoFile.Uuid;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("                 MachO file invalid uuid - {0}", ex.Message);
+                            }
+                            foreach (MachSegment segment in machoFile.Segments)
+                            {
+                                Tracer.Verbose("                 {0:X16}-{1:X16} offset {2:X16} size {3:X16} {4} {5}",
+                                    (ulong)segment.LoadCommand.VMAddress,
+                                    segment.LoadCommand.VMAddress + segment.LoadCommand.VMSize,
+                                    (ulong)segment.LoadCommand.FileOffset,
+                                    (ulong)segment.LoadCommand.FileSize,
+                                    segment.LoadCommand.Command,
+                                    segment.LoadCommand.SegName);
+
+                                foreach (MachSection section in segment.Sections)
+                                {
+                                    Tracer.Verbose("                         addr {0:X16} size {1:X16} offset {2:X8} {3}",
+                                        (ulong)section.Address,
+                                        (ulong)section.Size,
+                                        section.Offset,
+                                        section.SectionName);
+                                }
+                            }
+
+                            // The MachO module was valid try next module
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        machoException = ex;
+                    }
+
+                    try
+                    {
+                        var peFile = new PEFile(addressSpace, true);
+                        if (peFile.IsValid())
+                        {
+                            // The PE module was valid try next module
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        peException = ex;
+                    }
+
+                    Console.WriteLine("{0:X16} invalid image - {1}", image.LoadAddress, image.Path);
+                    if (elfException != null)
+                    {
+                        Tracer.Verbose("ELF {0}", elfException.Message);
+                    }
+                    if (machoException != null)
+                    {
+                        Tracer.Verbose("MachO {0}", machoException.Message);
+                    }
+                    if (peException != null)
+                    {
+                        Tracer.Verbose("PE {0}", peException.Message);
+                    }
+                }
+
+                ulong segmentsTotal = core.Segments.Max(s => s.Header.FileOffset + s.Header.FileSize);
+                if (segmentsTotal > dataSource.Length)
+                {
+                    Console.WriteLine($"ERROR: Core file not complete: file size 0x{dataSource.Length:X8} segments total 0x{segmentsTotal:X8}");
                 }
             }
         }
