@@ -6,6 +6,6 @@ Builds are available on the dotnet-tools feed: https://dev.azure.com/dnceng/publ
 
 [//]: # (Begin current test results)
 
-[![Build Status](https://dnceng.visualstudio.com/public/_apis/build/status/dotnet/symstore/symstore-public-ci?branchName=master)](https://dnceng.visualstudio.com/public/_build/latest?definitionId=587&branchName=master)
+[![Build Status](https://dnceng.visualstudio.com/public/_apis/build/status/dotnet/symstore/symstore-public-ci?branchName=main)](https://dnceng.visualstudio.com/public/_build/latest?definitionId=587&branchName=main)
 
 [//]: # (End current test results)
