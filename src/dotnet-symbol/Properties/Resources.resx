@@ -152,6 +152,7 @@ Options:
   --debugging                                       Download the special debugging modules (DAC, DBI, SOS).
   --windows-pdbs                                    Force the downloading of the Windows PDBs when Portable PDBs are also available.
   --overwrite                                       Overwrite existing files in output directory.
+  --verifycore                                      Verify ELF core dump.
   -o, --output &lt;output directory&gt;                   Set the output directory. Otherwise, write next to the input file (default).
   -d, --diagnostics                                 Enable diagnostic output.
   -h, --help                                        Show help information.</value>
