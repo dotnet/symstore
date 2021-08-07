@@ -58,7 +58,7 @@ namespace Microsoft.FileFormats.ELF
 
             foreach (var fte in FileTable.Files.Where(fte => !fte.Path.StartsWith("/dev/zero") && !fte.Path.StartsWith("/run/shm")))
             {
-                if (!normalizedFiles.ContainsKey(fte.Path) || fte.LoadAddress < normalizedFiles[fte.Path].LoadAddress)
+                if (!normalizedFiles.ContainsKey(fte.Path) && fte.PageOffset == 0)
                 {
                     normalizedFiles[fte.Path] = fte;
                 }
@@ -93,7 +93,8 @@ namespace Microsoft.FileFormats.ELF
             _ptrs = ptrs;
         }
 
-        public ulong LoadAddress { get { return _ptrs.Start; } }
+        public ulong PageOffset => _ptrs.PageOffset;
+        public ulong LoadAddress => _ptrs.Start;
         public string Path { get; private set; }
     }
 
