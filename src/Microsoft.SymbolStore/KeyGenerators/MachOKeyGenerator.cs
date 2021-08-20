@@ -46,7 +46,8 @@ namespace Microsoft.SymbolStore.KeyGenerators
             return _machoFile.IsValid() && 
                 (_machoFile.Header.FileType == MachHeaderFileType.Execute || 
                  _machoFile.Header.FileType == MachHeaderFileType.Dylib ||
-                 _machoFile.Header.FileType == MachHeaderFileType.Dsym);
+                 _machoFile.Header.FileType == MachHeaderFileType.Dsym ||
+                 _machoFile.Header.FileType == MachHeaderFileType.Bundle);
         }
 
         public override IEnumerable<SymbolStoreKey> GetKeys(KeyTypeFlags flags)
