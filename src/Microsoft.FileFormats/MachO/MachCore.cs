@@ -106,7 +106,8 @@ namespace Microsoft.FileFormats.MachO
 
         private ulong FindAllImageInfosAddress()
         {
-            ulong preferredAddress = _dyldImage.Symtab.Symbols.Where(s => s.Name == "_dyld_all_image_infos").First().Value;
+            // The symbol may be decorated so check if it contains the loader symbol instead of comparing it exactly
+            ulong preferredAddress = _dyldImage.Symtab.Symbols.Where(s => s.Name.Contains("dyld_all_image_infos")).First().Value;
             return preferredAddress - _dyldImage.PreferredVMBaseAddress + _dyldImage.LoadAddress;
         }
 
