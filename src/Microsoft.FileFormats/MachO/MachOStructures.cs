@@ -99,6 +99,7 @@ namespace Microsoft.FileFormats.MachO
         Segment = 1,
         Symtab = 2,
         Thread = 4,
+        DySymtab = 11,
         Segment64 = 25,
         Uuid = 27,
     }
@@ -252,6 +253,28 @@ namespace Microsoft.FileFormats.MachO
             }
         }
         #endregion
+    }
+
+    public class MachDySymtabLoadCommand : MachLoadCommand
+    {
+        public uint ILocalSym;
+        public uint NLocalSym;
+        public uint IExtDefSym;
+        public uint NextDefSym;
+        public uint IUndefSym;
+        public uint NUndefSym;
+        public uint ToCoff;
+        public uint NToc;
+        public uint ModTabOff;
+        public uint MModTab;
+        public uint ExtrefSymOff;
+        public uint NextrefSyms;
+        public uint IndirectSymOff;
+        public uint NindirectSyms;
+        public uint ExtrelOff;
+        public uint Nextrel;
+        public uint LocrelOff;
+        public uint NLocrel;
     }
 
     public class NList : TStruct
