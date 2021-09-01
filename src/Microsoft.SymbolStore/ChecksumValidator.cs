@@ -38,7 +38,7 @@ namespace Microsoft.SymbolStore
             Array.Copy(bytes, offset, pdbId, 0, pdbIdSize);
 
             // Zero out the pdb Id
-            for (int i = 0; i <= pdbIdSize; i++)
+            for (int i = 0; i < pdbIdSize; i++)
             {
                 bytes[i + offset] = 0;
             }
@@ -66,7 +66,7 @@ namespace Microsoft.SymbolStore
                     }
                 }
             }
-                
+
             if(!algorithmNameKnown)
             {
                 var algorithmNames = string.Join(" ", pdbChecksums.Select(c => c.AlgorithmName));
