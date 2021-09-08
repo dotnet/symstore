@@ -37,6 +37,10 @@ namespace Microsoft.SymbolStore.KeyGenerators
                     {
                         yield return GetKey(_path, _pdbFile.Signature, unchecked((int)_pdbFile.DbiAge));
                     }
+                    else
+                    {
+                        yield return GetKey(_path, _pdbFile.Signature, unchecked((int)_pdbFile.Age));
+                    }
                 }
             }
         }
