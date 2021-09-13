@@ -319,7 +319,7 @@ namespace dotnet.symbol
                     }
                     if (Symbols)
                     {
-                        flags |= KeyTypeFlags.SymbolKey;
+                        flags |= KeyTypeFlags.SymbolKey | KeyTypeFlags.PerfMapKeys;
                     }
                     if (Modules)
                     {
@@ -339,7 +339,7 @@ namespace dotnet.symbol
                         else
                         {
                             // Otherwise the default is just the symbol files
-                            flags = KeyTypeFlags.SymbolKey;
+                            flags = KeyTypeFlags.SymbolKey | KeyTypeFlags.PerfMapKeys;
                         }
                     }
                     if (ForceWindowsPdbs)
