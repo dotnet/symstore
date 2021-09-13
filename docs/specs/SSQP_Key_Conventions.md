@@ -143,3 +143,17 @@ Example:
 **Sha1 hash bytes:** `0x49, 0x7B, 0x72, 0xF6, 0x39, 0x0A, 0x44, 0xFC, 0x87, 0x8E, 0x5A, 0x2D, 0x63, 0xB6, 0xCC, 0x4B, 0x0C, 0x2D, 0x99, 0x84`
 
 **Lookup key:** `foo.cs/sha1-497b72f6390a44fc878e5a2d63b6cc4b0c2d9984/foo.cs`
+
+### R2R PerfMap v1
+
+This applies to v1 PerfMap files produced by CrossGen2 , commonly having extensions `.ni.r2rmap`. The key is formed by formatting the signature, the file name, and the version in the following manner:
+
+Example:
+
+**File name:** `System.Private.CoreLib.ni.r2rmap`
+
+**Signature at pseudo-rva 0xFFFFFFFF:** `f5fddf60efb0bee79ef02a19c3decba9`
+
+**Version at pseudo-rva 0xFFFFFFFE:** `1`
+
+**Lookup key:** `system.private.corelib.ni.r2rmap/r2rmap-v1-f5fddf60efb0bee79ef02a19c3decba9/system.private.corelib.ni.r2rmap`
