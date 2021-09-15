@@ -12,6 +12,8 @@ namespace Microsoft.FileFormats.PerfMap
     {
         // See format of the perfmap file at https://github.com/dotnet/runtime/blob/main/docs/design/coreclr/botr/r2r-perfmap-format.md
         private static readonly int PerfMapV1SigLength = 16;
+        
+        private static readonly int PerfMapV1HeaderRecordCount = 5;
 
         public static readonly int MaxKnownPerfMapVersion = 1;
 
@@ -56,8 +58,6 @@ namespace Microsoft.FileFormats.PerfMap
         private readonly Stream _stream;
         private readonly Lazy<PerfMapHeader> _header;
 
-        private long _headerLength;
-
         public PerfMapHeader Header { get => _header.Value; }
 
         public bool IsValid => Header is not null;
@@ -72,9 +72,17 @@ namespace Microsoft.FileFormats.PerfMap
                     throw new NotImplementedException($"Format version {Header.Version} unknown. Max known format is {MaxKnownPerfMapVersion}");
 
                 using StreamReader reader = new StreamReader(_stream, Encoding.UTF8, false, 1024, leaveOpen: true);
-                _stream.Position = _headerLength;
-                while (_stream.Length != _stream.Position)
-                    yield return ReadRecord(reader);
+
+                // Skip over the header.
+                // For now this is V1, the length will need to be a lookup on the version.
+                for (int i = 0; i < PerfMapV1HeaderRecordCount; ++i) _ = reader.ReadLine();
+
+                while(true)
+                {
+                    PerfMapFile.PerfMapRecord cur = ReadRecord(reader);
+                    if (cur is null) yield break;
+                    yield return cur;
+                }
             }
         }
 
@@ -94,14 +102,15 @@ namespace Microsoft.FileFormats.PerfMap
         private PerfMapHeader ReadHeader()
         {
             bool IsValidHeaderRecord(PerfMapPseudoRVAToken expectedToken, PerfMapRecord record)
-                => (uint)expectedToken == record.Rva
+                => record is not null && (uint)expectedToken == record.Rva
                     && record.Length == HeaderRecordPseudoLength;
 
             long prevPosition = _stream.Position;
             try
             {
                 _stream.Position = 0;
-                using StreamReader reader = new StreamReader(_stream, Encoding.UTF8, false, 1024, leaveOpen: true);
+                // Headers don't need much of a buffer.
+                using StreamReader reader = new StreamReader(_stream, Encoding.UTF8, false, 256, leaveOpen: true);
 
                 PerfMapRecord sigRecord = ReadRecord(reader);
                 if (!IsValidHeaderRecord(PerfMapPseudoRVAToken.OutputSignature, sigRecord)
@@ -129,7 +138,6 @@ namespace Microsoft.FileFormats.PerfMap
                     || !uint.TryParse(abiRecord.Name, out uint abi))
                     return null;
 
-                _headerLength = _stream.Position;
                 return new PerfMapHeader(sigBytes, version, os, arch, abi);
                 // Append as necessary as revisions get added here.
                 // We don't return null on a higher versioned heder than the max known as they are backwards compatible and they are not necessary for indexing.
@@ -150,7 +158,7 @@ namespace Microsoft.FileFormats.PerfMap
             string[] segments = reader.ReadLine()?.Split();
 
             if (segments is null)
-                throw new EndOfStreamException("There's no more records.");
+                return null;
 
             if (segments.Length != 3)
                 throw new BadInputFormatException("Entry on perfmap record doesn't have 3 segments.");
