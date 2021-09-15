@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using Microsoft.SymbolStore.KeyGenerators;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,6 +31,36 @@ namespace Microsoft.SymbolStore.Tests
             PDBFileKeyGeneratorInternal(fileGenerator: true);
             PEFileKeyGeneratorInternal(fileGenerator: true);
             PortablePDBFileKeyGeneratorInternal(fileGenerator: true);
+            PerfMapFileKeyGeneratorInternal(fileGenerator: true);
+        }
+
+
+        [Fact]
+        public void PerfMapFileKeyGenerator()
+        {
+            PerfMapFileKeyGeneratorInternal(fileGenerator: false);
+        }
+
+        private void PerfMapFileKeyGeneratorInternal(bool fileGenerator)
+        {
+            const string LinuxPerfMapPath = "TestBinaries/PerfMapEnabled/System.ComponentModel.EventBasedAsync.ni.r2rmap";
+            using (Stream linuxPerfMapStream = File.OpenRead(LinuxPerfMapPath))
+            {
+                var file = new SymbolStoreFile(linuxPerfMapStream, LinuxPerfMapPath);
+                KeyGenerator generator = fileGenerator ? (KeyGenerator)new FileKeyGenerator(_tracer, file) : new PerfMapFileKeyGenerator(_tracer, file);
+
+                IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
+                Assert.True(identityKey.Single().Index == "system.componentmodel.eventbasedasync.ni.r2rmap/r2rmap-v1-734d59d6de0e96aa3c77b3e2ed498097/system.componentmodel.eventbasedasync.ni.r2rmap");
+
+                IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
+                Assert.True(!symbolKey.Any());
+
+                IEnumerable<SymbolStoreKey> perfMapKey = generator.GetKeys(KeyTypeFlags.PerfMapKeys);
+                Assert.True(!symbolKey.Any());
+
+                IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
+                Assert.True(!symbolKey.Any());
+            }
         }
 
         [Fact]
@@ -362,6 +393,29 @@ namespace Microsoft.SymbolStore.Tests
                 Assert.True(symbolKey.Count() == 1);
                 Assert.True(symbolKey.First().Index == "helloworld.pdb/99891b3ed7ae4c3babff8a2b4a9b0c431/helloworld.pdb");
 
+                IEnumerable<SymbolStoreKey> perfMapKey = generator.GetKeys(KeyTypeFlags.PerfMapKeys);
+                Assert.True(perfMapKey.Count() == 0);
+
+                IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
+                Assert.True(clrKeys.Count() == 0);
+            }
+
+            const string LinuxPePath = "TestBinaries/PerfMapEnabled/System.ComponentModel.EventBasedAsync.dll";
+            using (Stream linuxPeStream = File.OpenRead(LinuxPePath))
+            {
+                var file = new SymbolStoreFile(linuxPeStream, LinuxPePath);
+                KeyGenerator generator = fileGenerator ? (KeyGenerator)new FileKeyGenerator(_tracer, file) : new PEFileKeyGenerator(_tracer, file);
+
+                IEnumerable<SymbolStoreKey> identityKey = generator.GetKeys(KeyTypeFlags.IdentityKey);
+                Assert.True(identityKey.Count() == 1);
+                Assert.True(identityKey.First().Index == "system.componentmodel.eventbasedasync.dll/9757F3A636c00/system.componentmodel.eventbasedasync.dll");
+
+                IEnumerable<SymbolStoreKey> symbolKey = generator.GetKeys(KeyTypeFlags.SymbolKey);
+                Assert.True(symbolKey.Single().Index == "system.componentmodel.eventbasedasync.pdb/99d3f272c6a8429ba694647a7912d178FFFFFFFF/system.componentmodel.eventbasedasync.pdb");
+
+                IEnumerable<SymbolStoreKey> perfMapKey = generator.GetKeys(KeyTypeFlags.PerfMapKeys);
+                Assert.True(perfMapKey.Single().Index == "system.componentmodel.eventbasedasync.ni.r2rmap/r2rmap-v1-734d59d6de0e96aa3c77b3e2ed498097/system.componentmodel.eventbasedasync.ni.r2rmap");
+
                 IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
                 Assert.True(clrKeys.Count() == 0);
             }
@@ -380,6 +434,9 @@ namespace Microsoft.SymbolStore.Tests
                 Assert.True(symbolKey.Count() == 2);
                 Assert.True(symbolKey.First().Index == "system.diagnostics.stacktrace.ni.pdb/3cd5a68a9f2cd99b169d074e6e956d4fFFFFFFFF/system.diagnostics.stacktrace.ni.pdb");
                 Assert.True(symbolKey.Last().Index == "system.diagnostics.stacktrace.pdb/8b2e8cf443144806982ab7d904876a50FFFFFFFF/system.diagnostics.stacktrace.pdb");
+
+                IEnumerable<SymbolStoreKey> perfMapKey = generator.GetKeys(KeyTypeFlags.PerfMapKeys);
+                Assert.True(perfMapKey.Count() == 0);
 
                 IEnumerable<SymbolStoreKey> clrKeys = generator.GetKeys(KeyTypeFlags.ClrKeys);
                 Assert.True(clrKeys.Count() == 0);
@@ -409,6 +466,9 @@ namespace Microsoft.SymbolStore.Tests
                 Assert.True(dacdbiKeys.ContainsKey("mscordbi.dll/595EBCD5538000/mscordbi.dll"));
                 Assert.False(dacdbiKeys.ContainsKey("sos.dll/595EBCD5538000/sos.dll"));
                 Assert.False(dacdbiKeys.ContainsKey("sos.netcore.dll/595EBCD5538000/sos.netcore.dll"));
+
+                IEnumerable<SymbolStoreKey> perfMapKey = generator.GetKeys(KeyTypeFlags.PerfMapKeys);
+                Assert.True(perfMapKey.Count() == 0);
 
                 Dictionary<string, SymbolStoreKey> runtimeKeys = generator.GetKeys(KeyTypeFlags.RuntimeKeys).ToDictionary((key) => key.Index);
                 Assert.True(runtimeKeys.ContainsKey("coreclr.dll/595EBCD5538000/coreclr.dll"));

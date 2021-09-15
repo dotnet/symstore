@@ -27,7 +27,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
 
         public override bool IsDump()
         {
-            return GetGenerators().Any((generator) => generator.IsDump());
+            return GetGenerators().Any((generator) => generator.IsValid() && generator.IsDump());
         }
 
         public override IEnumerable<SymbolStoreKey> GetKeys(KeyTypeFlags flags)
@@ -57,6 +57,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 yield return new MachOFileKeyGenerator(Tracer, _file);
                 yield return new PDBFileKeyGenerator(Tracer, _file);
                 yield return new PortablePDBFileKeyGenerator(Tracer, _file);
+                yield return new PerfMapFileKeyGenerator(Tracer, _file);
             }
         }
     }

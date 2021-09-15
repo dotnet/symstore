@@ -198,7 +198,8 @@ namespace Microsoft.FileFormats.PE
         Bbt = 10,
         Reproducible = 16,
         EmbeddedPortablePdb = 17,
-        PdbChecksum = 19
+        PdbChecksum = 19,
+        PerfMap = 21
     };
 
     /// <summary>
@@ -226,6 +227,17 @@ namespace Microsoft.FileFormats.PE
         [ArraySize(16)]
         public byte[] Signature;
         public int Age;
+    }
+
+    public class PerfMapIdV1 : TStruct
+    {
+        public const int PerfMapEntryMagic = 0x4D523252; // R2RM in ascii
+
+        public int Magic;
+
+        [ArraySize(16)]
+        public byte[] Signature;
+        public uint Version;
     }
 
     #endregion

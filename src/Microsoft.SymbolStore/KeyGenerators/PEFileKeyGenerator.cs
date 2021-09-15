@@ -79,6 +79,18 @@ namespace Microsoft.SymbolStore.KeyGenerators
                         }
                     }
                 }
+
+                if ((flags & KeyTypeFlags.PerfMapKeys) != 0)
+                {
+                    foreach(PEPerfMapRecord perfmapRecord in _peFile.PerfMapsV1)
+                    {
+                        if (perfmapRecord.Version > FileFormats.PerfMap.PerfMapFile.MaxKnownPerfMapVersion)
+                            Tracer.Warning("Trying to get key for PerfmapFile {0} associated with PE {1} with version {2}, higher than max known version {3}", 
+                                perfmapRecord.Path, _path, perfmapRecord.Version, FileFormats.PerfMap.PerfMapFile.MaxKnownPerfMapVersion);
+                        yield return PerfMapFileKeyGenerator.GetKey(perfmapRecord.Path, perfmapRecord.Signature, perfmapRecord.Version);
+                    }
+                }
+
                 if ((flags & (KeyTypeFlags.ClrKeys | KeyTypeFlags.DacDbiKeys)) != 0)
                 {
                     if (GetFileName(_path) == CoreClrFileName)

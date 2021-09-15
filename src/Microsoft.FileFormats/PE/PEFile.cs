@@ -27,6 +27,7 @@ namespace Microsoft.FileFormats.PE
         private readonly Lazy<List<ImageSectionHeader>> _segments;
         private readonly Lazy<VsFixedFileInfo> _vsFixedFileInfo;
         private readonly Lazy<IEnumerable<PdbChecksum>> _pdbChecksum;
+        private readonly Lazy<IEnumerable<PEPerfMapRecord>> _perfMapsV1;
         private readonly Lazy<Reader> _virtualAddressReader;
 
         private const ushort ExpectedDosHeaderMagic = 0x5A4D;   // MZ
@@ -54,6 +55,7 @@ namespace Microsoft.FileFormats.PE
             _segments = new Lazy<List<ImageSectionHeader>>(ReadSectionHeaders);
             _vsFixedFileInfo = new Lazy<VsFixedFileInfo>(ReadVersionResource);
             _pdbChecksum = new Lazy<IEnumerable<PdbChecksum>>(ReadPdbChecksum);
+            _perfMapsV1 = new Lazy<IEnumerable<PEPerfMapRecord>>(ReadPerfMapV1Entries);
             _virtualAddressReader = new Lazy<Reader>(CreateVirtualAddressReader);
 
         }
@@ -72,6 +74,7 @@ namespace Microsoft.FileFormats.PE
         public Reader RelativeVirtualAddressReader { get { return _virtualAddressReader.Value; } }
         public ReadOnlyCollection<ImageSectionHeader> Segments { get { return _segments.Value.AsReadOnly(); } }
         public VsFixedFileInfo VersionInfo { get { return _vsFixedFileInfo.Value; } }
+        public IEnumerable<PEPerfMapRecord> PerfMapsV1 { get { return _perfMapsV1.Value; } }
         public IEnumerable<PdbChecksum> PdbChecksums { get { return _pdbChecksum.Value; } }
 
         public bool IsValid()
@@ -203,6 +206,27 @@ namespace Microsoft.FileFormats.PE
                     uint length = sizeOfData - algorithmLength - 1; // -1 for null terminator
                     byte[] checksum = RelativeVirtualAddressReader.ReadArray<byte>(position + algorithmLength + 1 /* +1 for null terminator */, length);
                     yield return new PdbChecksum(algorithmName, checksum);
+                }
+            }
+        }
+
+        private IEnumerable<PEPerfMapRecord> ReadPerfMapV1Entries()
+        {
+            ImageDataDirectory imageDebugDirectory = ImageDataDirectory[(int)ImageDirectoryEntry.Debug];
+            uint count = imageDebugDirectory.Size / FileReader.SizeOf<ImageDebugDirectory>();
+            ImageDebugDirectory[] debugDirectories = RelativeVirtualAddressReader.ReadArray<ImageDebugDirectory>(imageDebugDirectory.VirtualAddress, count);
+
+            foreach (ImageDebugDirectory directory in debugDirectories)
+            {
+                if (directory.Type == ImageDebugType.PerfMap && directory.MajorVersion == 1 && directory.MinorVersion == 0)
+                {
+                    ulong position = directory.AddressOfRawData;
+                    PerfMapIdV1 perfmapEntryHeader = RelativeVirtualAddressReader.Read<PerfMapIdV1>(ref position);
+                    if (perfmapEntryHeader.Magic == PerfMapIdV1.PerfMapEntryMagic)
+                    {
+                        string fileName = RelativeVirtualAddressReader.Read<string>(position);
+                        yield return new PEPerfMapRecord(fileName, perfmapEntryHeader.Signature, perfmapEntryHeader.Version);
+                    }
                 }
             }
         }

@@ -29,6 +29,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\Microsoft.FileFormats.UnitTests\TestBinaries\PerfMapEnabled\System.ComponentModel.EventBasedAsync.dll" Link="TestBinaries\PerfMapEnabled\System.ComponentModel.EventBasedAsync.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Microsoft.FileFormats.UnitTests\TestBinaries\PerfMapEnabled\System.ComponentModel.EventBasedAsync.ni.r2rmap" Link="TestBinaries\PerfMapEnabled\System.ComponentModel.EventBasedAsync.ni.r2rmap">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\Microsoft.FileFormats.UnitTests\TestBinaries\triagedump.gz" Link="TestBinaries\triagedump.gz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

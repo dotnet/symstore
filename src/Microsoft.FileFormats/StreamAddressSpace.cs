@@ -15,6 +15,7 @@ namespace Microsoft.FileFormats
     {
         public StreamAddressSpace(Stream stream)
         {
+            System.Diagnostics.Debug.Assert(stream.CanSeek);
             _stream = stream;
             Length = (ulong)stream.Length;
         }

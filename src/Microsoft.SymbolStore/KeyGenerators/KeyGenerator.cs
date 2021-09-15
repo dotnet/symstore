@@ -59,7 +59,12 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// Include the runtime modules (coreclr.dll, clrjit.dll, clrgc.dll, 
         /// libcoreclr.so, libclrjit.so, libcoreclr.dylib, etc.)
         /// </summary>
-        RuntimeKeys = 0x40
+        RuntimeKeys = 0x40,
+
+        /// <summary>
+        /// Generate the r2r perfmap key of the binary (if one exists).
+        /// </summary>
+        PerfMapKeys = 0x80
     }
 
     /// <summary>
