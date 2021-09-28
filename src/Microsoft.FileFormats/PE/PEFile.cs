@@ -29,6 +29,7 @@ namespace Microsoft.FileFormats.PE
         private readonly Lazy<IEnumerable<PdbChecksum>> _pdbChecksum;
         private readonly Lazy<IEnumerable<PEPerfMapRecord>> _perfMapsV1;
         private readonly Lazy<Reader> _virtualAddressReader;
+        private readonly Lazy<ImageExportDirectory> _exportDirectory;
 
         private const ushort ExpectedDosHeaderMagic = 0x5A4D;   // MZ
         private const int PESignatureOffsetLocation = 0x3C;
@@ -57,7 +58,7 @@ namespace Microsoft.FileFormats.PE
             _pdbChecksum = new Lazy<IEnumerable<PdbChecksum>>(ReadPdbChecksum);
             _perfMapsV1 = new Lazy<IEnumerable<PEPerfMapRecord>>(ReadPerfMapV1Entries);
             _virtualAddressReader = new Lazy<Reader>(CreateVirtualAddressReader);
-
+            _exportDirectory = new Lazy<ImageExportDirectory>(ReadExportDirectory);
         }
 
         public ushort DosHeaderMagic { get { return _dosHeaderMagic.Value; } }
@@ -104,6 +105,55 @@ namespace Microsoft.FileFormats.PE
         /// The COM data directory.  In practice this is the metadata of an IL image.
         /// </summary>
         public ImageDataDirectory ComDataDirectory { get { return ImageDataDirectory[(int)ImageDirectoryEntry.ComDescriptor]; } }
+
+        /// <summary>
+        /// Returns the address of a module export symbol if found
+        /// </summary>
+        /// <param name="symbolName">symbol name (without the module name prepended)</param>
+        /// <param name="offset">symbol offset returned</param>
+        /// <returns>true if found</returns>
+        public bool TryGetExportSymbol(string symbolName, out ulong offset)
+        {
+            try
+            {
+                ImageExportDirectory exportDirectory = _exportDirectory.Value;
+                if (exportDirectory is not null)
+                {
+                    for (int nameIndex = 0; nameIndex < exportDirectory.NumberOfNames; nameIndex++)
+                    {
+                        uint namePointerRVA = RelativeVirtualAddressReader.Read<uint>((ulong)(exportDirectory.AddressOfNames + (sizeof(uint) * nameIndex)));
+                        if (namePointerRVA != 0)
+                        {
+                            string name = RelativeVirtualAddressReader.Read<string>(namePointerRVA);
+                            if (name == symbolName)
+                            {
+                                ushort ordinalForNamedExport = RelativeVirtualAddressReader.Read<ushort>((ulong)(exportDirectory.AddressOfNameOrdinals + (sizeof(ushort) * nameIndex)));
+                                offset = RelativeVirtualAddressReader.Read<uint>((ulong)(exportDirectory.AddressOfFunctions + (sizeof(uint) * ordinalForNamedExport)));
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
+            {
+            }
+            offset = 0;
+            return false;
+        }
+
+        private ImageExportDirectory ReadExportDirectory()
+        {
+            if (IsValid())
+            {
+                ImageDataDirectory exportTableDirectory = ImageDataDirectory[(int)ImageDirectoryEntry.Export];
+                if (exportTableDirectory is not null)
+                {
+                    return RelativeVirtualAddressReader.Read<ImageExportDirectory>(exportTableDirectory.VirtualAddress);
+                }
+            }
+            return null;
+        }
 
         private uint ReadPEHeaderOffset()
         {
@@ -187,7 +237,6 @@ namespace Microsoft.FileFormats.PE
                 }
             }
         }
-
 
         private IEnumerable<PdbChecksum> ReadPdbChecksum()
         {
@@ -318,7 +367,6 @@ namespace Microsoft.FileFormats.PE
         #endregion
     }
 
-
     public class PEAddressSpace : IAddressSpace
     {
         private Lazy<ulong> _length;
@@ -341,8 +389,6 @@ namespace Microsoft.FileFormats.PE
             _baseAddress = baseAddress;
             _addressSpace = addressSpace;
         }
-
-
 
         public uint Read(ulong position, byte[] buffer, uint bufferOffset, uint count)
         {
