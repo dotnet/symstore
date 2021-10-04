@@ -333,6 +333,28 @@ namespace Microsoft.FileFormats.PE
 
     #endregion
 
+    #region IMAGE_EXPORT_DIRECTORY
+
+    /// <summary>
+    /// IMAGE_EXPORT_DIRECTORY struct
+    /// </summary>
+    public class ImageExportDirectory : TStruct
+    {
+        public uint Characteristics;
+        public uint TimeDateStamp;
+        public ushort MajorVersion;
+        public ushort MinorVersion;
+        public uint Name;
+        public uint Base;
+        public uint NumberOfFunctions;
+        public uint NumberOfNames;
+        public uint AddressOfFunctions;     // RVA from base of image
+        public uint AddressOfNames;         // RVA from base of image
+        public uint AddressOfNameOrdinals;  // RVA from base of image
+    };
+
+    #endregion
+
     /// <summary>
     /// Pair of a checksum algorithm name (ex: "SHA256") and the bytes of the checksum.
     /// </summary>
