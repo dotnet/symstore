@@ -2,6 +2,7 @@
 
 using Microsoft.FileFormats;
 using Microsoft.FileFormats.ELF;
+using Microsoft.FileFormats.MachO;
 using Microsoft.FileFormats.PE;
 using System;
 using System.Collections.Generic;
@@ -52,10 +53,17 @@ namespace Microsoft.SymbolStore.KeyGenerators
                 }
                 // TODO - mikem 7/1/17 - need to figure out a better way to determine the file vs loaded layout
                 bool layout = loadedImage.Path.StartsWith("/");
-                var peFile = new PEFile(new RelativeAddressSpace(_core.DataSource, loadedImage.LoadAddress, _core.DataSource.Length), layout);
+                var reader = new RelativeAddressSpace(_core.DataSource, loadedImage.LoadAddress, _core.DataSource.Length);
+                var peFile = new PEFile(reader, layout);
                 if (peFile.IsValid())
                 {
                     return new PEFileKeyGenerator(Tracer, peFile, loadedImage.Path);
+                }
+                // Check if this is a macho module in a ELF 5.0.x MacOS dump
+                var machOFile = new MachOFile(reader, 0, true);
+                if (machOFile.IsValid())
+                {
+                    return new MachOFileKeyGenerator(Tracer, machOFile, loadedImage.Path);
                 }
                 Tracer.Warning("Unknown ELF core image {0:X16} {1}", loadedImage.LoadAddress, loadedImage.Path);
             }

@@ -54,33 +54,64 @@ namespace Microsoft.FileFormats.ELF
 
         private ELFLoadedImage[] ReadLoadedImages()
         {
-            Dictionary<string, ELFFileTableEntry> normalizedFiles = new Dictionary<string, ELFFileTableEntry>();
+            Dictionary<string, ELFLoadedImage> lookup = new();
 
-            foreach (var fte in FileTable.Files.Where(fte => !fte.Path.StartsWith("/dev/zero") && !fte.Path.StartsWith("/run/shm")))
+            foreach (ELFFileTableEntry fte in FileTable.Files.Where(fte => !fte.Path.StartsWith("/dev/zero") && !fte.Path.StartsWith("/run/shm")))
             {
-                if (!normalizedFiles.ContainsKey(fte.Path) && fte.PageOffset == 0)
+                string path = fte.Path;
+                if (!lookup.TryGetValue(path, out ELFLoadedImage image))
                 {
-                    normalizedFiles[fte.Path] = fte;
+                    image = lookup[path] = new ELFLoadedImage(path);
                 }
+                image.AddTableEntryPointers(fte);
             }
 
-            return normalizedFiles.Select(e => new ELFLoadedImage(new ELFFile(_elf.VirtualAddressReader.DataSource, e.Value.LoadAddress, true), e.Value)).ToArray();
+            List<ELFLoadedImage> result = new();
+            foreach (ELFLoadedImage image in lookup.Values)
+            {
+                image.Image = new ELFFile(_elf.VirtualAddressReader.DataSource, image.LoadAddress, isDataSourceVirtualAddressSpace: true);
+                result.Add(image);
+            }
+
+            return result.ToArray();
         }
     }
 
     public class ELFLoadedImage
     {
-        private readonly ELFFileTableEntry _entry;
+        private ulong _loadAddress;
+        private ulong _minimumPointer = ulong.MaxValue;
 
         public ELFLoadedImage(ELFFile image, ELFFileTableEntry entry)
         {
             Image = image;
-            _entry = entry;
+            Path = entry.Path;
+            _loadAddress = entry.LoadAddress;
         }
 
-        public ulong LoadAddress { get { return _entry.LoadAddress; } }
-        public string Path { get { return _entry.Path; } }
-        public ELFFile Image { get; private set; }
+        public ELFLoadedImage(string path)
+        {
+            Path = path;
+        }
+
+        public ulong LoadAddress => _loadAddress == 0 ? _minimumPointer : _loadAddress;
+        public string Path { get; }
+        public ELFFile Image { get; internal set; }
+
+        internal void AddTableEntryPointers(ELFFileTableEntry entry)
+        {
+            // There are cases (like .NET single-file modules) where the first NT_FILE entry isn't the ELF
+            // or PE header (i.e the base address). The header is the first entry with PageOffset == 0. For
+            // ELF modules there should only be one PageOffset == 0 entry but with the memory mapped PE
+            // assemblies, there can be more than one PageOffset == 0 entry and the first one is the base
+            // address.
+            if (_loadAddress == 0 && entry.PageOffset == 0)
+                _loadAddress = entry.LoadAddress;
+
+            // If no load address was found, will use the lowest start address. There has to be at least one
+            // entry. This fixes the .NET 5.0 MacOS ELF dumps which have modules with no PageOffset == 0 entries.
+            _minimumPointer = Math.Min(entry.LoadAddress, _minimumPointer);
+        }
     }
 
     public class ELFFileTableEntry

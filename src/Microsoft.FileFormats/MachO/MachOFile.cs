@@ -145,9 +145,8 @@ namespace Microsoft.FileFormats.MachO
         {
             get
             {
-                IsAtLeastOneSegmentAtFileOffsetZero.CheckThrowing();
-                return Segments.Where(s => s.LoadCommand.FileOffset == 0 && s.LoadCommand.FileSize != 0).First().
-                    LoadCommand.VMAddress;
+                MachSegment first = Segments.Where(s => s.LoadCommand.FileOffset == 0 && s.LoadCommand.FileSize > 0).FirstOrDefault();
+                return first != null ? _position - first.LoadCommand.VMAddress : 0;
             }
         }
 
@@ -191,7 +190,7 @@ namespace Microsoft.FileFormats.MachO
             }
             else
             {
-                return DataSourceReader.WithAddressSpace(new MachPhysicalAddressSpace(_reader.DataSource, _position, PreferredVMBaseAddress, Segments));
+                return DataSourceReader.WithAddressSpace(new MachPhysicalAddressSpace(_reader.DataSource, PreferredVMBaseAddress, Segments));
             }
         }
 
@@ -248,16 +247,25 @@ namespace Microsoft.FileFormats.MachO
         {
             IsAtLeastOneSymtabLoadCommand.CheckThrowing();
             IsAtMostOneSymtabLoadCommand.CheckThrowing();
+            ulong symtabPosition = 0;
+            ulong dysymtabPosition = 0;
             foreach (Tuple<MachLoadCommand, ulong> cmdAndPos in _loadCommands.Value)
             {
-                if (cmdAndPos.Item1.Command != LoadCommandType.Symtab)
+                switch (cmdAndPos.Item1.Command)
                 {
-                    continue;
+                    case LoadCommandType.Symtab:
+                        symtabPosition = cmdAndPos.Item2;
+                        break;
+                    case LoadCommandType.DySymtab:
+                        dysymtabPosition = cmdAndPos.Item2;
+                        break;
                 }
-                return new MachSymtab(DataSourceReader, cmdAndPos.Item2, PhysicalAddressReader);
             }
-
-            return null;
+            if (symtabPosition == 0 || dysymtabPosition == 0)
+            {
+                return null;
+            }
+            return new MachSymtab(DataSourceReader, symtabPosition, dysymtabPosition, PhysicalAddressReader);
         }
 
         #region Validation Rules
@@ -397,18 +405,17 @@ namespace Microsoft.FileFormats.MachO
 
     public class MachPhysicalAddressSpace : PiecewiseAddressSpace
     {
-        public MachPhysicalAddressSpace(IAddressSpace virtualAddressSpace, ulong baseLoadAddress, ulong preferredVMBaseAddress, IEnumerable<MachSegment> segments) :
-            base(segments.Select(s => ToRange(virtualAddressSpace, baseLoadAddress, preferredVMBaseAddress, s)).ToArray())
+        public MachPhysicalAddressSpace(IAddressSpace virtualAddressSpace, ulong preferredVMBaseAddress, IEnumerable<MachSegment> segments) :
+            base(segments.Select(s => ToRange(virtualAddressSpace, preferredVMBaseAddress, s)).ToArray())
         {
         }
 
-        private static PiecewiseAddressSpaceRange ToRange(IAddressSpace virtualAddressSpace, ulong baseLoadAddress, ulong preferredVMBaseAddress, MachSegment segment)
+        private static PiecewiseAddressSpaceRange ToRange(IAddressSpace virtualAddressSpace, ulong preferredVMBaseAddress, MachSegment segment)
         {
-            ulong actualSegmentLoadAddress = segment.LoadCommand.VMAddress - preferredVMBaseAddress + baseLoadAddress;
+            ulong actualSegmentLoadAddress = preferredVMBaseAddress + segment.LoadCommand.VMAddress - segment.LoadCommand.FileOffset; 
             return new PiecewiseAddressSpaceRange()
             {
-                AddressSpace = new RelativeAddressSpace(virtualAddressSpace, actualSegmentLoadAddress, segment.LoadCommand.FileSize,
-                                                            (long)(segment.LoadCommand.FileOffset - actualSegmentLoadAddress)),
+                AddressSpace = new RelativeAddressSpace(virtualAddressSpace, actualSegmentLoadAddress, segment.LoadCommand.FileSize),
                 Start = segment.LoadCommand.FileOffset,
                 Length = segment.LoadCommand.FileSize
             };
@@ -430,29 +437,31 @@ namespace Microsoft.FileFormats.MachO
     public class MachSymtab
     {
         private readonly Reader _machReader;
-        private readonly ulong _position;
         private readonly Reader _physicalAddressSpace;
-        private readonly Lazy<MachSymtabLoadCommand> _loadCommand;
+        private readonly Lazy<MachSymtabLoadCommand> _symtabLoadCommand;
+        private readonly Lazy<MachDySymtabLoadCommand> _dysymtabLoadCommand;
         private readonly Lazy<MachSymbol[]> _symbols;
 
-
-        public MachSymtab(Reader machReader, ulong position, Reader physicalAddressSpace)
+        public MachSymtab(Reader machReader, ulong symtabPosition, ulong dysymtabPosition, Reader physicalAddressSpace)
         {
             _machReader = machReader;
-            _position = position;
             _physicalAddressSpace = physicalAddressSpace;
-            _loadCommand = new Lazy<MachSymtabLoadCommand>(() => _machReader.Read<MachSymtabLoadCommand>(_position));
+            _symtabLoadCommand = new Lazy<MachSymtabLoadCommand>(() => _machReader.Read<MachSymtabLoadCommand>(symtabPosition));
+            _dysymtabLoadCommand = new Lazy<MachDySymtabLoadCommand>(() => _machReader.Read<MachDySymtabLoadCommand>(dysymtabPosition));
             _symbols = new Lazy<MachSymbol[]>(ReadSymbols);
         }
 
-        public MachSymtabLoadCommand LoadCommand { get { return _loadCommand.Value; } }
         public IEnumerable<MachSymbol> Symbols { get { return _symbols.Value; } }
 
         private MachSymbol[] ReadSymbols()
         {
-            LoadCommand.IsNSymsReasonable.CheckThrowing();
-            NList[] nlists = _physicalAddressSpace.ReadArray<NList>(LoadCommand.SymOffset, LoadCommand.SymCount);
-            Reader stringReader = _physicalAddressSpace.WithRelativeAddressSpace(LoadCommand.StringOffset, LoadCommand.StringSize);
+            MachSymtabLoadCommand symtabLoadCommand = _symtabLoadCommand.Value;
+            MachDySymtabLoadCommand dysymtabLoadCommand = _dysymtabLoadCommand.Value;
+            symtabLoadCommand.IsNSymsReasonable.CheckThrowing();
+
+            ulong position = symtabLoadCommand.SymOffset + (dysymtabLoadCommand.IExtDefSym * _physicalAddressSpace.SizeOf<NList>());
+            NList[] nlists = _physicalAddressSpace.ReadArray<NList>(position, dysymtabLoadCommand.NextDefSym);
+            Reader stringReader = _physicalAddressSpace.WithRelativeAddressSpace(symtabLoadCommand.StringOffset, symtabLoadCommand.StringSize);
             return nlists.Select(n => new MachSymbol() { Name = stringReader.Read<string>(n.StringIndex), Raw = n }).ToArray();
         }
     }

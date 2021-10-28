@@ -108,12 +108,11 @@ namespace Microsoft.FileFormats.MachO
         {
             // The symbol may be decorated so check if it contains the loader symbol instead of comparing it exactly
             ulong preferredAddress = _dyldImage.Symtab.Symbols.Where(s => s.Name.Contains("dyld_all_image_infos")).First().Value;
-            return preferredAddress - _dyldImage.PreferredVMBaseAddress + _dyldImage.LoadAddress;
+            return preferredAddress + _dyldImage.PreferredVMBaseAddress;
         }
 
         private DyldImageAllInfosV2 ReadAllImageInfos()
         {
-            DyldImageAllInfosVersion version = _dyldImage.VirtualAddressReader.Read<DyldImageAllInfosVersion>(AllImageInfosAddress);
             return _dyldImage.VirtualAddressReader.Read<DyldImageAllInfosV2>(AllImageInfosAddress);
         }
 
