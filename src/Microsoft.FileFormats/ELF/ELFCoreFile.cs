@@ -69,7 +69,7 @@ namespace Microsoft.FileFormats.ELF
             List<ELFLoadedImage> result = new();
             foreach (ELFLoadedImage image in lookup.Values)
             {
-                image.Image = new ELFFile(_elf.VirtualAddressReader.DataSource, image.LoadAddress, true);
+                image.Image = new ELFFile(_elf.VirtualAddressReader.DataSource, image.LoadAddress, isDataSourceVirtualAddressSpace: true);
                 result.Add(image);
             }
 
@@ -80,7 +80,14 @@ namespace Microsoft.FileFormats.ELF
     public class ELFLoadedImage
     {
         private ulong _loadAddress;
-        private ulong _minimumPointer;
+        private ulong _minimumPointer = ulong.MaxValue;
+
+        public ELFLoadedImage(ELFFile image, ELFFileTableEntry entry)
+        {
+            Image = image;
+            Path = entry.Path;
+            _loadAddress = entry.LoadAddress;
+        }
 
         public ELFLoadedImage(string path)
         {
@@ -99,12 +106,11 @@ namespace Microsoft.FileFormats.ELF
             // assemblies, there can be more than one PageOffset == 0 entry and the first one is the base
             // address.
             if (_loadAddress == 0 && entry.PageOffset == 0)
-                _loadAddress = entry.Start;
+                _loadAddress = entry.LoadAddress;
 
             // If no load address was found, will use the lowest start address. There has to be at least one
             // entry. This fixes the .NET 5.0 MacOS ELF dumps which have modules with no PageOffset == 0 entries.
-            if (_minimumPointer == 0 || entry.Start < _minimumPointer) 
-                _minimumPointer = entry.Start;
+            _minimumPointer = Math.Min(entry.LoadAddress, _minimumPointer);
         }
     }
 
@@ -119,7 +125,7 @@ namespace Microsoft.FileFormats.ELF
         }
 
         public ulong PageOffset => _ptrs.PageOffset;
-        public ulong Start => _ptrs.Start;
+        public ulong LoadAddress => _ptrs.Start;
         public string Path { get; private set; }
     }
 
