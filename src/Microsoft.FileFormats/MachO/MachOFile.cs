@@ -40,7 +40,7 @@ namespace Microsoft.FileFormats.MachO
                 {
                     return HeaderMagic.IsMagicValid.Check();
                 }
-                catch (InvalidVirtualAddressException)
+                catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
                 {
                 }
             }
@@ -116,7 +116,13 @@ namespace Microsoft.FileFormats.MachO
         {
             if (_reader.Length > (_position + _reader.SizeOf<MachHeaderMagic>()))
             {
-                return HeaderMagic.IsMagicValid.Check();
+                try
+                {
+                    return HeaderMagic.IsMagicValid.Check();
+                }
+                catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
+                {
+                }
             }
             return false;
         }
