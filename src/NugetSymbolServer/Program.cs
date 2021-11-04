@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
+using Microsoft.Extensions.Hosting;
 
 namespace NugetSymbolServer
 {
@@ -12,13 +13,15 @@ namespace NugetSymbolServer
     {
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .ConfigureServices(sp => sp.AddSingleton<IConfigurationSource>(new MemoryConfigurationSource()))
-                .UseKestrel()
-                .UseStartup<Startup>()
-                .Build();
+            var host = 
+                Host.CreateDefaultBuilder(args)
+                    .ConfigureServices(sp => sp.AddSingleton<IConfigurationSource>(new MemoryConfigurationSource()))
+                    .ConfigureWebHostDefaults(webBuilder =>
+                    {
+                        webBuilder.UseStartup<Startup>();
+                    })
+                    .Build();
 
-            
             host.Run();
         }
     }
