@@ -1,6 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +14,7 @@ namespace NugetSymbolServer
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment hostingEnvironment, IConfigurationSource hostProvidedConfiguration)
+        public Startup(IWebHostEnvironment hostingEnvironment, IConfigurationSource hostProvidedConfiguration)
         { 
             Configuration = 
                 new ConfigurationBuilder()
@@ -40,7 +42,6 @@ namespace NugetSymbolServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            
             services
                 .AddOptions()
                 .Configure<FileStoreOptions>(options =>
@@ -70,13 +71,13 @@ namespace NugetSymbolServer
                 .AddMvc();
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
             //Kick off package processing now, not when the first request comes in
             app.ApplicationServices.GetRequiredService<IPackageSource>().EnsurePackagesProcessed();
 
             app.UseDeveloperExceptionPage();
-            loggerFactory.AddConsole(/*LoggingConfiguration*/);
+
             app.UseMvc(routes => 
              { 
                  routes.MapRoute( 
