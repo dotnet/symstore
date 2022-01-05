@@ -152,7 +152,7 @@ namespace Microsoft.FileFormats.MachO
         {
             get
             {
-                MachSegment first = Segments.Where(s => s.LoadCommand.FileOffset == 0 && s.LoadCommand.FileSize > 0).FirstOrDefault();
+                MachSegment first = Segments.Where(s => s.LoadCommand.SegName.ToString() == "__TEXT").FirstOrDefault();
                 return first != null ? _position - first.LoadCommand.VMAddress : 0;
             }
         }
