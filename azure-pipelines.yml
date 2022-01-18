@@ -106,7 +106,7 @@ stages:
 
         - job: MacOS
           pool:
-            vmImage: macOS-10.15
+            vmImage: macOS-latest
 
           strategy:
             matrix:
