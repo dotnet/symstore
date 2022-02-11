@@ -44,12 +44,9 @@ namespace Microsoft.FileFormats.MachO
             foreach (MachSegment segment in _machO.Segments)
             {
                 ulong position = segment.LoadCommand.VMAddress;
-                for (ulong offset = 0; offset < segment.LoadCommand.FileSize; offset += 0x1000)
+                if (IsValidDylinkerAddress(position))
                 {
-                    if (IsValidDylinkerAddress(position + offset))
-                    {
-                        return position + offset;
-                    }
+                    return position;
                 }
             }
             throw new BadInputFormatException("No dylinker module found");
@@ -107,9 +104,11 @@ namespace Microsoft.FileFormats.MachO
 
         private ulong FindAllImageInfosAddress()
         {
-            // The symbol may be decorated so check if it contains the loader symbol instead of comparing it exactly
-            ulong preferredAddress = _dyldImage.Symtab.Symbols.Where(s => s.Name.Contains("dyld_all_image_infos")).First().Value;
-            return preferredAddress + _dyldImage.PreferredVMBaseAddress;
+            if (!_dyldImage.Symtab.TryLookupSymbol("dyld_all_image_infos", out ulong offset))
+            {
+                throw new BadInputFormatException("Can not find dyld_all_image_infos");
+            }
+            return offset + _dyldImage.PreferredVMBaseAddress;
         }
 
         private DyldImageAllInfosV2 ReadAllImageInfos()

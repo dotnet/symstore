@@ -448,6 +448,8 @@ namespace Microsoft.FileFormats.MachO
         private readonly Lazy<MachSymtabLoadCommand> _symtabLoadCommand;
         private readonly Lazy<MachDySymtabLoadCommand> _dysymtabLoadCommand;
         private readonly Lazy<MachSymbol[]> _symbols;
+        private readonly Lazy<Reader> _stringReader;
+        private readonly Lazy<NList[]> _symbolTable;
 
         public MachSymtab(Reader machReader, ulong symtabPosition, ulong dysymtabPosition, Reader physicalAddressSpace)
         {
@@ -455,21 +457,84 @@ namespace Microsoft.FileFormats.MachO
             _physicalAddressSpace = physicalAddressSpace;
             _symtabLoadCommand = new Lazy<MachSymtabLoadCommand>(() => _machReader.Read<MachSymtabLoadCommand>(symtabPosition));
             _dysymtabLoadCommand = new Lazy<MachDySymtabLoadCommand>(() => _machReader.Read<MachDySymtabLoadCommand>(dysymtabPosition));
+            _stringReader = new Lazy<Reader>(GetStringReader);
+            _symbolTable = new Lazy<NList[]>(ReadSymbolTable);
             _symbols = new Lazy<MachSymbol[]>(ReadSymbols);
         }
 
         public IEnumerable<MachSymbol> Symbols { get { return _symbols.Value; } }
 
-        private MachSymbol[] ReadSymbols()
+        public bool TryLookupSymbol(string symbol, out ulong offset)
         {
+            if (symbol is null)
+                throw new ArgumentNullException(nameof(symbol));
+
             MachSymtabLoadCommand symtabLoadCommand = _symtabLoadCommand.Value;
             MachDySymtabLoadCommand dysymtabLoadCommand = _dysymtabLoadCommand.Value;
-            symtabLoadCommand.IsNSymsReasonable.CheckThrowing();
 
-            ulong position = symtabLoadCommand.SymOffset + (dysymtabLoadCommand.IExtDefSym * _physicalAddressSpace.SizeOf<NList>());
-            NList[] nlists = _physicalAddressSpace.ReadArray<NList>(position, dysymtabLoadCommand.NextDefSym);
-            Reader stringReader = _physicalAddressSpace.WithRelativeAddressSpace(symtabLoadCommand.StringOffset, symtabLoadCommand.StringSize);
-            return nlists.Select(n => new MachSymbol() { Name = stringReader.Read<string>(n.StringIndex), Raw = n }).ToArray();
+            // First, search just the "external" export symbols 
+            if (TryLookupSymbol(dysymtabLoadCommand.IExtDefSym, dysymtabLoadCommand.NextDefSym, symbol, out offset))
+            {
+                return true;
+            }
+
+            // If not found in external symbols, search all of them
+            if (TryLookupSymbol(0, symtabLoadCommand.SymCount, symbol, out offset))
+            {
+                return true;
+            }
+
+            offset = 0;
+            return false;
+        }
+
+        private bool TryLookupSymbol(uint start, uint nsyms, string symbol, out ulong offset)
+        {
+            NList[] symTable = _symbolTable.Value;
+            if (symTable is not null)
+            {
+                for (uint i = 0; i < nsyms; i++)
+                {
+                    string name = _stringReader.Value.Read<string>(symTable[start + i].StringIndex); 
+                    if (name.Length > 0)
+                    {
+                        // Skip the leading underscores to match Linux externs
+                        if (name[0] == '_')
+                        {
+                            name = name.Substring(1);
+                        }
+                        if (name == symbol)
+                        {
+                            offset = symTable[start + i].Value;
+                            return true;
+                        }
+                    }
+                }
+            }
+            offset = 0;
+            return false;
+        }
+
+        private MachSymbol[] ReadSymbols()
+        {
+            Reader stringReader = _stringReader.Value;
+            return _symbolTable.Value?.Select(n => new MachSymbol() { Name = stringReader.Read<string>(n.StringIndex), Raw = n }).ToArray();
+        }
+
+        private Reader GetStringReader()
+        {
+            MachSymtabLoadCommand symtabLoadCommand = _symtabLoadCommand.Value;
+            return _physicalAddressSpace.WithRelativeAddressSpace(symtabLoadCommand.StringOffset, symtabLoadCommand.StringSize);
+        }
+
+        private NList[] ReadSymbolTable()
+        {
+            MachSymtabLoadCommand symtabLoadCommand = _symtabLoadCommand.Value;
+            if (symtabLoadCommand.IsNSymsReasonable.Check() && symtabLoadCommand.SymOffset > 0)
+            {
+                return _physicalAddressSpace.ReadArray<NList>(symtabLoadCommand.SymOffset, symtabLoadCommand.SymCount);
+            }
+            return null;
         }
     }
 }
