@@ -493,7 +493,7 @@ namespace Microsoft.FileFormats.MachO
             NList[] symTable = _symbolTable.Value;
             if (symTable is not null)
             {
-                for (uint i = 0; i < nsyms; i++)
+                for (uint i = 0; i < nsyms && start + i < symTable.Length; i++)
                 {
                     string name = _stringReader.Value.Read<string>(symTable[start + i].StringIndex); 
                     if (name.Length > 0)
