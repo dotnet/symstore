@@ -187,7 +187,7 @@ namespace Microsoft.SymbolStore.SymbolStores
             }
             catch (HttpRequestException ex)
             {
-                Tracer.Error("HttpSymbolStore: {0} {1} - '{2}'", ex.Message, fileName, requestUri.AbsoluteUri);
+                Tracer.Error("HttpSymbolStore: {0} '{1}' {2}", fileName, requestUri.AbsoluteUri, ex.ToString());
                 MarkClientFailure();
             }
             return null;
