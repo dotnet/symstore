@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +47,11 @@ namespace Microsoft.SymbolStore.SymbolStores
                 }
             }
         }
+
+        /// <summary>
+        /// The number of retries to do on a retryable status or socket error
+        /// </summary>
+        public int RetryCount { get; set; }
 
         /// <summary>
         /// Create an instance of a http symbol store
@@ -141,54 +147,88 @@ namespace Microsoft.SymbolStore.SymbolStores
                 return null;
             }
             string fileName = Path.GetFileName(path);
-            try
+            HttpClient client = _authenticatedClient ?? _client;
+            int retries = 0;
+            while(true)
             {
-                HttpClient client = _authenticatedClient ?? _client;
-                HttpResponseMessage response = await client.GetAsync(requestUri, token);
-                if (response.StatusCode == HttpStatusCode.OK)
+                bool retryable;
+                string message;
+                try
                 {
-                    return await response.Content.ReadAsStreamAsync();
-                }
-                if (response.StatusCode == HttpStatusCode.Found)
-                {
-                    response = await _client.GetAsync(response.Headers.Location, token);
+                    // Can not dispose the response (like via using) on success because then the content stream
+                    // is disposed and it is returned by this function.
+                    HttpResponseMessage response = await client.GetAsync(requestUri, token);
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
                         return await response.Content.ReadAsStreamAsync();
                     }
+                    if (response.StatusCode == HttpStatusCode.Found)
+                    {
+                        Uri location = response.Headers.Location;
+                        response.Dispose();
+
+                        response = await _client.GetAsync(location, token);
+                        if (response.StatusCode == HttpStatusCode.OK)
+                        {
+                            return await response.Content.ReadAsStreamAsync();
+                        }
+                    }
+                    HttpStatusCode statusCode = response.StatusCode;
+                    string reasonPhrase = response.ReasonPhrase;
+                    response.Dispose();
+
+                    // The GET failed 
+
+                    if (statusCode == HttpStatusCode.NotFound)
+                    {
+                        Tracer.Error("Not Found: {0} - '{1}'", fileName, requestUri.AbsoluteUri);
+                        break;
+                    }
+
+                    retryable = IsRetryableStatus(statusCode);
+
+                    // Build the status code error message
+                    message = string.Format("{0} {1}: {2} - '{3}'", (int)statusCode, reasonPhrase, fileName, requestUri.AbsoluteUri);
+                }
+                catch (HttpRequestException ex)
+                {
+                    SocketError socketError;
+                    if (ex.InnerException is SocketException se)
+                    {
+                        socketError = se.SocketErrorCode;
+                        retryable = IsRetryableSocketError(socketError);
+                    }
+                    else 
+                    {
+                        socketError = 0;
+                        retryable = false;
+                    }
+                    // Build the socket error message
+                    message = string.Format($"HttpSymbolStore: {fileName} retryable {retryable} socketError {socketError} '{requestUri.AbsoluteUri}' {ex}");
                 }
 
-                // If the status code isn't some temporary or retryable condition, mark failure
-                bool retryable = IsRetryableStatus(response.StatusCode);
+                // If the status code or socket error isn't some temporary or retryable condition, mark failure
                 if (!retryable)
                 {
                     MarkClientFailure();
-                }
-
-                string message;
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    message = string.Format("Not Found: {0} - '{1}'", fileName, requestUri.AbsoluteUri);
+                    Tracer.Error(message);
+                    break;
                 }
                 else
-                {
-                    message = string.Format("{0} {1}: {2} - '{3}'", (int)response.StatusCode, response.ReasonPhrase, fileName, requestUri.AbsoluteUri);
-                }
-                if (!retryable || response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    Tracer.Error(message);
-                }
-                else 
                 {
                     Tracer.Warning(message);
                 }
 
-                response.Dispose();
-            }
-            catch (HttpRequestException ex)
-            {
-                Tracer.Error("HttpSymbolStore: {0} '{1}' {2}", fileName, requestUri.AbsoluteUri, ex.ToString());
-                MarkClientFailure();
+                // Retry the operation?
+                if (retries++ >= RetryCount)
+                {
+                    break;
+                }
+
+                Tracer.Information($"HttpSymbolStore: retry #{retries}");
+
+                // Delay for a while before doing the retry
+                await Task.Delay(TimeSpan.FromMilliseconds((Math.Pow(2, retries) * 100) + new Random().Next(200)));
             }
             return null;
         }
@@ -203,9 +243,8 @@ namespace Microsoft.SymbolStore.SymbolStores
             base.Dispose();
         }
 
-        HashSet<HttpStatusCode> s_retryableStatusCodes = new HashSet<HttpStatusCode>
+        private HashSet<HttpStatusCode> s_retryableStatusCodes = new HashSet<HttpStatusCode>
         {
-            HttpStatusCode.NotFound,
             HttpStatusCode.RequestTimeout,
             HttpStatusCode.InternalServerError,
             HttpStatusCode.BadGateway,
@@ -216,10 +255,19 @@ namespace Microsoft.SymbolStore.SymbolStores
         /// <summary>
         /// Returns true if the http status code is temporary or retryable condition.
         /// </summary>
-        protected bool IsRetryableStatus(HttpStatusCode status)
+        protected bool IsRetryableStatus(HttpStatusCode status) => s_retryableStatusCodes.Contains(status);
+
+        private HashSet<SocketError> s_retryableSocketErrors = new HashSet<SocketError>
         {
-            return s_retryableStatusCodes.Contains(status);
-        }
+            SocketError.ConnectionReset,
+            SocketError.ConnectionAborted,
+            SocketError.ConnectionRefused,
+            SocketError.Shutdown,
+            SocketError.TimedOut,
+            SocketError.TryAgain,
+        };
+
+        protected bool IsRetryableSocketError(SocketError se) => s_retryableSocketErrors.Contains(se);
 
         /// <summary>
         /// Marks this client as a failure where any subsequent calls to 
