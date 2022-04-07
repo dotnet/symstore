@@ -261,7 +261,6 @@ namespace Microsoft.SymbolStore.SymbolStores
         {
             SocketError.ConnectionReset,
             SocketError.ConnectionAborted,
-            SocketError.ConnectionRefused,
             SocketError.Shutdown,
             SocketError.TimedOut,
             SocketError.TryAgain,
