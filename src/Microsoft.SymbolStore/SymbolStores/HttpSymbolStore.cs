@@ -192,17 +192,22 @@ namespace Microsoft.SymbolStore.SymbolStores
                 }
                 catch (HttpRequestException ex)
                 {
-                    SocketError socketError;
-                    if (ex.InnerException is SocketException se)
+                    SocketError socketError = SocketError.Success;
+                    retryable = false;
+
+                    Exception innerException = ex.InnerException;
+                    while (innerException != null)
                     {
-                        socketError = se.SocketErrorCode;
-                        retryable = IsRetryableSocketError(socketError);
+                        if (ex.InnerException is SocketException se)
+                        {
+                            socketError = se.SocketErrorCode;
+                            retryable = IsRetryableSocketError(socketError);
+                            break;
+                        }
+
+                        innerException = innerException.InnerException;
                     }
-                    else 
-                    {
-                        socketError = 0;
-                        retryable = false;
-                    }
+
                     // Build the socket error message
                     message = string.Format($"HttpSymbolStore: {fileName} retryable {retryable} socketError {socketError} '{requestUri.AbsoluteUri}' {ex}");
                 }
