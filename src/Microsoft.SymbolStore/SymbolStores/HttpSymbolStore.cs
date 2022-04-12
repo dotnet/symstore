@@ -198,7 +198,7 @@ namespace Microsoft.SymbolStore.SymbolStores
                     Exception innerException = ex.InnerException;
                     while (innerException != null)
                     {
-                        if (ex.InnerException is SocketException se)
+                        if (innerException is SocketException se)
                         {
                             socketError = se.SocketErrorCode;
                             retryable = IsRetryableSocketError(socketError);
