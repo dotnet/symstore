@@ -47,7 +47,7 @@ namespace Microsoft.FileFormats.PDB
             Header.IsMagicValid.CheckThrowing();
             uint secondLevelPageCount = ToPageCount(Header.DirectorySize);
             ulong pageIndicesOffset = _reader.SizeOf<PDBFileHeader>();
-            PDBPagedAddressSpace secondLevelPageList = CreatePagedAddressSpace(_reader.DataSource, pageIndicesOffset, secondLevelPageCount * 4);
+            PDBPagedAddressSpace secondLevelPageList = CreatePagedAddressSpace(_reader.DataSource, pageIndicesOffset, secondLevelPageCount * sizeof(uint));
             PDBPagedAddressSpace directoryContent = CreatePagedAddressSpace(secondLevelPageList, 0, Header.DirectorySize);
 
             Reader directoryReader = new Reader(directoryContent);
@@ -58,7 +58,7 @@ namespace Microsoft.FileFormats.PDB
             for (uint i = 0; i < streamSizes.Length; i++)
             {
                 streams[i] = new Reader(CreatePagedAddressSpace(directoryContent, position, streamSizes[i]));
-                position += ToPageCount(streamSizes[i]) * 4;
+                position += ToPageCount(streamSizes[i]) * sizeof(uint);
             }
             return streams;
         }
@@ -119,12 +119,12 @@ namespace Microsoft.FileFormats.PDB
             uint bytesRead = 0;
             while (bytesRead != count)
             {
-                ulong virtualAddressToRead = position + bytesRead;
                 uint virtualPageOffset;
                 ulong physicalPosition = GetPhysicalAddress(position, out virtualPageOffset);
                 uint pageBytesToRead = Math.Min(_pageSize - virtualPageOffset, count - bytesRead);
                 uint pageBytesRead = _physicalAddresses.Read(physicalPosition, buffer, bufferOffset + bytesRead, pageBytesToRead);
                 bytesRead += pageBytesRead;
+                position += pageBytesRead;
                 if (pageBytesToRead != pageBytesRead)
                 {
                     break;
@@ -138,7 +138,7 @@ namespace Microsoft.FileFormats.PDB
             uint virtualPageIndex = (uint)(virtualAddress / _pageSize);
             virtualOffset = (uint)(virtualAddress - (virtualPageIndex * _pageSize));
             uint physicalPageIndex = _pageIndices[(int)virtualPageIndex];
-            return physicalPageIndex * _pageSize + virtualOffset;
+            return (ulong)physicalPageIndex * _pageSize + virtualOffset;
         }
     }
 
