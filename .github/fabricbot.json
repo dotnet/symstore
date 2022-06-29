@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "tasks": [
+    {
+      "taskType": "trigger",
+      "capabilityId": "AutoMerge",
+      "subCapability": "AutoMerge",
+      "version": "1.0",
+      "config": {
+        "taskName": "Automatically merge pull requests",
+        "label": "auto merge",
+        "silentMode": false,
+        "minMinutesOpen": "120",
+        "mergeType": "squash",
+        "deleteBranches": true,
+        "allowAutoMergeInstructionsWithoutLabel": true,
+        "enforceDMPAsStatus": true,
+        "removeLabelOnPush": true,
+        "usePrDescriptionAsCommitMessage": false,
+        "conditionalMergeTypes": [],
+        "requireAllStatuses": true,
+        "requireSpecificCheckRuns": true,
+        "requireAllStatuses_exemptList": [
+          "codecov"
+        ],
+        "requireSpecificCheckRunsList": [
+          "symstore-public-ci"
+        ],
+        "minimumNumberOfStatuses": 1,
+        "minimumNumberOfCheckRuns": 1
+      },
+      "id": "fGCKB0qDMW"
+    }
+  ],
+  "userGroups": []
+}
