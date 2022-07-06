@@ -4,8 +4,8 @@ This tool can download all the files needed for debugging (symbols, modules, SOS
       
     SymClient [options] <files>
 
-    -ms|--microsoft-symbol-server                       Add 'http://msdl.microsoft.com/download/symbols' symbol server path
-    -mi|--ms-internal-server                            Add 'http://symweb.corp.microsoft.com' symbol server path
+    -ms|--microsoft-symbol-server                       Add 'https://msdl.microsoft.com/download/symbols' symbol server path
+    -mi|--ms-internal-server                            Add 'https://symweb' symbol server path
     -s |--server-path <symbol server path>              Add a http server path
     -as|--authenticated-server-path <pat> <server path> Add a http PAT authenticated server path
     -c |--cache-directory <file cache directory>        Add a cache directory

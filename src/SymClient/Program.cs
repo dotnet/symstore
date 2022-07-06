@@ -57,13 +57,13 @@ namespace SymClient
                 {
                     case "-ms":
                     case "--microsoft-symbol-server":
-                        Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out uri);
+                        Uri.TryCreate("https://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out uri);
                         program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null});
                         break;
 
                     case "-mi":
                     case "--ms-internal-server":
-                        Uri.TryCreate("http://symweb.corp.microsoft.com/", UriKind.Absolute, out uri);
+                        Uri.TryCreate("https://symweb/", UriKind.Absolute, out uri);
                         program.SymbolServers.Add(new ServerInfo {Uri = uri, PersonalAccessToken = null, InternalSymwebServer = true});
                         break;
 
@@ -219,8 +219,8 @@ namespace SymClient
         {
             Console.WriteLine(@"
 SymClient [options] <files>
--ms|--microsoft-symbol-server                       Add 'http://msdl.microsoft.com/download/symbols' symbol server path
--mi|--ms-internal-server                            Add 'http://symweb.corp.microsoft.com' symbol server path
+-ms|--microsoft-symbol-server                       Add 'https://msdl.microsoft.com/download/symbols' symbol server path
+-mi|--ms-internal-server                            Add 'https://symweb' symbol server path
 -s |--server-path <symbol server path>              Add a http server path
 -as|--authenticated-server-path <pat> <server path> Add a http PAT authenticated server path
 -c |--cache-directory <file cache directory>        Add a cache directory

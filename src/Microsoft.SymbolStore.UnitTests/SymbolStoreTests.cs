@@ -118,12 +118,12 @@ namespace Microsoft.SymbolStore.Tests
             SymbolStores.SymbolStore store = null;
             if (ms)
             {
-                Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
+                Uri.TryCreate("https://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
                 store = new HttpSymbolStore(_tracer, store, uri);
             }
             if (mi)
             {
-                Uri.TryCreate("http://symweb.corp.microsoft.com/", UriKind.Absolute, out Uri uri);
+                Uri.TryCreate("https://symweb/", UriKind.Absolute, out Uri uri);
                 store = new SymwebHttpSymbolStore(_tracer, store, uri);
             }
             var generator = new FileKeyGenerator(_tracer, file);
