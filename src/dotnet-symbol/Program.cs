@@ -60,12 +60,12 @@ namespace dotnet.symbol
                 switch (args[i])
                 {
                     case "--microsoft-symbol-server":
-                        Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out uri);
+                        Uri.TryCreate("https://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out uri);
                         program.SymbolServers.Add(new ServerInfo { Uri = uri, PersonalAccessToken = null });
                         break;
 
                     case "--internal-server":
-                        Uri.TryCreate("http://symweb.corp.microsoft.com/", UriKind.Absolute, out uri);
+                        Uri.TryCreate("https://symweb/", UriKind.Absolute, out uri);
                         program.SymbolServers.Add(new ServerInfo { Uri = uri, PersonalAccessToken = null, InternalSymwebServer = true });
                         break;
 
@@ -187,7 +187,7 @@ namespace dotnet.symbol
                 // Default to public Microsoft symbol server
                 if (program.SymbolServers.Count == 0)
                 {
-                    Uri.TryCreate("http://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
+                    Uri.TryCreate("https://msdl.microsoft.com/download/symbols/", UriKind.Absolute, out Uri uri);
                     program.SymbolServers.Add(new ServerInfo { Uri = uri, PersonalAccessToken = null });
                 }
                 foreach (ServerInfo server in program.SymbolServers)
