@@ -200,7 +200,7 @@ namespace Microsoft.FileFormats.ELF
                         }
                     }
                 }
-                catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException)
+                catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException || ex is OverflowException)
                 {
                 }
             }
@@ -227,14 +227,20 @@ namespace Microsoft.FileFormats.ELF
 
         private byte[] ReadSectionNameTable()
         {
-            int nameTableIndex = Header.SectionHeaderStringIndex;
-            if (Header.SectionHeaderOffset != 0 && Header.SectionHeaderCount > 0 && nameTableIndex != 0)
+            try
             {
-                ELFSection nameTableSection = Sections[nameTableIndex];
-                if (nameTableSection.Header.FileOffset > 0 && nameTableSection.Header.FileSize > 0)
+                int nameTableIndex = Header.SectionHeaderStringIndex;
+                if (Header.SectionHeaderOffset != 0 && Header.SectionHeaderCount > 0 && nameTableIndex != 0)
                 {
-                    return nameTableSection.Contents.Read(0, (uint)nameTableSection.Contents.Length);
+                    ELFSection nameTableSection = Sections[nameTableIndex];
+                    if (nameTableSection.Header.FileOffset > 0 && nameTableSection.Header.FileSize > 0)
+                    {
+                        return nameTableSection.Contents.Read(0, (uint)nameTableSection.Contents.Length);
+                    }
                 }
+            }
+            catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException || ex is OverflowException)
+            {
             }
             return null;
         }
@@ -387,17 +393,21 @@ namespace Microsoft.FileFormats.ELF
         {
             if (Header.Type == ELFSectionHeaderType.Null)
             {
-                return "";
-            }
-            int index = (int)Header.NameIndex;
-            if (index == 0)
-            {
-                return "";
+                return String.Empty;
             }
             byte[] sectionNameTable = _elfFile.SectionNameTable;
             if (sectionNameTable == null || sectionNameTable.Length == 0)
             {
-                return "";
+                return String.Empty;
+            }
+            if (Header.NameIndex > sectionNameTable.Length)
+            {
+                return String.Empty;
+            }
+            int index = (int)Header.NameIndex;
+            if (index == 0)
+            {
+                return String.Empty;
             }
             int count = 0;
             for (; (index + count) < sectionNameTable.Length; count++)

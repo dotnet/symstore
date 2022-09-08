@@ -40,7 +40,7 @@ namespace Microsoft.FileFormats
         public override object Read(IAddressSpace dataSource, ulong position)
         {
             byte[] buffer = dataSource.Read(position, 1);
-            return (sbyte)buffer[0];
+            return unchecked((sbyte)buffer[0]);
         }
     }
 
@@ -68,14 +68,11 @@ namespace Microsoft.FileFormats
         public override object Read(IAddressSpace dataSource, ulong position)
         {
             byte[] buffer = dataSource.Read(position, 2);
-            if (IsBigEndian)
+            if (IsBigEndian == BitConverter.IsLittleEndian)
             {
-                return (char)((buffer[0] << 8) | buffer[1]);
+                Array.Reverse(buffer);
             }
-            else
-            {
-                return (char)((buffer[1] << 8) | buffer[0]);
-            }
+            return BitConverter.ToChar(buffer, 0);
         }
     }
 
@@ -89,14 +86,11 @@ namespace Microsoft.FileFormats
         public override object Read(IAddressSpace dataSource, ulong position)
         {
             byte[] buffer = dataSource.Read(position, 2);
-            if (IsBigEndian)
+            if (IsBigEndian == BitConverter.IsLittleEndian)
             {
-                return (short)((buffer[0] << 8) | buffer[1]);
+                Array.Reverse(buffer);
             }
-            else
-            {
-                return (short)((buffer[1] << 8) | buffer[0]);
-            }
+            return BitConverter.ToInt16(buffer, 0);
         }
     }
 
@@ -110,14 +104,11 @@ namespace Microsoft.FileFormats
         public override object Read(IAddressSpace dataSource, ulong position)
         {
             byte[] buffer = dataSource.Read(position, 2);
-            if (IsBigEndian)
+            if (IsBigEndian == BitConverter.IsLittleEndian)
             {
-                return (ushort)((buffer[0] << 8) | buffer[1]);
+                Array.Reverse(buffer);
             }
-            else
-            {
-                return (ushort)((buffer[1] << 8) | buffer[0]);
-            }
+            return BitConverter.ToUInt16(buffer, 0);
         }
     }
 
@@ -131,14 +122,11 @@ namespace Microsoft.FileFormats
         public override object Read(IAddressSpace dataSource, ulong position)
         {
             byte[] buffer = dataSource.Read(position, 4);
-            if (IsBigEndian)
+            if (IsBigEndian == BitConverter.IsLittleEndian)
             {
-                return (int)((buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3]);
+                Array.Reverse(buffer);
             }
-            else
-            {
-                return (int)((buffer[3] << 24) | (buffer[2] << 16) | (buffer[1] << 8) | buffer[0]);
-            }
+            return BitConverter.ToInt32(buffer, 0);
         }
     }
 
@@ -152,14 +140,11 @@ namespace Microsoft.FileFormats
         public override object Read(IAddressSpace dataSource, ulong position)
         {
             byte[] buffer = dataSource.Read(position, 4);
-            if (IsBigEndian)
+            if (IsBigEndian == BitConverter.IsLittleEndian)
             {
-                return (uint)((buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3]);
+                Array.Reverse(buffer);
             }
-            else
-            {
-                return (uint)((buffer[3] << 24) | (buffer[2] << 16) | (buffer[1] << 8) | buffer[0]);
-            }
+            return BitConverter.ToUInt32(buffer, 0);
         }
     }
 
@@ -196,16 +181,11 @@ namespace Microsoft.FileFormats
         public override object Read(IAddressSpace dataSource, ulong position)
         {
             byte[] buffer = dataSource.Read(position, 8);
-            if (IsBigEndian)
+            if (IsBigEndian == BitConverter.IsLittleEndian)
             {
-                return (long)(((ulong)buffer[0] << 56) | ((ulong)buffer[1] << 48) | ((ulong)buffer[2] << 40) | ((ulong)buffer[3] << 32) |
-                              ((ulong)buffer[4] << 24) | ((ulong)buffer[5] << 16) | ((ulong)buffer[6] << 8) | (ulong)buffer[7]);
+                Array.Reverse(buffer);
             }
-            else
-            {
-                return (long)(((ulong)buffer[7] << 56) | ((ulong)buffer[6] << 48) | ((ulong)buffer[5] << 40) | ((ulong)buffer[4] << 32) |
-                              ((ulong)buffer[3] << 24) | ((ulong)buffer[2] << 16) | ((ulong)buffer[1] << 8) | (ulong)buffer[0]);
-            }
+            return BitConverter.ToInt64(buffer, 0);
         }
     }
 
@@ -219,16 +199,11 @@ namespace Microsoft.FileFormats
         public override object Read(IAddressSpace dataSource, ulong position)
         {
             byte[] buffer = dataSource.Read(position, 8);
-            if (IsBigEndian)
+            if (IsBigEndian == BitConverter.IsLittleEndian)
             {
-                return (((ulong)buffer[0] << 56) | ((ulong)buffer[1] << 48) | ((ulong)buffer[2] << 40) | ((ulong)buffer[3] << 32) |
-                        ((ulong)buffer[4] << 24) | ((ulong)buffer[5] << 16) | ((ulong)buffer[6] << 8) | (ulong)buffer[7]);
+                Array.Reverse(buffer);
             }
-            else
-            {
-                return (((ulong)buffer[7] << 56) | ((ulong)buffer[6] << 48) | ((ulong)buffer[5] << 40) | ((ulong)buffer[4] << 32) |
-                        ((ulong)buffer[3] << 24) | ((ulong)buffer[2] << 16) | ((ulong)buffer[1] << 8) | (ulong)buffer[0]);
-            }
+            return BitConverter.ToUInt64(buffer, 0);
         }
     }
 
