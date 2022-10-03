@@ -31,7 +31,7 @@ variables:
 resources:
   containers:
   - container: LinuxContainer
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-16.04-09ca40b-20190520220842
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04
 
 stages:
   - stage: build
