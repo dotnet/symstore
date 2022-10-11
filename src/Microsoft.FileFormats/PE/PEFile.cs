@@ -288,6 +288,11 @@ namespace Microsoft.FileFormats.PE
         private VsFixedFileInfo ReadVersionResource()
         {
             ImageResourceDataEntry dataEntry = GetResourceDataEntry(VersionResourceType, VersionResourceName, VersionResourceLanguage);
+            if (dataEntry == null)
+            {
+                // If the version resource can't be found under the 0x409 language, try as language "neutral" (0)
+                dataEntry = GetResourceDataEntry(VersionResourceType, VersionResourceName, 0);
+            }
             if (dataEntry != null)
             {
                 VsVersionInfo info = RelativeVirtualAddressReader.Read<VsVersionInfo>(dataEntry.OffsetToData);
