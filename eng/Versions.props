@@ -15,10 +15,4 @@
     <!-- CoreFX -->
     <SystemReflectionMetadataVersion>1.8.1</SystemReflectionMetadataVersion>
   </PropertyGroup>
-  <PropertyGroup>
-    <RestoreSources>
-      $(RestoreSources);
-      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
-    </RestoreSources>
-  </PropertyGroup>
 </Project>
