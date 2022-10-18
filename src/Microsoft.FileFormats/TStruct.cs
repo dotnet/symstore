@@ -145,20 +145,33 @@ namespace Microsoft.FileFormats
         /// <returns></returns>
         public static LayoutManager AddReflectionTypes(this LayoutManager layouts, IEnumerable<string> enabledDefines, Type requiredBaseType)
         {
-            layouts.AddLayoutProvider((type, layoutManager) => GetTStructLayout(type, layoutManager, enabledDefines, requiredBaseType));
+            layouts.AddLayoutProvider((type, layoutManager) =>
+            {
+                if (!requiredBaseType.GetTypeInfo().IsAssignableFrom(type))
+                {
+                    return null;
+                }
+                return GetTStructLayout(type, layoutManager, enabledDefines);
+            });
             return layouts;
         }
 
-        private static ILayout GetTStructLayout(Type tStructType, LayoutManager layoutManager, IEnumerable<string> enabledDefines, Type requiredBaseType)
+        public static LayoutManager AddReflectionTypes(this LayoutManager layouts, IEnumerable<string> enabledDefines, Func<Type, bool> typeFilter)
         {
-            if (!requiredBaseType.GetTypeInfo().IsAssignableFrom(tStructType))
+            layouts.AddLayoutProvider((type, layoutManager) =>
             {
-                return null;
-            }
-            if (enabledDefines == null)
-            {
-                enabledDefines = new string[0];
-            }
+                if (!typeFilter(type))
+                {
+                    return null;
+                }
+                return GetTStructLayout(type, layoutManager, enabledDefines);
+            });
+            return layouts;
+        }
+ 
+        private static ILayout GetTStructLayout(Type tStructType, LayoutManager layoutManager, IEnumerable<string> enabledDefines)
+        {
+            enabledDefines ??= new string[0];
 
             TypeInfo typeInfo = tStructType.GetTypeInfo();
 
@@ -175,7 +188,7 @@ namespace Microsoft.FileFormats
             uint curOffset = 0;
 
             ILayout parentLayout = null;
-            Type baseType = tStructType.GetTypeInfo().BaseType;
+            Type baseType = typeInfo.BaseType;
             if (!baseType.Equals(typeof(TStruct)))
             {
                 // Treat base type as first member.

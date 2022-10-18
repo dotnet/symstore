@@ -15,14 +15,20 @@ namespace Microsoft.FileFormats
     /// </summary>
     public class PointerLayout : LayoutBase
     {
-        protected ILayout _storageLayout;
-        protected ILayout _targetLayout;
+        private readonly LayoutManager _layoutManager;
+        private readonly Type _targetType;
+        private ILayout _targetLayout;
 
-        public PointerLayout(Type pointerType, ILayout storageLayout, ILayout targetLayout) :
+        protected readonly ILayout StorageLayout;
+
+        public ILayout TargetLayout => _targetLayout ??= _layoutManager.GetLayout(_targetType);
+
+        public PointerLayout(LayoutManager layoutManager, Type pointerType, ILayout storageLayout, Type targetType) :
             base(pointerType, storageLayout.Size, storageLayout.NaturalAlignment)
         {
-            _storageLayout = storageLayout;
-            _targetLayout = targetLayout;
+            _layoutManager = layoutManager;
+            StorageLayout = storageLayout;
+            _targetType = targetType;
         }
     }
 
@@ -31,8 +37,8 @@ namespace Microsoft.FileFormats
     /// </summary>
     public class UInt64PointerLayout : PointerLayout
     {
-        public UInt64PointerLayout(Type pointerType, ILayout storageLayout, ILayout targetLayout) :
-            base(pointerType, storageLayout, targetLayout)
+        public UInt64PointerLayout(LayoutManager layoutManager, Type pointerType, ILayout storageLayout, Type targetType) :
+            base(layoutManager, pointerType, storageLayout, targetType)
         {
             if (storageLayout.Type != typeof(ulong))
             {
@@ -42,9 +48,9 @@ namespace Microsoft.FileFormats
 
         public override object Read(IAddressSpace dataSource, ulong position)
         {
-            ulong val = (ulong)_storageLayout.Read(dataSource, position);
+            ulong value = (ulong)StorageLayout.Read(dataSource, position);
             Pointer p = (Pointer)Activator.CreateInstance(Type);
-            p.Init(_targetLayout, val);
+            p.Initialize(value, this);
             return p;
         }
     }
@@ -54,8 +60,8 @@ namespace Microsoft.FileFormats
     /// </summary>
     public class UInt32PointerLayout : PointerLayout
     {
-        public UInt32PointerLayout(Type pointerType, ILayout storageLayout, ILayout targetLayout) :
-            base(pointerType, storageLayout, targetLayout)
+        public UInt32PointerLayout(LayoutManager layoutManager, Type pointerType, ILayout storageLayout, Type targetType) :
+            base(layoutManager, pointerType, storageLayout, targetType)
         {
             if (storageLayout.Type != typeof(uint))
             {
@@ -65,9 +71,9 @@ namespace Microsoft.FileFormats
 
         public override object Read(IAddressSpace dataSource, ulong position)
         {
-            ulong val = (uint)_storageLayout.Read(dataSource, position);
+            ulong value = (uint)StorageLayout.Read(dataSource, position);
             Pointer p = (Pointer)Activator.CreateInstance(Type);
-            p.Init(_targetLayout, val);
+            p.Initialize(value, this);
             return p;
         }
     }
@@ -77,8 +83,8 @@ namespace Microsoft.FileFormats
     /// </summary>
     public class SizeTPointerLayout : PointerLayout
     {
-        public SizeTPointerLayout(Type pointerType, ILayout storageLayout, ILayout targetLayout) :
-            base(pointerType, storageLayout, targetLayout)
+        public SizeTPointerLayout(LayoutManager layoutManager, Type pointerType, ILayout storageLayout, Type targetType) :
+            base(layoutManager, pointerType, storageLayout, targetType)
         {
             if (storageLayout.Type != typeof(SizeT))
             {
@@ -88,9 +94,9 @@ namespace Microsoft.FileFormats
 
         public override object Read(IAddressSpace dataSource, ulong position)
         {
-            ulong val = (SizeT)_storageLayout.Read(dataSource, position);
+            ulong value = (SizeT)StorageLayout.Read(dataSource, position);
             Pointer p = (Pointer)Activator.CreateInstance(Type);
-            p.Init(_targetLayout, val);
+            p.Initialize(value, this);
             return p;
         }
     }
@@ -98,6 +104,9 @@ namespace Microsoft.FileFormats
     public class Pointer
     {
         public ulong Value;
+
+        protected PointerLayout Layout;
+
         public bool IsNull
         {
             get { return Value == 0; }
@@ -113,13 +122,11 @@ namespace Microsoft.FileFormats
             return instance.Value;
         }
 
-        internal void Init(ILayout targetLayout, ulong value)
+        public void Initialize(ulong value, PointerLayout layout)
         {
-            _targetLayout = targetLayout;
             Value = value;
+            Layout = layout;
         }
-
-        protected ILayout _targetLayout;
     }
 
     /// <summary>
@@ -143,9 +150,9 @@ namespace Microsoft.FileFormats
         public TargetType Element(IAddressSpace addressSpace, uint index)
         {
             if (Value != 0)
-                return (TargetType)_targetLayout.Read(addressSpace, Value + index * _targetLayout.Size);
+                return (TargetType)Layout.TargetLayout.Read(addressSpace, Value + index * Layout.TargetLayout.Size);
             else
-                return default(TargetType);
+                return default;
         }
     }
 
@@ -184,7 +191,6 @@ namespace Microsoft.FileFormats
             }
             Type targetType = genericPointerTypeInfo.GetGenericArguments()[0];
             Type storageType = genericPointerTypeInfo.GetGenericArguments()[1];
-            ILayout targetLayout = layoutManager.GetLayout(targetType);
             ILayout storageLayout = layoutManager.GetLayout(storageType);
 
             // Unfortunately the storageLayout.Read returns a boxed object that can't be 
@@ -199,15 +205,15 @@ namespace Microsoft.FileFormats
 
             if (storageLayout.Type == typeof(SizeT))
             {
-                return new SizeTPointerLayout(pointerType, storageLayout, targetLayout);
+                return new SizeTPointerLayout(layoutManager, pointerType, storageLayout, targetType);
             }
             else if (storageLayout.Type == typeof(ulong))
             {
-                return new UInt64PointerLayout(pointerType, storageLayout, targetLayout);
+                return new UInt64PointerLayout(layoutManager, pointerType, storageLayout, targetType);
             }
             else if (storageLayout.Type == typeof(uint))
             {
-                return new UInt32PointerLayout(pointerType, storageLayout, targetLayout);
+                return new UInt32PointerLayout(layoutManager, pointerType, storageLayout, targetType);
             }
             else
             {
