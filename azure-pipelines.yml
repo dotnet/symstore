@@ -52,7 +52,7 @@ stages:
           pool:
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               name: NetCore-Public
-              demands: ImageOverride -equals windows.amd64.vs2022.pen
+              demands: ImageOverride -equals windows.amd64.vs2022.open
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               name: NetCore1ESPool-Internal
               demands: ImageOverride -equals windows.amd64.vs2022
