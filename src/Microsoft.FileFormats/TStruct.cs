@@ -142,23 +142,36 @@ namespace Microsoft.FileFormats
         /// The set of defines that can be used to enabled optional fields decorated with the IfAttribute
         /// </param>
         /// <param name="requiredBaseType"></param>
-        /// <returns></returns>
         public static LayoutManager AddReflectionTypes(this LayoutManager layouts, IEnumerable<string> enabledDefines, Type requiredBaseType)
         {
-            layouts.AddLayoutProvider((type, layoutManager) => GetTStructLayout(type, layoutManager, enabledDefines, requiredBaseType));
-            return layouts;
+            return layouts.AddReflectionTypes(enabledDefines, typeFilter: (type) => requiredBaseType.GetTypeInfo().IsAssignableFrom(type));
         }
 
-        private static ILayout GetTStructLayout(Type tStructType, LayoutManager layoutManager, IEnumerable<string> enabledDefines, Type requiredBaseType)
+        /// <summary>
+        /// Adds support for parsing types filtered by typeFilter from by using reflection to interpret their fields.
+        /// All field types used within these types must also have layouts available from the LayoutManager.
+        /// </summary>
+        /// <param name="layouts"></param>
+        /// <param name="enabledDefines">
+        /// The set of defines that can be used to enabled optional fields decorated with the IfAttribute
+        /// </param>
+        /// <param name="typeFilter">return true if reflection should be used to layout the type</param>
+        public static LayoutManager AddReflectionTypes(this LayoutManager layouts, IEnumerable<string> enabledDefines, Func<Type, bool> typeFilter)
         {
-            if (!requiredBaseType.GetTypeInfo().IsAssignableFrom(tStructType))
+            layouts.AddLayoutProvider((type, layoutManager) =>
             {
-                return null;
-            }
-            if (enabledDefines == null)
-            {
-                enabledDefines = new string[0];
-            }
+                if (!typeFilter(type))
+                {
+                    return null;
+                }
+                return GetTStructLayout(type, layoutManager, enabledDefines);
+            });
+            return layouts;
+        }
+ 
+        private static ILayout GetTStructLayout(Type tStructType, LayoutManager layoutManager, IEnumerable<string> enabledDefines)
+        {
+            enabledDefines ??= new string[0];
 
             TypeInfo typeInfo = tStructType.GetTypeInfo();
 
@@ -175,7 +188,7 @@ namespace Microsoft.FileFormats
             uint curOffset = 0;
 
             ILayout parentLayout = null;
-            Type baseType = tStructType.GetTypeInfo().BaseType;
+            Type baseType = typeInfo.BaseType;
             if (!baseType.Equals(typeof(TStruct)))
             {
                 // Treat base type as first member.
