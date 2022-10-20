@@ -122,7 +122,7 @@ namespace Microsoft.FileFormats
             return instance.Value;
         }
 
-        public void Initialize(ulong value, PointerLayout layout)
+        internal void Initialize(ulong value, PointerLayout layout)
         {
             Value = value;
             Layout = layout;

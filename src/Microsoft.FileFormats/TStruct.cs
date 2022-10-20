@@ -142,20 +142,20 @@ namespace Microsoft.FileFormats
         /// The set of defines that can be used to enabled optional fields decorated with the IfAttribute
         /// </param>
         /// <param name="requiredBaseType"></param>
-        /// <returns></returns>
         public static LayoutManager AddReflectionTypes(this LayoutManager layouts, IEnumerable<string> enabledDefines, Type requiredBaseType)
         {
-            layouts.AddLayoutProvider((type, layoutManager) =>
-            {
-                if (!requiredBaseType.GetTypeInfo().IsAssignableFrom(type))
-                {
-                    return null;
-                }
-                return GetTStructLayout(type, layoutManager, enabledDefines);
-            });
-            return layouts;
+            return layouts.AddReflectionTypes(enabledDefines, typeFilter: (type) => requiredBaseType.GetTypeInfo().IsAssignableFrom(type));
         }
 
+        /// <summary>
+        /// Adds support for parsing types filtered by typeFilter from by using reflection to interpret their fields.
+        /// All field types used within these types must also have layouts available from the LayoutManager.
+        /// </summary>
+        /// <param name="layouts"></param>
+        /// <param name="enabledDefines">
+        /// The set of defines that can be used to enabled optional fields decorated with the IfAttribute
+        /// </param>
+        /// <param name="typeFilter">return true if reflection should be used to layout the type</param>
         public static LayoutManager AddReflectionTypes(this LayoutManager layouts, IEnumerable<string> enabledDefines, Func<Type, bool> typeFilter)
         {
             layouts.AddLayoutProvider((type, layoutManager) =>
