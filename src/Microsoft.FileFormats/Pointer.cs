@@ -15,11 +15,10 @@ namespace Microsoft.FileFormats
     /// </summary>
     public class PointerLayout : LayoutBase
     {
+        protected readonly ILayout _storageLayout;
         private readonly LayoutManager _layoutManager;
         private readonly Type _targetType;
         private ILayout _targetLayout;
-
-        protected readonly ILayout StorageLayout;
 
         public ILayout TargetLayout => _targetLayout ??= _layoutManager.GetLayout(_targetType);
 
@@ -27,7 +26,7 @@ namespace Microsoft.FileFormats
             base(pointerType, storageLayout.Size, storageLayout.NaturalAlignment)
         {
             _layoutManager = layoutManager;
-            StorageLayout = storageLayout;
+            _storageLayout = storageLayout;
             _targetType = targetType;
         }
     }
@@ -48,9 +47,9 @@ namespace Microsoft.FileFormats
 
         public override object Read(IAddressSpace dataSource, ulong position)
         {
-            ulong value = (ulong)StorageLayout.Read(dataSource, position);
+            ulong value = (ulong)_storageLayout.Read(dataSource, position);
             Pointer p = (Pointer)Activator.CreateInstance(Type);
-            p.Initialize(value, this);
+            p.Init(TargetLayout, value);
             return p;
         }
     }
@@ -71,9 +70,9 @@ namespace Microsoft.FileFormats
 
         public override object Read(IAddressSpace dataSource, ulong position)
         {
-            ulong value = (uint)StorageLayout.Read(dataSource, position);
+            ulong value = (uint)_storageLayout.Read(dataSource, position);
             Pointer p = (Pointer)Activator.CreateInstance(Type);
-            p.Initialize(value, this);
+            p.Init(TargetLayout, value);
             return p;
         }
     }
@@ -94,9 +93,9 @@ namespace Microsoft.FileFormats
 
         public override object Read(IAddressSpace dataSource, ulong position)
         {
-            ulong value = (SizeT)StorageLayout.Read(dataSource, position);
+            ulong value = (SizeT)_storageLayout.Read(dataSource, position);
             Pointer p = (Pointer)Activator.CreateInstance(Type);
-            p.Initialize(value, this);
+            p.Init(TargetLayout, value);
             return p;
         }
     }
@@ -104,9 +103,6 @@ namespace Microsoft.FileFormats
     public class Pointer
     {
         public ulong Value;
-
-        protected PointerLayout Layout;
-
         public bool IsNull
         {
             get { return Value == 0; }
@@ -122,11 +118,13 @@ namespace Microsoft.FileFormats
             return instance.Value;
         }
 
-        internal void Initialize(ulong value, PointerLayout layout)
+        internal void Init(ILayout targetLayout, ulong value)
         {
+            _targetLayout = targetLayout;
             Value = value;
-            Layout = layout;
         }
+
+        protected ILayout _targetLayout;
     }
 
     /// <summary>
@@ -150,7 +148,7 @@ namespace Microsoft.FileFormats
         public TargetType Element(IAddressSpace addressSpace, uint index)
         {
             if (Value != 0)
-                return (TargetType)Layout.TargetLayout.Read(addressSpace, Value + index * Layout.TargetLayout.Size);
+                return (TargetType)_targetLayout.Read(addressSpace, Value + index * _targetLayout.Size);
             else
                 return default;
         }
