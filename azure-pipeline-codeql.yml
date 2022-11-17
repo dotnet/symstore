@@ -3,7 +3,7 @@ trigger:
 
 schedules:
   - cron: 0 3 * * SUN
-    displayName: Weekly Monday CodeQL/Semmle run
+    displayName: Weekly Sunday CodeQL run
     branches:
       include:
       - main
