@@ -21,6 +21,9 @@ variables:
     value: $(System.JobDisplayName)
   - name: Codeql.Language
     value: csharp
+  # CG is handled in the primary CI pipeline
+  - name: skipComponentGovernanceDetection
+    value: true
 
 jobs:
   - job: CodeQL-Run
