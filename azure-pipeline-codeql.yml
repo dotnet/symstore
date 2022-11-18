@@ -1,0 +1,46 @@
+trigger:
+  none
+
+schedules:
+  - cron: 0 3 * * SUN
+    displayName: Weekly Sunday CodeQL run
+    branches:
+      include:
+      - main
+    always: true
+
+variables:
+  - template: /eng/pipelines/common/variables.yml
+  - name: Codeql.Enabled
+    value: True
+  - name: Codeql.Cadence
+    value: 0
+  - name: Codeql.TSAEnabled
+    value: True
+  - name: Codeql.BuildIdentifier
+    value: $(System.JobDisplayName)
+  - name: Codeql.Language
+    value: csharp
+  # CG is handled in the primary CI pipeline
+  - name: skipComponentGovernanceDetection
+    value: true
+
+jobs:
+  - job: CodeQL-Run
+    pool:
+      name: NetCore1ESPool-Internal
+      demands: ImageOverride -equals windows.vs2022.amd64
+    steps:
+    - task: CodeQL3000Init@0
+      displayName: CodeQL Initialize
+
+    - script:  eng\common\cibuild.cmd
+        -configuration Release
+        -prepareMachine
+        -verbosity normal
+      name: Build
+      displayName: Build
+      condition: succeeded()
+
+    - task: CodeQL3000Finalize@0
+      displayName: CodeQL Finalize
