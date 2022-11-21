@@ -25,7 +25,7 @@ variables:
     value: true
 
 jobs:
-  - job: CodeQL-Run
+  - job: CodeQL
     pool:
       name: NetCore1ESPool-Internal
       demands: ImageOverride -equals windows.vs2022.amd64
