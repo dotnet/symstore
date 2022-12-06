@@ -196,7 +196,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// <returns>symbol store keys</returns>
         private static void NormalizeBuildId(ref byte[] buildId)
         {
-            if (buildId != null && buildId.Length < 20 && buildId.Length >= 16)
+            if (buildId != null && buildId.Length < 20 && buildId.Length >= 8)
             {
                 int oldLength = buildId.Length;
                 Array.Resize(ref buildId, 20);
