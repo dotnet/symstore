@@ -58,8 +58,7 @@ namespace Microsoft.SymbolStore.KeyGenerators
             if (IsValid())
             {
                 byte[] buildId = _elfFile.BuildID;
-                NormalizeBuildId(ref buildId);
-                if (buildId != null)
+                if (NormalizeBuildId(ref buildId))
                 {
                     bool symbolFile = false;
                     try
@@ -113,56 +112,58 @@ namespace Microsoft.SymbolStore.KeyGenerators
         public static IEnumerable<SymbolStoreKey> GetKeys(KeyTypeFlags flags, string path, byte[] buildId, bool symbolFile, string symbolFileName)
         {
             Debug.Assert(path != null);
-            Debug.Assert(buildId != null);
-            NormalizeBuildId(ref buildId);
-
-            Debug.Assert(buildId.Length == 20);
-
-            string fileName = GetFileName(path);
-
-            if ((flags & KeyTypeFlags.IdentityKey) != 0)
+            if (NormalizeBuildId(ref buildId))
             {
-                if (symbolFile)
+                string fileName = GetFileName(path);
+
+                if ((flags & KeyTypeFlags.IdentityKey) != 0)
                 {
-                    yield return BuildKey(path, SymbolPrefix, buildId, "_.debug");
-                }
-                else
-                {
-                    bool clrSpecialFile = s_coreClrSpecialFiles.Contains(fileName);
-                    yield return BuildKey(path, IdentityPrefix, buildId, clrSpecialFile);
-                }
-            }
-            if (!symbolFile)
-            {
-                // This is a workaround for 5.0 where the ELF file type of dotnet isn't Executable but 
-                // Shared. It doesn't work for self-contained apps (apphost renamed to host program).
-                if ((flags & KeyTypeFlags.HostKeys) != 0 && fileName == "dotnet")
-                {
-                    yield return BuildKey(path, IdentityPrefix, buildId, clrSpecialFile: false);
-                }
-                if ((flags & KeyTypeFlags.RuntimeKeys) != 0 && fileName == CoreClrFileName)
-                {
-                    yield return BuildKey(path, IdentityPrefix, buildId);
-                }
-                if ((flags & KeyTypeFlags.SymbolKey) != 0)
-                {
-                    if (string.IsNullOrEmpty(symbolFileName))
+                    if (symbolFile)
                     {
-                        symbolFileName = path + s_symbolFileExtensions[0];
+                        yield return BuildKey(path, SymbolPrefix, buildId, "_.debug");
                     }
-                    yield return BuildKey(symbolFileName, SymbolPrefix, buildId, "_.debug");
-                }
-                if ((flags & (KeyTypeFlags.ClrKeys | KeyTypeFlags.DacDbiKeys)) != 0)
-                {
-                    /// Creates all the special CLR keys if the path is the coreclr module for this platform
-                    if (fileName == CoreClrFileName)
+                    else
                     {
-                        foreach (string specialFileName in (flags & KeyTypeFlags.ClrKeys) != 0 ? s_coreClrSpecialFiles : s_dacdbiSpecialFiles)
+                        bool clrSpecialFile = s_coreClrSpecialFiles.Contains(fileName);
+                        yield return BuildKey(path, IdentityPrefix, buildId, clrSpecialFile);
+                    }
+                }
+                if (!symbolFile)
+                {
+                    // This is a workaround for 5.0 where the ELF file type of dotnet isn't Executable but 
+                    // Shared. It doesn't work for self-contained apps (apphost renamed to host program).
+                    if ((flags & KeyTypeFlags.HostKeys) != 0 && fileName == "dotnet")
+                    {
+                        yield return BuildKey(path, IdentityPrefix, buildId, clrSpecialFile: false);
+                    }
+                    if ((flags & KeyTypeFlags.RuntimeKeys) != 0 && fileName == CoreClrFileName)
+                    {
+                        yield return BuildKey(path, IdentityPrefix, buildId);
+                    }
+                    if ((flags & KeyTypeFlags.SymbolKey) != 0)
+                    {
+                        if (string.IsNullOrEmpty(symbolFileName))
                         {
-                            yield return BuildKey(specialFileName, CoreClrPrefix, buildId);
+                            symbolFileName = path + s_symbolFileExtensions[0];
+                        }
+                        yield return BuildKey(symbolFileName, SymbolPrefix, buildId, "_.debug");
+                    }
+                    if ((flags & (KeyTypeFlags.ClrKeys | KeyTypeFlags.DacDbiKeys)) != 0)
+                    {
+                        // Creates all the special CLR keys if the path is the coreclr module for this platform
+                        if (fileName == CoreClrFileName)
+                        {
+                            foreach (string specialFileName in (flags & KeyTypeFlags.ClrKeys) != 0 ? s_coreClrSpecialFiles : s_dacdbiSpecialFiles)
+                            {
+                                yield return BuildKey(specialFileName, CoreClrPrefix, buildId);
+                            }
                         }
                     }
                 }
+            }
+            else
+            {
+                Debug.Fail($"Invalid ELF BuildId '{(buildId == null ? "<null>" : ToHexString(buildId))}' for {path}");
             }
         }
 
@@ -194,17 +195,19 @@ namespace Microsoft.SymbolStore.KeyGenerators
         /// </summary>
         /// <param name="buildId">Reference to ELF build-id. This build-id maybe extended to 20 bytes</param>
         /// <returns>symbol store keys</returns>
-        private static void NormalizeBuildId(ref byte[] buildId)
+        private static bool NormalizeBuildId(ref byte[] buildId)
         {
-            if (buildId != null && buildId.Length < 20 && buildId.Length >= 8)
+            if (buildId == null || buildId.Length > 20 || buildId.Length < 8)
             {
-                int oldLength = buildId.Length;
-                Array.Resize(ref buildId, 20);
-                for (int i = oldLength; i < buildId.Length; i++)
-                {
-                    buildId[i] = 0;
-                }
+                return false;
             }
+            int oldLength = buildId.Length;
+            Array.Resize(ref buildId, 20);
+            for (int i = oldLength; i < buildId.Length; i++)
+            {
+                buildId[i] = 0;
+            }
+            return true;
         }
     }
 }
