@@ -41,11 +41,11 @@ namespace Microsoft.FileFormats.MachO
             {
                 return _dylinkerHintAddress;
             }
-            if (TryFindDylinker(true, out ulong position))
+            if (TryFindDylinker(firstPass: true, out ulong position))
             {
                 return position;
             }
-            if (TryFindDylinker(false, out position))
+            if (TryFindDylinker(firstPass: false, out position))
             {
                 return position;
             }
