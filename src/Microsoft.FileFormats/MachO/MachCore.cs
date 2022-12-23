@@ -41,22 +41,49 @@ namespace Microsoft.FileFormats.MachO
             {
                 return _dylinkerHintAddress;
             }
-            foreach (MachSegment segment in _machO.Segments)
+            if (TryFindDylinker(firstPass: true, out ulong position))
             {
-                ulong position = segment.LoadCommand.VMAddress;
-                if (IsValidDylinkerAddress(position))
-                {
-                    return position;
-                }
+                return position;
+            }
+            if (TryFindDylinker(firstPass: false, out position))
+            {
+                return position;
             }
             throw new BadInputFormatException("No dylinker module found");
+        }
+
+        private bool TryFindDylinker(bool firstPass, out ulong position)
+        {
+            const uint skip = 0x1000;
+            const uint firstPassAttemptCount = 8;
+            foreach (MachSegment segment in _machO.Segments)
+            {
+                ulong start = 0;
+                ulong end = segment.LoadCommand.FileSize;
+
+                if (firstPass)
+                    end = skip * firstPassAttemptCount;
+                else
+                    start = skip * firstPassAttemptCount;
+
+                for (ulong offset = start; offset < end; offset += skip)
+                {
+                    ulong possibleDylinker = segment.LoadCommand.VMAddress + offset;
+                    if (IsValidDylinkerAddress(possibleDylinker))
+                    {
+                        position = possibleDylinker;
+                        return true;
+                    }
+                }
+            }
+            position = 0;
+            return false;
         }
 
         private bool IsValidDylinkerAddress(ulong possibleDylinkerAddress)
         {
             MachOFile dylinker = new MachOFile(VirtualAddressReader.DataSource, possibleDylinkerAddress, true);
-            return dylinker.HeaderMagic.IsMagicValid.Check() &&
-                   dylinker.Header.FileType == MachHeaderFileType.Dylinker;
+            return dylinker.IsValid() && dylinker.Header.FileType == MachHeaderFileType.Dylinker;
         }
 
         private MachLoadedImage[] ReadImages()
