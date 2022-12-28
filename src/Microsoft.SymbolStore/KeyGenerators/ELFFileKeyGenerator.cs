@@ -190,11 +190,11 @@ namespace Microsoft.SymbolStore.KeyGenerators
         }
 
         /// <summary>
-        /// Extends build-ids of 16 bytes (created by MD5 or UUID build ids) to 20 bytes
+        /// Extends build-ids of 8-20 bytes (created by MD5 or UUID build ids) to 20 bytes with proper padding
         /// using a zero extension
         /// </summary>
-        /// <param name="buildId">Reference to ELF build-id. This build-id maybe extended to 20 bytes</param>
-        /// <returns>symbol store keys</returns>
+        /// <param name="buildId">Reference to ELF build-id. This build-id must be between 8 and 20 bytes in length.</param>
+        /// <returns>True if the build-id is compliant and could be resized and padded. False otherwise.</returns>
         private static bool NormalizeBuildId(ref byte[] buildId)
         {
             if (buildId == null || buildId.Length > 20 || buildId.Length < 8)
