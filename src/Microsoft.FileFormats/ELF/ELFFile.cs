@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.FileFormats.ELF
 {
-    public class ELFFile
+    public class ELFFile : IDisposable
     {
         private readonly ulong _position;
         private readonly bool _isDataSourceVirtualAddressSpace;
@@ -45,6 +45,14 @@ namespace Microsoft.FileFormats.ELF
         public Reader VirtualAddressReader { get { return _virtualAddressReader.Value; } }
         public byte[] BuildID { get { return _buildId.Value; } }
         public byte[] SectionNameTable { get { return _sectionNameTable.Value; } }
+
+        public void Dispose()
+        {
+            if (_reader.DataSource is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
 
         public bool IsValid()
         {

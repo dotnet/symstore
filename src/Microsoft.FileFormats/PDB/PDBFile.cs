@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.FileFormats.PDB
 {
-    public class PDBFile
+    public class PDBFile : IDisposable
     {
         private readonly Reader _reader;
         private readonly Lazy<PDBFileHeader> _header;
@@ -33,6 +30,14 @@ namespace Microsoft.FileFormats.PDB
         public uint Age { get { return NameStream.Header.Age; } }
         public uint DbiAge { get { return DbiStream.Header.Age; } }
         public Guid Signature { get { return new Guid(NameStream.Header.Guid); } }
+
+        public void Dispose()
+        {
+            if (_reader.DataSource is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
 
         public bool IsValid()
         {

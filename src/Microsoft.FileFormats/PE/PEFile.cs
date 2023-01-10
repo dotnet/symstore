@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,7 +11,7 @@ namespace Microsoft.FileFormats.PE
     /// <summary>
     /// A very basic PE reader that can extract a few useful pieces of information
     /// </summary>
-    public class PEFile
+    public class PEFile : IDisposable
     {
         // PE file
         private readonly bool _isDataSourceVirtualAddressSpace;
@@ -79,6 +78,14 @@ namespace Microsoft.FileFormats.PE
         public VsFixedFileInfo VersionInfo { get { return _vsFixedFileInfo.Value; } }
         public IEnumerable<PEPerfMapRecord> PerfMapsV1 { get { return _perfMapsV1.Value; } }
         public IEnumerable<PdbChecksum> PdbChecksums { get { return _pdbChecksum.Value; } }
+
+        public void Dispose()
+        {
+            if (_headerReader.DataSource is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
 
         public bool IsValid()
         {
@@ -332,6 +339,7 @@ namespace Microsoft.FileFormats.PE
             {
                 numNameEntries = 0;
             }
+
             if (numIDEntries == ushort.MaxValue)
             {
                 numIDEntries = 0;

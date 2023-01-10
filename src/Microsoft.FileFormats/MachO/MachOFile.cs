@@ -1,15 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.FileFormats;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.FileFormats.MachO
 {
-    public class MachOFatFile
+    public class MachOFatFile : IDisposable
     {
         private readonly Reader _reader;
         private readonly Lazy<MachFatHeaderMagic> _headerMagic;
@@ -32,6 +30,14 @@ namespace Microsoft.FileFormats.MachO
         public MachFatHeader Header { get { return _header.Value; } }
         public MachFatArch[] Arches { get { return _arches.Value; } }
         public MachOFile[] ArchSpecificFiles { get { return _archSpecificFiles.Value; } }
+
+        public void Dispose()
+        {
+            if (_reader.DataSource is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
 
         public bool IsValid()
         {
@@ -70,7 +76,7 @@ namespace Microsoft.FileFormats.MachO
         }
     }
 
-    public class MachOFile
+    public class MachOFile : IDisposable
     {
         private readonly ulong _position;
         private readonly bool _dataSourceIsVirtualAddressSpace;
@@ -113,6 +119,13 @@ namespace Microsoft.FileFormats.MachO
         public MachSymtab Symtab { get { return _symtab.Value; } }
         private Reader DataSourceReader { get { return _dataSourceReader.Value; } }
 
+        public void Dispose()
+        {
+            if (_reader.DataSource is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
         public bool IsValid()
         {
             if (_reader.Length > (_position + _reader.SizeOf<MachHeaderMagic>()))
