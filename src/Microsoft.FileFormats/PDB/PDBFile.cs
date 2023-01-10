@@ -71,7 +71,7 @@ namespace Microsoft.FileFormats.PDB
 
         private uint ToPageCount(uint size)
         {
-            return (Header.PageSize + size - 1) / Header.PageSize;
+            return unchecked((Header.PageSize + size - 1) / Header.PageSize);
         }
     }
 
