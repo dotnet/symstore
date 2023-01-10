@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -326,6 +327,15 @@ namespace Microsoft.FileFormats.PE
         {
             ushort numNameEntries = resourceDirectory.NumberOfNamedEntries;
             ushort numIDEntries = resourceDirectory.NumberOfIdEntries;
+
+            if (numNameEntries == ushort.MaxValue)
+            {
+                numNameEntries = 0;
+            }
+            if (numIDEntries == ushort.MaxValue)
+            {
+                numIDEntries = 0;
+            }
 
             uint directorySize = RelativeVirtualAddressReader.SizeOf<ImageResourceDirectory>();
             uint entrySize = RelativeVirtualAddressReader.SizeOf<ImageResourceDirectoryEntry>();
