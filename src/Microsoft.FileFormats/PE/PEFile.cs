@@ -11,7 +11,7 @@ namespace Microsoft.FileFormats.PE
     /// <summary>
     /// A very basic PE reader that can extract a few useful pieces of information
     /// </summary>
-    public class PEFile
+    public class PEFile : IDisposable
     {
         // PE file
         private readonly bool _isDataSourceVirtualAddressSpace;
@@ -78,6 +78,14 @@ namespace Microsoft.FileFormats.PE
         public VsFixedFileInfo VersionInfo { get { return _vsFixedFileInfo.Value; } }
         public IEnumerable<PEPerfMapRecord> PerfMapsV1 { get { return _perfMapsV1.Value; } }
         public IEnumerable<PdbChecksum> PdbChecksums { get { return _pdbChecksum.Value; } }
+
+        public void Dispose()
+        {
+            if (_headerReader.DataSource is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
 
         public bool IsValid()
         {
@@ -326,6 +334,16 @@ namespace Microsoft.FileFormats.PE
         {
             ushort numNameEntries = resourceDirectory.NumberOfNamedEntries;
             ushort numIDEntries = resourceDirectory.NumberOfIdEntries;
+
+            if (numNameEntries == ushort.MaxValue)
+            {
+                numNameEntries = 0;
+            }
+
+            if (numIDEntries == ushort.MaxValue)
+            {
+                numIDEntries = 0;
+            }
 
             uint directorySize = RelativeVirtualAddressReader.SizeOf<ImageResourceDirectory>();
             uint entrySize = RelativeVirtualAddressReader.SizeOf<ImageResourceDirectoryEntry>();

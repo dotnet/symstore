@@ -12,8 +12,10 @@ namespace Microsoft.FileFormats
     /// <summary>
     /// Creates an address space that reads from a stream.
     /// </summary>
-    public sealed class StreamAddressSpace : IAddressSpace
+    public sealed class StreamAddressSpace : IAddressSpace, IDisposable
     {
+        private Stream _stream;
+
         public StreamAddressSpace(Stream stream)
         {
             System.Diagnostics.Debug.Assert(stream.CanSeek);
@@ -36,6 +38,10 @@ namespace Microsoft.FileFormats
         /// <returns>The number of bytes read</returns>
         public uint Read(ulong position, byte[] buffer, uint bufferOffset, uint count)
         {
+            if (_stream is null)
+            {
+                throw new ObjectDisposedException(nameof(_stream), "StreamAddressSpace instance has been disposed");
+            }
             if (position + count > Length)
             {
                 throw new BadInputFormatException("Unexpected end of data: Expected " + count + " bytes.");
@@ -44,6 +50,10 @@ namespace Microsoft.FileFormats
             return (uint)_stream.Read(buffer, (int)bufferOffset, (int)count);
         }
 
-        private Stream _stream;
+        public void Dispose()
+        {
+            _stream?.Dispose();
+            _stream = null;
+        }
     }
 }
