@@ -34,13 +34,13 @@ namespace Microsoft.SymbolStore.SymbolStores
         /// </summary>
         public TimeSpan Timeout
         {
-            get 
-            { 
+            get
+            {
                 return _client.Timeout;
             }
-            set 
-            { 
-                _client.Timeout = value; 
+            set
+            {
+                _client.Timeout = value;
                 if (_authenticatedClient != null)
                 {
                     _authenticatedClient.Timeout = value;
@@ -54,12 +54,13 @@ namespace Microsoft.SymbolStore.SymbolStores
         public int RetryCount { get; set; }
 
         /// <summary>
-        /// Create an instance of a http symbol store
+        /// Setups the underlying fields for HttpSymbolStore
         /// </summary>
+        /// <param name="tracer">logger</param>
         /// <param name="backingStore">next symbol store or null</param>
         /// <param name="symbolServerUri">symbol server url</param>
-        /// <param name="personalAccessToken">optional PAT or null if no authentication</param>
-        public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, string personalAccessToken = null)
+        /// <param name="hasPAT">flag to indicate to create an authenticatedClient if there is a PAT</param>
+        private HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, bool hasPAT)
             : base(tracer, backingStore)
         {
             Uri = symbolServerUri ?? throw new ArgumentNullException(nameof(symbolServerUri));
@@ -69,24 +70,69 @@ namespace Microsoft.SymbolStore.SymbolStores
             }
 
             // Normal unauthenticated client
-            _client = new HttpClient {
+            _client = new HttpClient
+            {
                 Timeout = TimeSpan.FromMinutes(4)
             };
 
-            // If PAT, create authenticated client
-            if (!string.IsNullOrEmpty(personalAccessToken))
+            if (hasPAT)
             {
-                var handler = new HttpClientHandler() {
+                var handler = new HttpClientHandler()
+                {
                     AllowAutoRedirect = false
                 };
-                var client = new HttpClient(handler) {
+                var client = new HttpClient(handler)
+                {
                     Timeout = TimeSpan.FromMinutes(4)
                 };
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                    "Basic", Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(string.Format("{0}:{1}", "", personalAccessToken))));
+                // Authorization is set in associated constructors.
                 _authenticatedClient = client;
             }
+        }
+
+        /// <summary>
+        /// Create an instance of a http symbol store
+        /// </summary>
+        /// <param name="tracer">logger</param>
+        /// <param name="backingStore">next symbol store or null</param>
+        /// <param name="symbolServerUri">symbol server url</param>
+        /// <param name="personalAccessToken">optional Basic Auth PAT or null if no authentication</param>
+        public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, string personalAccessToken = null)
+            : this(tracer, backingStore, symbolServerUri, !string.IsNullOrEmpty(personalAccessToken))
+        {
+            // If PAT, create authenticated client with Basic Auth
+            if (!string.IsNullOrEmpty(personalAccessToken))
+            {
+                _authenticatedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(string.Format("{0}:{1}", "", personalAccessToken))));
+            }
+        }
+
+        /// <summary>
+        /// Create an instance of a http symbol store with an authenticated client
+        /// </summary>
+        /// <param name="tracer">logger</param>
+        /// <param name="backingStore">next symbol store or null</param>
+        /// <param name="symbolServerUri">symbol server url</param>
+        /// <param name="scheme">The scheme information to use for the AuthenticationHeaderValue</param>
+        /// <param name="parameter">The parameter information to use for the AuthenticationHeaderValue</param>
+        public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, string scheme, string parameter)
+            : this(tracer, backingStore, symbolServerUri, true)
+        {
+            if (string.IsNullOrEmpty(scheme))
+            {
+                throw new ArgumentNullException(nameof(scheme));
+            }
+
+            if (string.IsNullOrEmpty(parameter))
+            {
+                throw new ArgumentNullException(nameof(parameter));
+            }
+
+            // Create authenticated header with given SymbolAuthHeader
+            _authenticatedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, parameter);
+            // Force redirect logins to fail.
+            _authenticatedClient.DefaultRequestHeaders.Add("X-TFS-FedAuthRedirect", "Suppress");
         }
 
         /// <summary>
@@ -149,7 +195,7 @@ namespace Microsoft.SymbolStore.SymbolStores
             string fileName = Path.GetFileName(path);
             HttpClient client = _authenticatedClient ?? _client;
             int retries = 0;
-            while(true)
+            while (true)
             {
                 bool retryable;
                 string message;
