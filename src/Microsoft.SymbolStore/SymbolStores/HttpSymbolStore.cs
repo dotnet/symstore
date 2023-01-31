@@ -15,12 +15,6 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SymbolStore.SymbolStores
 {
-    public class SymbolAuthHeader
-    {
-        public string Scheme { get; set; }
-        public string Parameter { get; set; }
-    }
-
     /// <summary>
     /// Basic http symbol store. The request can be authentication with a PAT for VSTS symbol stores.
     /// </summary>
@@ -121,16 +115,21 @@ namespace Microsoft.SymbolStore.SymbolStores
         /// <param name="backingStore">next symbol store or null</param>
         /// <param name="symbolServerUri">symbol server url</param>
         /// <param name="authenticationHeader">The header information to use for the AuthenticationHeaderValue</param>
-        public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, SymbolAuthHeader authenticationHeader)
+        public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, string scheme, string parameter)
             : this(tracer, backingStore, symbolServerUri, true)
         {
-            if (authenticationHeader == null)
+            if (string.IsNullOrEmpty(scheme))
             {
-                throw new ArgumentException(nameof(authenticationHeader));
+                throw new ArgumentException(nameof(scheme));
+            }
+
+            if (string.IsNullOrEmpty(parameter))
+            {
+                throw new ArgumentException(nameof(parameter));
             }
 
             // Create authenticated header with given SymbolAuthHeader
-            _authenticatedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authenticationHeader.Scheme, authenticationHeader.Parameter);
+            _authenticatedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, parameter);
             // Force redirect logins to fail.
             _authenticatedClient.DefaultRequestHeaders.Add("X-TFS-FedAuthRedirect", "Suppress");
         }
