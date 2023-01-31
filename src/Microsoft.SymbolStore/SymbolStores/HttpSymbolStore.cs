@@ -114,18 +114,19 @@ namespace Microsoft.SymbolStore.SymbolStores
         /// <param name="tracer">logger</param>
         /// <param name="backingStore">next symbol store or null</param>
         /// <param name="symbolServerUri">symbol server url</param>
-        /// <param name="authenticationHeader">The header information to use for the AuthenticationHeaderValue</param>
+        /// <param name="scheme">The scheme information to use for the AuthenticationHeaderValue</param>
+        /// <param name="parameter">The parameter information to use for the AuthenticationHeaderValue</param>
         public HttpSymbolStore(ITracer tracer, SymbolStore backingStore, Uri symbolServerUri, string scheme, string parameter)
             : this(tracer, backingStore, symbolServerUri, true)
         {
             if (string.IsNullOrEmpty(scheme))
             {
-                throw new ArgumentException(nameof(scheme));
+                throw new ArgumentNullException(nameof(scheme));
             }
 
             if (string.IsNullOrEmpty(parameter))
             {
-                throw new ArgumentException(nameof(parameter));
+                throw new ArgumentNullException(nameof(parameter));
             }
 
             // Create authenticated header with given SymbolAuthHeader
