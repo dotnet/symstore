@@ -2,7 +2,7 @@
 
 Implements API for retrieval of symbols and other debug artifacts from symbol store.
 
-Builds are available on the dotnet-tools feed: https://dev.azure.com/dnceng/public/_packaging?_a=feed&feed=dotnet-tools
+Builds are available on the dotnet-tools feed: https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-tools/NuGet/Microsoft.SymbolStore
 
 [//]: # (Begin current test results)
 
