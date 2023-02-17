@@ -66,7 +66,7 @@ namespace Microsoft.FileFormats
         /// <summary>
         /// The upper bound (non-inclusive) of readable addresses
         /// </summary>
-        public ulong Length { get { return (ulong)((long)_baseStart + (long)_length + _baseToRelativeShift); } }
+        public ulong Length { get { return unchecked(_baseStart + _length + (ulong)_baseToRelativeShift); } }
     }
 
     public class ZeroAddressSpace : IAddressSpace
