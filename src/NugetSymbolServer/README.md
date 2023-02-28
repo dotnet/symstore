@@ -10,14 +10,14 @@ Step 1 - Build the symstore repo
 
 Step 2 - Run the symbol server
 
-    c:\repos\symstore> dotnet artifacts\bin\NugetSymbolServer\Debug\netcoreapp3.1\NugetSymbolServer.dll
+    c:\repos\symstore> dotnet artifacts\bin\NugetSymbolServer\Debug\net6.0\NugetSymbolServer.dll
 
     info: NugetSymbolServer.Service.Models.PackageStore[0]
-          Adding package c:\repos\symstore\artifacts\Debug\bin\NugetSymbolServer\netcoreapp3.1\.\nuget_feed\HelloWorld.1.0.0.nupkg
+          Adding package c:\repos\symstore\artifacts\Debug\bin\NugetSymbolServer\net6.0\.\nuget_feed\HelloWorld.1.0.0.nupkg
     info: NugetSymbolServer.Service.Models.PackageBasedSymbolStore[0]
           Adding symbol entry helloworld.dll/57847aae8000/helloworld.dll => C:\Users\mikem\AppData\Local\Temp\NugetSymbolServerFileCache\HelloWorld.1.0.0\1\lib\netcoreapp1.0\HelloWorld.dll
     Hosting environment: Production
-    Content root path: c:\repos\symstore\artifacts\bin\NugetSymbolServer\Debug\netcoreapp3.1\
+    Content root path: c:\repos\symstore\artifacts\bin\NugetSymbolServer\Debug\net6.0\
     Now listening on: http://localhost:5000
     Application started. Press Ctrl+C to shut down.
 
