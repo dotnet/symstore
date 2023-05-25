@@ -178,16 +178,22 @@ namespace Microsoft.FileFormats.ELF
 
             if (Header.ProgramHeaderOffset > 0 && Header.ProgramHeaderEntrySize > 0 && Header.ProgramHeaderCount > 0)
             {
-                foreach (ELFProgramSegment segment in Segments)
+                try
                 {
-                    if (segment.Header.Type == ELFProgramHeaderType.Note)
+                    foreach (ELFProgramSegment segment in Segments)
                     {
-                        buildId = ReadBuildIdNote(segment.Contents);
-                        if (buildId != null)
+                        if (segment.Header.Type == ELFProgramHeaderType.Note)
                         {
-                            break;
+                            buildId = ReadBuildIdNote(segment.Contents);
+                            if (buildId != null)
+                            {
+                                break;
+                            }
                         }
                     }
+                }
+                catch (Exception ex) when (ex is InvalidVirtualAddressException || ex is BadInputFormatException || ex is OverflowException)
+                {
                 }
             }
 
