@@ -31,7 +31,7 @@ variables:
 resources:
   containers:
   - container: LinuxContainer
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04
 
 stages:
   - stage: build
@@ -88,7 +88,7 @@ stages:
           - job: Linux
             container: LinuxContainer
             pool:
-              vmImage: ubuntu-20.04
+              vmImage: ubuntu-22.04
 
             strategy:
               matrix:
